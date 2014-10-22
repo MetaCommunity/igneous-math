@@ -650,9 +650,7 @@ See also: `rescale'"))
         (slot-value* object 'magnitude)
       (cond 
         ((and boundp (typep mag 'ratio))
-         (write-char #\( stream)
-         (princ mag stream)
-         (write-char #\) stream))
+         (princ (float mag) stream))
         (boundp
          (princ mag stream))
         (t
@@ -800,17 +798,58 @@ See also: `rescale'"))
 ;;    #<METER (1/1000)E+3 km {1006331AF3}>, 
 ;;    #<METER 1000E-3 mm {1006332293}>, 
 ;;    T 
-
-
+;; ^ Implementation note: The magnitude of the measurement is 1,
+;;   in each of those three instances. 
+;;
+;;   The convenient, printed representation -- as illustrated -- may
+;;   seem to suggest as though a floating-point value was used in the
+;;   third instance. In the third instances, in the previous, the
+;;   measurement's magnitude is 1 and its degree is -3. At no time
+;;   does any of those instanes use a floating-point object in its
+;;   implementation. 
+;;
+;;   Though, of course, floating-point values would occur throughout a
+;;   mathematical system, in application, but insofar as discrete
+;;   ratios and integral values may be utilized within mathematical
+;;   calculations -- insofar as of integral and ratio values serving
+;;   as mathematically accurate alternatives to mathematically
+;;   equivalent floating point values -- then perhaps it may serve
+;;   towards a greater development of a basis for systematic
+;;   measurement accuracy, within mathematical systems extending of
+;;   this system, that a simple magnitude/degree model is developed --
+;;   as in  preference to a completely "dot decimal" model for
+;;   expression of measuremnt values, within digital information
+;;   objects. Of course, this model is developed as an extension of
+;;   the subset of ANSI Common Lisp implemented as with regards to
+;;   numeric types and mathematical procedures.
+;;
+;;   In a sense, it is a goal in the design of this system that
+;;   numbers will be applied without truncation, insofar as towards
+;;   calculation of "end values". So far as procedures for addition,
+;;   multiplication, subtraction, and divsion may be conducted
+;;   thoroughly with integral and ratio values, then such integral
+;;   and ratio values may be used iternally, within program objects. 
+;;   A floating point notation may be applied, nonetheless, for
+;;   printed representation of objects' numeric values, in a
+;;   conventional syntax. 
+;;
+;;   Of course, as in calculations effectively applying the ANSI CLtL
+;;   definition of 'pi', it may be fortuitous to extend on ANSI CLtL
+;;   with a methdology similar to the the 'thunk'[1] in which the
+;;   evaluation of the constant 'pi' would be delayed until
+;;   construction of a comprehensive formula for calculation of an
+;;   "end value" within a mathematical system. See also: Garnet KR[2]
+;;
+;; [1] http://www.chadbraunduin.com/2011/07/common-lisp-lazy-sequences.html
+;; [2] http://sourceforge.net/projects/garnetlisp/files/
 
 #+NIL ;; instance test - nrescale
 (let* ((m (make-measurement 1 :m))
        (m-2 (nrescale m 3)))
   (values m-2 (eq m-2 m)))
 
-;; => #<METER (1/1000)E+3 km {1005F4C4D3}>, 
+;; => #<METER 0.001E+3 km {1005F4C4D3}>, 
 ;;    T
-
 
 
 
