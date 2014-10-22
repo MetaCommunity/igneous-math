@@ -1,6 +1,46 @@
 
 (in-package #:cl-user)
 
+;; TO DO:
+;; 1) Define an ASDF system for this source file
+;;
+;; X) Define a reader macro syntax for measurement units
+;;    also cf. Jakub Higersberger's unit-formula system
+;;
+;; Y) Extend MEASUREMENT-CLASS with a new class,
+;;    DERIVED-MEASUREMENT-CLASS, such that would publish an accessor
+;;    for calculating a formula for measurement unit converstions
+;;
+;; 2) Implement YouTrack and TeamCity onto AWS (cf. Nr 4)
+;;
+;; 3) Move DEFCLASS* into the mci-cltl-utils source tree
+;;
+;; 4) Define, within YouTrack and TeamCity, such TO DO items as are
+;;    denoted within the commentary in the DEFCLASS* macro definition 
+;;
+;; 5) Define a convenient syntax for extension of this measurement
+;;    protocol in definition of custom measurement units
+;;
+;; 6) Continue with definition of the geometry component of this
+;;    system, toward DEFCLASS VECTOR etc.
+;;
+;; 7) "Back track" to the TO DO items defined then in YouTrack/TeamCity
+;;
+;; 8) At some point, refine the comments in this file into a form of
+;;    normative documentation for this program system
+;; 
+;; 9) Define a desktop interface for this system - carefully avoiding
+;;    any manner of a competitive spirit towards Wolfram Mathematica
+;;    and the respective MathML implementations available within the
+;;    contemporary computing domain - albeit all within proprietary/
+;;    closed source software systems, "those" -- also maxing reference
+;;    onto the ACL2 "theorem prover" system  and Maxima. Although this
+;;    system is being defined morso for a purpose of supporting
+;;    applicationso of analytic geometry, as primarily with regards
+;;    to electical engineering, however there must be some references
+;;    made onto theoretical mathematics, throughout this system.
+
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (dolist (s '(#:info.metacommunity.cltl.utils
@@ -52,6 +92,115 @@
 (defmacro defclass* (name-form (&rest superclasses) 
                              (&rest slot-definitions)
                      &rest initargs)
+  ;; FIXME: This macro does not, of itself, provide a complete
+  ;; "DEFCLASS* SOMEWHAT LIKE DEFSTRUCT"  implementation. Features
+  ;; presently lacking of this implementation, in that regards
+  ;; may include:
+  ;; 
+  ;; * Many of the features avaialble for structure classes defined
+  ;;   via DEFSTRUCT are altogether lacking from this protocol, such
+  ;;   as: 
+  ;;    * Naming and definition of a <type-p> predicate function
+  ;;    * Naming and definition of a <copier> function
+  ;;    * Specification of an object printer function
+  ;;    * Naming and lambda list syntax for constructor functions
+  ;;    * Nothing such as DEFSTRUCT's linear :INHERIT
+  ;;    * Nothing such as a list type or vector type syntax for instances
+  ;;    * Other qualities, as denoted in the following
+  ;;
+  ;; * In that this DEFCLASS* macro implements a syntax "Somewhat like
+  ;;   defstruct", the following features are noted:
+  ;;
+  ;;   * NAME-FORM may be a symbol or a list. If a symbol, then
+  ;;     NAME-FORM denotes the name of the class. If a list, then
+  ;;     NAME-FORM denotes -- as its first element -- the name of the
+  ;;     class, with a syntax similar to DEFTTRUCT <name-and-options>.
+  ;;    
+  ;;     DEFCLASS* emulates DEFSTRUCT' :CONC-NAME option
+  ;;
+  ;;   * For all direct slots of the class, a set of reader and writer
+  ;;     methods will be defined, as named according to CONC-NAME
+  ;;     interpreted in a manner similar to as with DEFSTRUCT (FIXME:
+  ;;     However, in its present revisin, DEFCLASS* rather interprets
+  ;;     a NULL CONC-NAME as a "flag" that no reader or writer methods
+  ;;     should be defined). Unless the slot-definition is denoted as
+  ;;     :READ-ONLY, a writer method will be defined for the slot
+  ;;     definition, named as per <that naming convention>. In <all
+  ;;     instances>, a reader method will be defined for the slot
+  ;;     instances>definition (NOTE: Unless CONC-NAME is NULL
+
+  ; FIXME: Redefine DEFCLASS* to interpret CONC-NAME in a manner more
+  ; consissent onto DEFSTRUCT; provide an additional slot definition
+  ; "flag" value for denoting if a slot defintion is not to have any
+  ; reader or writer methods defined for it; revise this
+  ; documentation, subsequent to that changeset. (Firstly, move
+  ; DEFCLASS* into the mci-cltl-utils source tree). Lastly, describe
+  ; the complete syntax for slot definition specifiers, as implemented
+  ; of this DEFCLASS* macro -- and make a more direct reference to the
+  ; X3J13 discussions surrounding the definition of the syntax of each
+  ; of DEFSTRUCT and DEFCLASS in CLtL2 -- all of this, to proceed
+  ; after implementation of Jetbrains' YouTrack and TeamCity
+  ; components into a Glasfish server in an AWS instance.
+
+  ;;
+  ;; * When a class' slot is redefined from "not read only" to "read
+  ;;   only" then the SLOT-DEFINITION-WRITER methods defined for slots
+  ;;   in the class as side-effects of its definition as "not read
+  ;;   only" are not undefined. Those "then invalid" writer methods
+  ;;   should be made undefined, however, as consequent with the
+  ;;   change in slot definition qualities
+  ;;
+  ;; * Concerning the :READ-ONLY value for slot specifiers for this
+  ;;   macro, presently that value may seem to represent something of
+  ;;   a misnomer. <Presently> :
+  ;;
+  ;;     * The READ-ONLY value is not stored with the slot
+  ;;       definition - whether its direct slot definition of
+  ;;       effective slot defintion
+  ;;
+  ;;     * The READ-ONLY value will not be inherited by subclasses
+  ;;
+  ;;     * The READ-ONLY value does not actually prevent SETF access
+  ;;       to slots, as by way of (SETF SLOT-VALUE)
+  ;;
+  ;;   Those shortcomings may be addressed, subsequently, with a
+  ;;   definition of a READ-ONLY-INSTANCE-SLOT-DEFINITION
+  ;;   protocol. However, as one's experiences in developing
+  ;;   extensions onto CLOS might seem to prove: Once the proverbial
+  ;;   Pandora's box of slot definition extension is opened, then --
+  ;;   in less figurative terms -- it may be difficult to develop any
+  ;;   effectively "layered" extensions onto STANDARD-SLOT-DEFINITION,
+  ;;   as well as the direct and effective slot definition subclasses
+  ;;   of STANDARD-SLOT-DEFINITION. Certainly, that is not to
+  ;;   criticise the design of MOP, whereas -- presently -- one
+  ;;   considers that it may be possible to develop an extensional
+  ;;   architecture for facilitating a definition of "layered",
+  ;;   domain-specific slot definition extensions
+  ;;
+  ;;   As well as that such an architecture may be applied in
+  ;;   developing this READ-ONLY-INSTANCE-SLOT-DEFINITION proposal,
+  ;;   but furthtermore: Such an architecture may be applied for
+  ;;   developing a MODALLY-LOCKED-SLOT-DEFINITION protocol namely
+  ;;   using read-write locking onto slot values, as may be
+  ;;   facilitative of thread safety in Common Lisp programs.
+  ;;
+  ;;   Thirdly, such an architecture may be applied for developing an
+  ;;   L10N-SLOT-DEFINITION proposal, namely to facilitate
+  ;;   internationalization of locale-specific values - especially,
+  ;;   language-specific strings -- within Common Lisp applications.
+  ;;   See also: The #I18N notes peppered throughout the codebases
+  ;;   provided of the MetaCommunity.info project
+  ;;
+  ;;  Thus, effectively five "Architectural FIXME" items are defined here:
+  ;;
+  ;;  * DEFCLASS*-MORE-SOMEWHAT-LIKE-DEFSTRUCT
+  ;;  * LAYRED-SLOT-DEFINITON-ARCHITECTURE
+  ;;  * READ-ONLY-SLOT-DEFINITION
+  ;;  * MODALLY-LOCKED-SLOT-DEFINITION
+  ;;  * L10N-SLOT-DEFINITION liketly to be followed with
+  ;;    I18N-STRING-SLOT-DEFINITION and a broader I18N protocol
+  ;;    integrating with existing internationalization frameworks, e.g
+  ;;    "PO files"
   (destructuring-bind (name &key (conc-name nil cnp))
       (cond
         ((symbolp name-form) (list name-form))
@@ -109,6 +258,9 @@
   ())
 
 
+(deftype measurement-class-designator ()
+  '(or symbol measurement-class))
+
 (define-condition class-not-found (entity-not-found)
   ()
   (:report
@@ -160,157 +312,70 @@
 
 
 (defclass* measurement ()
-    ((magnitude real :initform 0)
-     ;; degree : an exponent of 10
-     (degree fixnum :initform 0)))
+  ;; magnitude : a real value that, when multplied by 10^degree,
+  ;; then serves as an effective element for calculating the
+  ;; `scalar-magnitude' for the measurement
+  ((magnitude real :initform 0)
+   ;; degree : an exponent of 10, denoting the degree of the decimal
+   ;; prefix factor for the measurement; serves as like a scale
+   ;; value. see also: PREFIX class and protocol
+   ;;
+   ;; TO DO: For measures of information content (byte, etc) define an 
+   ;; additional prefix system - onto powers of 8, rather than of 10.
+   ;; The DEGREE slot for MEASUREMENT may be interpreted in simply an
+   ;; alternate regards, then -- as in (expt 8 DEGREE) rather than 
+   ;; (expt 10 DEGREE) -- respectively, an effective FACTOR-BASE of 8
+   ;; rather than 10
+   (degree fixnum :initform 0)
+   ;; FIXME: For purpose of memoization, consider developing a
+   ;; MEMOIZED-SLOT protocol such that a slot
+   ;; MEMOIZED-FACTORED-MAGNITUDE would store an effective 
+   ;; cached value of (* magnitude (expt factor-base degree)) 
+   ;; Referencing Garnet KR, the same slot may be defined effetively
+   ;; with a formula onto other slots in the class and other formulas
+   ;; iin the Lisp environment
+   ))
 
-(defun base-magnitude (m)
+
+;; FIXME: Move this DEFCONSTANT into prefix handling code, and consider
+;; refactoring this system for defining an accessor FACTOR-BASE onto a
+;; new class PREFIX-CLASS - such that would allow for defining
+;; prefixes for an octal factor base, as for measurements of data
+;; quantities within information systems
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant %factor-base% 10)
+  )
+
+(defun base-magnitude (m)  
+  "Calculate the scalar magnitude of the measurement M for the base
+measurement unit of M"
+  ;;
+  ;; NB. This function implements a numeric conversion on
+  ;; a basis of of prefix magnitude. Conversions per ratios of derived
+  ;; units must be implemneted seperately.
   (declare (type measurement m)
            (values real))
   (let ((deg (measurement-degree m)))
     (cond 
       ((zerop deg) (measurement-magnitude m))
       (t (* (measurement-magnitude m)
-            (expt 10 deg))))))
+            (expt #.%factor-base% deg))))))
 
-(defgeneric magnitude-for-degree (measurement degree)
-  (:method ((m measurement) (deg fixnum))
-    (let ((next-deg (+ deg (measurement-degree m))))
-      (cond
-        ((zerop next-deg) (measurement-magnitude m))
-        (t (* (measurement-magnitude m)
-              (expt 10 next-deg)))))))
-
-;; (magnitude-for-degree (make-measurement 1 :m 3) 0)
+;; (base-magnitude (make-measurement 1 :m 3))
 ;; => 1000
 
-;; (magnitude-for-degree (make-measurement 1 :m 3) -3)
-;; => 1
+;; (base-magnitude (make-measurement 1 :m -3))
+;; => 1/1000
+
+(defgeneric scalar-magnitude (scalar)
+  (:method ((scalar measurement))
+    (base-magnitude scalar)))
+
+;; (scalar-magnitude (make-measurement 1 :m -3))
+;; => 1/1000
 
 
-;;; % Prefix Notation 
-
-;; NB: "Engineering notation" typically uses only prefixes for degrees
-;; in multiples of 3
-
-(defgeneric prefix-degree (instance))
-(defgeneric prefix-print-label (instance))
-(defgeneric prefix-print-name (instance))
-(defgeneric prefix-symbol (instance))
-
-
-(deftype prefix-degree ()
-  '(integer -24 24))
-
-(defclass* prefix ()
-  ((degree prefix-degree)
-   (print-label simple-string)
-   (print-name simple-string)
-   (symbol symbol)))
-
-
-(defmethod print-object ((instance prefix) stream)
-  (print-unreadable-object (instance stream :type t :identity t)
-    (princ (slot-value* instance 'print-label) stream)))
-
-  (define-condition entity-not-found (error)
-  ((name
-    :initarg :name
-    :reader entity-not-found-name)))
-  
-
-(define-condition prefix-not-found (entity-not-found)
-  ()
-  (:report
-   (lambda (c s)
-     (format s "No measureent prefix registered for name ~S"
-             (entity-not-found-name c)))))
-
-(define-condition prefix-degree-not-found (entity-not-found)
-  ()
-  (:report
-   (lambda (c s)
-     (format s "No measureent prefix registered for degree ~S"
-             (entity-not-found-name c)))))
-
-
-(declaim (type simple-vector %prefixes%))
-(defvar %prefixes% (make-array 22))
-
-
-(defun find-prefix (s)
-  (declare (type symbol s)
-           (values prefix))
-  (or (find s %prefixes%
-            :test #'eq
-            :key #'measurement-symbol)
-      (error 'prefix-not-found :name s)))
-
-
-;; define prefix classes
-(let ((n -1))
-  (labels ((do-def (p degree print-name name)
-             (let ((p (make-instance 'prefix
-                                     :symbol name
-                                     :degree degree
-                                     :print-name print-name
-                                     :print-label (string-downcase (symbol-name p))
-                                     )))
-               (setf (svref %prefixes% (incf n)) p)
-               (values p))))
-    (mapcar (lambda (spec)
-              (destructuring-bind 
-                    (c  degree print-name name) spec
-                (do-def c degree print-name name)))
-          '((yotta 24 "Y" :|Y|)
-            (zetta 21 "Z" :|Z|)
-            (exa 18 "E" :|e|)
-            (peta  15 "P" :|p|)
-            (tera  15 "T" :|t|)
-            (giga  9 "G" :|g|)
-            (mega  6 "M" :|M|)
-            (kilo  3 "k" :|k|)
-            (hecto  2 "h" :|h|)
-            (deca  1 "da" :|da|)
-            (deci  -1 "d" :|d|)
-            (centi  -2 "c" :|c|)
-            (milli  -3 "m" :|m|)
-            (micro  -6 "μ" :|u|)
-            (nano  -9 "n" :|n|)
-            (pico  -12 "p" :|p|)
-            (femto  -15 "f" :|f|)
-            (atto  -18 "a" :|a|)
-            (zepto  -21 "z" :|z|)
-            (yocto  -24 "y" :|y|)))))
-
-
-
-
-;; FIXME: does not work in SBCL, but probably should.
-;;
-;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
-;;
-;; something about the walker hopping over a binding??
-
-;; - https://bugs.launchpad.net/sbcl/+bug/1368847
-;;
-;; so, must define the methods, each, manually
-#+NIL
-(labels ((defbounce (sl)
-           (let ((name 
-                  (intern-formatted "~A~A" 
-                                    (quote #:measurement-)
-                                    (slot-definition-name sl))))
-             (macrolet ((defbounce% ()
-                          `(defmethod ,name ((instance measurement))
-                             (,name (class-of instance)))))
-               (defbounce%)))))
-  
-  ;; for direct slots in MEASUREMENT-CLASS, define accessors onto
-  ;; MEASUREMENT to access the respective slot of the same class
-  (dolist (sl (class-direct-slots 
-               (find-class 'measurement-domain)))
-    (defbounce sl)))
+;;; % MEASUREMENT
 
 (defmethod measurement-quantity-name ((instance measurement))
   (measurement-quantity-name (class-of instance)))
@@ -324,31 +389,6 @@
 (defmethod measurement-symbol ((instance measurement))
   (measurement-symbol (class-of instance)))
 
-
-
-(defmethod print-object ((object measurement) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (multiple-value-bind (mag boundp)
-        (slot-value* object 'magnitude)
-      (princ (cond
-               (boundp mag)
-               ;; FIXME: #I18N
-               (t "{no magnitude}"))
-             stream))
-
-    (multiple-value-bind (deg boundp)
-        (slot-value* object 'degree)
-      (cond
-        (boundp (unless (zerop deg)
-                  (format stream "E~@D" deg)))
-        (t (write-char #\Space stream)
-           ;; FIXME: #I18N
-           (princ "{no degree}" stream))))
-
-    (write-char #\Space stream)
-
-    (princ (measurement-print-name (class-of object))
-             stream)))
 
 ;;; define base unit classes
 (labels ((do-def (c quantity print-label print-name name)
@@ -385,14 +425,38 @@
 ;; (find-measurement-class :mol)
 ;; (find-measurement-class :cd)
 
+
 (defun make-measurement (magnitude unit &optional (degree 0))
+  "Crate a MEAUREMENT object of the specified MAGNITUDE representing a
+scalar measurement of measurement unit UNIT. The scalar magnitude of
+the measurement.
+
+Examples:
+
+  (make-measurement 1 :m)
+  => #<METER 1 m {1006289003}>
+
+ (make-measurement 1 :m -3)
+ => #<METER 1E-3 m {10062E90C3}>
+
+
+See also: 
+* `scalar-magnitude'
+* `prefix-of'
+* `rescale', `nrescale'
+
+Notes:
+* Results are undefined if DEGREE represents a prefix not available
+  to `find-prefix'"
   (declare (type real magnitude)
-           (type class-designator unit))
-  ;; note: consequences are undefined if DEGREE represents a prefix 
+           (type measurement-class-designator unit))
+  ;; note: results are undefined if DEGREE represents a prefix 
   ;; not indexed in %PREFIXES%
-  (make-instance (find-measurement-class unit)
-                 :magnitude magnitude
-                 :degree degree))
+  (make-instance  (etypecase unit
+                    (symbol (find-measurement-class unit))
+                    (measurement-class unit))
+                  :magnitude magnitude
+                  :degree degree))
 
 ;; (make-measurement 1 :m)
 
@@ -401,7 +465,242 @@
 ;; (measurement-print-name (make-measurement 1 :m))
 ;; => "m"
 
+
+(defgeneric rescale (scalar prefix)
+  (:documentation 
+   "Return a new scalar object representing the magnitude of SCALAR 
+multiplied by the effective factor-base of the measurement rasied to
+the PREFIX degree.
+
+For measurements using SI decimal prefixes, the effective factor base
+is 10
+
+See also: `nrescale'"))
+
+
+(defgeneric nrescale (scalar prefix )
+  (:documentation 
+   "Return the SCALAR object, such that the SCALAR-MAGNITUDE of the
+SCALAR will be equivalent to its orignal value, though PREFIX will be
+used newly as the SCALAR-PREFIX of the SCALAR. Methods specialized on
+this function will alter the SCALAR by side-effect.
+
+The SCALAR-MAGNITUDE of a SCALAR is calcualted as the magnitude of
+SCALAR  multiplied by the effective factor-base of the measurement
+rasied to the PREFIX degree. For measurements using SI decimal
+prefixes, the effective factor base is 10.
+
+See also: `rescale'"))
+
+;; nb. Methods for RESCALE and NRESCALE are defined after the class
+;; PREFIX is defined
+
+
+;;; % Prefix Notation - SI Decimal Prefix Notation, specifically
+
+;; NB: "Engineering notation" typically uses only prefixes for degrees
+;; in multiples of 3
+
+(defgeneric prefix-degree (instance)
+  (:method ((instance measurement))
+    (measurement-degree instance)))
+
+(defgeneric prefix-print-label (instance)
+  (:method ((instance measurement))
+    (prefix-print-label (prefix-of instance))))
+
+(defgeneric prefix-print-name (instance)
+  (:method ((instance measurement))
+    (prefix-print-name (prefix-of instance))))
+
+(defgeneric prefix-symbol (instance)
+  (:method ((instance measurement))
+    (prefix-symbol (prefix-of instance))))
+
+
+(deftype prefix-degree ()
+  '(and (integer -24 24)
+    (member 0 
+     1 2 3 6 9 12 15 18 21 24
+     -1 -2 -3 -6 -9 -12 -15 -18 -21 -24)))
+
+;; (typep -5 'prefix-degree)
+;; => NIL
+;; (typep 9 'prefix-degree)
+;; => T
+
+(defclass* prefix ()
+  ;; NOTE: This class is applied effectively as a DECIMAL-PREFIX 
+  ;; FIXME: Rename PREFIX class to DECIMAL-PREFIX,
+  ;; FIXME: Implement class PREFIX-CLASS with accessor PREFIX-BASE
+  ;; FIXME: Implement class DECIMAL-PREFIX-CLASS with PREFIX-BASE 10
+  ;; FIXME: Implement class OCTAL-PREFIX-CLASS with PREFIX-BASE 8
+  ;; FIXME: Implement a measurement-domain for information quantity,
+  ;;        supporting an OCTAL-PREFIX-CLASS for prefixes thereof.
+  ;; FIXME: Seperately, impelement a measurement-domain for 
+  ;;         virtual (e.g. display screen, cf HyTime) measurements  
+  ((degree prefix-degree :read-only t)
+   (print-label simple-string :read-only t)
+   (print-name simple-string :read-only t)
+   (symbol symbol :read-only t)))
+
+
+;; FIXME: Define classes DECIMAL-PREFIX, BINARY-PREFIX
+;; as well as accessor PREFIX-FACTOR-BASE
+;;
+;; Hypothetically, also consider defining an experimental range of
+;; prefixes: LOGARITHMIC-PREFIX <ABSTRACT>, DECIMAL-LOGARITHMIC-PREFIX,
+;; and NATURAL-LOGARITHMIX-PREFIX cf. frequency domain analysis,
+;; with documentation clearly and succinctly describing the syntax and
+;; characteristics of the same measurement domain (perhaps to a
+;; discrete sense of technical Goodwill for  MetaCommunity, if well
+;; done) as well as its origins in frequency domain analysis of
+;; electrical systems -- also with an xref onto CLIM, then, as with
+;; regards to graphs of ideal frequency response in analysis of
+;; electrical systems components (use cases? radio communication
+;; systems namely onto HAM radio standards; audio-digital converstion
+;; components; power factor analysis for industrial-quality electrical
+;; systems with a big, red, blinking HTML label for safety analysis.)
+
+(defmethod print-object ((instance prefix) stream)
+  (print-unreadable-object (instance stream :type t :identity t)
+    (princ (slot-value* instance 'print-label "{no label}") 
+           stream)))
+
+(define-condition entity-not-found (error)
+  ((name
+    :initarg :name
+    :reader entity-not-found-name)))
+  
+
+(define-condition prefix-not-found (entity-not-found)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No measureent prefix registered for name ~S"
+             (entity-not-found-name c)))))
+
+(define-condition prefix-degree-not-found (entity-not-found)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No measureent prefix registered for degree ~S"
+             (entity-not-found-name c)))))
+
+
+(declaim (type simple-vector %prefixes%))
+(defvar %prefixes% (make-array 20))
+
+
+(defun find-prefix (s)
+  (declare (type symbol s)
+           (values prefix))
+  (or (find s %prefixes%
+            :test #'eq
+            :key #'measurement-symbol)
+      (error 'prefix-not-found :name s)))
+
+
+;; define prefix classes
+(let ((n -1))
+  (labels ((do-def (p degree print-name name)
+             (let ((p (make-instance 'prefix
+                                     :symbol name
+                                     :degree degree
+                                     :print-name print-name
+                                     :print-label (string-downcase (symbol-name p))
+                                     )))
+               (setf (svref %prefixes% (incf n)) p)
+               (values p))))
+    (mapcar (lambda (spec)
+              (destructuring-bind 
+                    (c  degree print-name name) spec
+                (do-def c degree print-name name)))
+            ;; FIXME: Update the documentation (README.md namely) as
+            ;; to denote the syntax for measurement symbols, applied
+            ;; here - with a sidebar note as with regards to readtable
+            ;; case within a Common Lisp programming system
+          '((yotta 24 "Y" :|Y|)
+            (zetta 21 "Z" :|Z|)
+            (exa 18 "E" :|e|)
+            (peta  15 "P" :|p|)
+            (tera  15 "T" :|t|)
+            (giga  9 "G" :|g|)
+            (mega  6 "M" :|M|)
+            (kilo  3 "k" :|k|)
+            (hecto  2 "h" :|h|)
+            (deca  1 "da" :|da|)
+            (deci  -1 "d" :|d|)
+            (centi  -2 "c" :|c|)
+            (milli  -3 "m" :|m|)
+            (micro  -6 "μ" :|u|)
+            (nano  -9 "n" :|n|)
+            (pico  -12 "p" :|p|)
+            (femto  -15 "f" :|f|)
+            (atto  -18 "a" :|a|)
+            (zepto  -21 "z" :|z|)
+            (yocto  -24 "y" :|y|)))))
+
+
+(defmethod print-object ((object measurement) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+
+    (multiple-value-bind (mag boundp)
+        (slot-value* object 'magnitude)
+      (cond 
+        ((and boundp (typep mag 'ratio))
+         (write-char #\( stream)
+         (princ mag stream)
+         (write-char #\) stream))
+        (boundp
+         (princ mag stream))
+        (t
+         (princ "{no magnitude}" stream))))
+
+    (multiple-value-bind (deg boundp)
+        (slot-value* object 'degree)
+      (cond
+        ((and boundp (zerop (the fixnum deg)))
+         (write-char #\Space stream))
+        (boundp
+         (format stream "E~@D" deg)
+         (write-char #\Space stream)
+         (princ (prefix-print-name (prefix-of object)) stream))
+        (t  (princ "{no degree} " stream))))
+    
+    (princ (measurement-print-name (class-of object))
+           stream)))
+
+
+;; FIXME: does not work in SBCL, but probably should.
+;;
+;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
+;;
+;; something about the walker hopping over a binding??
+
+;; - https://bugs.launchpad.net/sbcl/+bug/1368847
+;;
+;; so, must define the methods, each, manually
+#+NIL
+(labels ((defbounce (sl)
+           (let ((name 
+                  (intern-formatted "~A~A" 
+                                    (quote #:measurement-)
+                                    (slot-definition-name sl))))
+             (macrolet ((defbounce% ()
+                          `(defmethod ,name ((instance measurement))
+                             (,name (class-of instance)))))
+               (defbounce%)))))
+  
+  ;; for direct slots in MEASUREMENT-CLASS, define accessors onto
+  ;; MEASUREMENT to access the respective slot of the same class
+  (dolist (sl (class-direct-slots 
+               (find-class 'measurement-domain)))
+    (defbounce sl)))
+
+
 (defun prefix-of (m)
+  ;; FIXME: Memoize the PREFIX value for MEASUREMENT instance
   (declare (type measurement m)
            (values prefix))
   (let ((deg (measurement-degree m)))
@@ -416,8 +715,110 @@
 ;; (prefix-of (make-measurement 1 :m 24))
 ;; => <<yotta>>
 
-;;; referencing http://physics.nist.gov/cuu/pdf/sp811.pdf
+;; (prefix-of (make-measurement 1 :m 23))
+;; --> error
 
+;; Trivial decimal exponential mathematics, ad hoc syntax:
+;;
+;;  1 m => 1000 mm
+;;      => 0.001 km
+;;
+;; syntax: 
+;;   (<magnitude>, <degree>)
+;;   <A> =[<decimal shift>]=> <B>
+ ;;  <=>   i.e. "equivalent to"
+;; 
+;; (1, 0) =[3]=> (.001, 3) <=> (1 * 10^-3, 3)
+;; (1, 0) =[-3]=> (1000, -3) <=> (1 * 10^3, -3)
+;;
+;; e.g in a conventional syntax
+;;  1 m = .001 km
+;;  1 m = 1000 mm
+
+#+NIL ;; algorithm test
+;; 1. define an implicit measurment instance via LET
+;;
+;; 2. return values representative of the original implicit
+;;    measurement instance, as "decimal shifted" for a new decimal
+;;    prefix degree
+;;
+(let ((magnitude 1)
+      (degree 0)
+      (factor-base 10))
+  (flet ((decimal-shift (new-degree)
+           (cons (* magnitude (expt factor-base (- degree new-degree)))
+                 (+ degree new-degree))))
+    (values (decimal-shift 3)
+            (decimal-shift -3))))
+  
+
+(defun shift-magnitude (magnitude degree new-degree 
+                        &optional (factor-base #.%factor-base%))
+  ;; utility function - implementation of the "decimal shift"
+  ;; algorithm denoted in the above
+  (declare (type real magnitude)
+           (type fixnum degree new-degree factor-base))
+  (values (* magnitude (expt factor-base (- degree new-degree)))
+          (+ degree new-degree)))
+
+(defmethod rescale ((scalar measurement) (prefix fixnum))
+  (multiple-value-bind (new-mag new-deg) 
+      (shift-magnitude (measurement-magnitude scalar)
+                       (prefix-degree scalar)
+                       prefix
+                       #.%factor-base%)
+    (make-measurement new-mag  (class-of scalar)
+                      new-deg)))
+
+(defmethod rescale ((scalar measurement) (prefix prefix))
+  (rescale scalar (prefix-degree prefix)))
+
+
+
+(defmethod nrescale ((scalar measurement) (prefix fixnum))
+  (multiple-value-bind (new-mag new-deg) 
+      (shift-magnitude (measurement-magnitude scalar)
+                       (prefix-degree scalar)
+                       prefix
+                       #.%factor-base%)
+    (setf (measurement-degree scalar) new-deg)
+    (setf (measurement-magnitude scalar) new-mag)
+    (values scalar)))
+
+(defmethod nrescale ((scalar measurement) (prefix prefix))
+  (nrescale scalar (prefix-degree prefix))
+  (values scalar))
+
+#+NIL ;; instance test - rescale, equivalent magnitude
+(let* ((m (make-measurement 1 :m))
+       (m-2 (rescale m 3))
+       (m-3 (rescale m -3)))
+  (values m m-2 m-3
+          (apply #'= (mapcar #'scalar-magnitude 
+                             (list m m-2 m-3)))))
+;; => #<METER 1 m {1006330FD3}>, 
+;;    #<METER (1/1000)E+3 km {1006331AF3}>, 
+;;    #<METER 1000E-3 mm {1006332293}>, 
+;;    T 
+
+
+
+#+NIL ;; instance test - nrescale
+(let* ((m (make-measurement 1 :m))
+       (m-2 (nrescale m 3)))
+  (values m-2 (eq m-2 m)))
+
+;; => #<METER (1/1000)E+3 km {1005F4C4D3}>, 
+;;    T
+
+
+
+
+;;; % DERIVED MEASUREMENT UNITS
+
+
+;;; referencing http://physics.nist.gov/cuu/pdf/sp811.pdf
+;; ... define measurement-classes, conversion matrices
 
 
 
@@ -467,12 +868,24 @@
 
 
 
-;;; % Geometry
+;;; % Geometry Domain
 
-(defgeneric scalar-measurement (instance))
 
-(defclass* scalar ()
-  ((measurement measurement)))
+(defclass scalar (measurement) ;; a monadic coordinate
+  ())
+
+
+;; (defclass plane ...)
+;; (defclass space ...)
+;;
+;; The term "Coordinate" will be applied informaly, in the following
+;;
+;; (defclass diadic-coordinate ...) ;; a <point> onto a <planar surface>
+;; (defclass triadic-coordinate ...) ;; a <point> onto <3 space>
+;; (defclass polar-coordinate ...) 
+;; ^ a <point> within a <polar coordinate> system  on a <planar surface>
+;; (defclass spherical-coordinate ...)
+;; ^ a <point> within a <spherical coordinate space>
 
 
 
