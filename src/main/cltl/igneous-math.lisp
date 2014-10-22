@@ -114,8 +114,7 @@
 
    
 
-
-#+SBCL
+#+SBCL ;; FIXME: also port to other impmls. using PCL
 (defmethod sb-mop:validate-superclass ((class measurement-class)
                                        (superclass standard-class))
   (values t))
@@ -123,7 +122,6 @@
 
 (let ((%classes% (make-array 7 :fill-pointer 0))
       (%classes-lock% (make-lock "%CLASSES%")))
-  ;; FIXME: lock %classes% #THREADSAFETY
   (defun register-measurement-class (c)
     (with-lock-held (%classes-lock%)
       (let* ((s (measurement-symbol c))
@@ -157,7 +155,7 @@
 
 
 
-;; FIXME: does not work in SBCL, but should.
+;; FIXME: does not work in SBCL, but probably should.
 ;;
 ;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
 ;;
