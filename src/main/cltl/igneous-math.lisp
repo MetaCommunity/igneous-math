@@ -3,24 +3,29 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (dolist (s '(#:unit-formulas #:info.metacommunity.cltl.utils))
+  (dolist (s '(#:info.metacommunity.cltl.utils
+               #:closer-mop
+               #:bordeaux-threads))
     (asdf:operate 'asdf:load-op s))
 
   (defpackage #:info.metacommunity.cltl.math
+    (:shadowing-import-from 
+     ;; prefer the implementation's own forms to those defined in C2MOP
+     #:cl
+     #:defgeneric
+     #:defmethod
+     #:standard-generic-function)
+
     (:use #:info.metacommunity.cltl.utils
-          #:unit-formulas
-          #:cl)
-    
-    (:import-from 
-     #:unit-formulas 
-     #:unit)
-    )
+          #:bordeaux-threads
+          #:c2mop
+          #:cl))
   )
 
 
 (in-package #:info.metacommunity.cltl.math)
 
-;; Sidebar: Measurement definitions in HyTime
+;; sidebar: measurement definitions in hytime
 ;;
 ;; cf. 
 ;; http://www.cs.utexas.edu/users/novak/units95.html
@@ -31,295 +36,230 @@
 ;; http://www.is-thought.co.uk/schedule.htm
 ;; http://crism.maden.org/consulting/pub/hytime/meas.html
 ;; http://www.hytime.org/materials/hi2mdhyt.sgm
-;; ^ cf %HyGrand, "HyTime Granule Definition Notation"
+;; ^ cf %hygrand, "
 
 
 ;; see also:
-;; http://physics.nist.gov/cuu/Units/
-;; http://physics.nist.gov/Pubs/SP811/appenB.html 
+;; http://physics.nist.gov/cuu/units/
+;; http://physics.nist.gov/pubs/sp811/appenb.html 
 ;; ^ esp. for conversions regarding foot, mile, yard , ...
 
 
 ;; referencing http://www.bipm.org/en/publications/si-brochure/
-;; and http://physics.nist.gov/Pubs/SP811/contents.html
+;; and http://physics.nist.gov/pubs/sp811/contents.html
     
-  
-#| Issue: Naming of units within interactive programs
 
-This program system will endeavor to adopt a consistent syntax for
-measurement names, within the context of this program system.
+(defmacro defclass* (name-form (&rest superclasses) 
+                             (&rest slot-definitions)
+                     &rest initargs)
+  (destructuring-bind (name &key (conc-name nil cnp))
+      (cond
+        ((symbolp name-form) (list name-form))
+        (t name-form))
 
-Consulting the SI Brochure[1], all of the seven SI base units[1] are
-defined, each, around a specific measurement domain, denoted by a type
-of base quantity.
+    (unless (or cnp conc-name)
+      (setq conc-name (make-symbol (format nil "~A-" name))))
 
-Each type of base quantity is assigned with one or more conventional
-symbols, such as for variables denoting of such a quantity. The
-applications may vary, for those conventional symbols for quantities
-of the base unit -- for example, "l" being applied commonly for
-measure of linear dimesion, and "r" applied commonly for radial
-magnitude, each of the previous  denoted as a conventional symbol for
-a variable denoting of a measure of length. This application system
-will not make a formal defintion of those conventional symbols for
-variables denoting of quantity. 
+    (labels ((acc (slot read-only-p)
+               (when conc-name
+                 (list (if read-only-p :reader :accessor)
+                       (intern-formatted "~A~A" conc-name slot))))
+             (initarg (slot)
+               (list :initarg (intern (symbol-name slot) :keyword))))
+             
+      `(defclass ,name (,@superclasses) 
+         ,(mapcar (lambda (spec)
+                    (destructuring-bind (name &optional (type t)
+                                              &key read-only)
+                        spec
+                      `(,name ,@(acc name read-only)
+                          ,@(initarg name)
+                          :type ,type)))
+                  slot-definitions)
+         ,@initargs))))
 
-Each type of measurement base quantity corresponds to exactly one
-measurement base unit. 
+#+NIL
+(macroexpand-1 (quote
+(defclass* (frob :conc-name #:a-frob-) ()
+  ((b)
+   (c real :read-only t)))
+))
 
-Each base unit is denoted with a unit name -- for instance, "second"
--- and one or more symbols denoting of the measurement unit -- for
-instance "s". 
+(defgeneric measurement-quantity-name (instance))
+(defgeneric measurement-print-label (instance))
+(defgeneric measurement-print-name (instance))
+(defgeneric measurement-symbol (instance))
 
-For purpose of referene within software applications, this program
-system will endeavor to define a normative syntax for measurement
-units, consistent with common practice. In that context, it is a 
-requirement of this system that all measurement units defined by this
-system may be referenced with a symbolic name comprised of printing
-characters within the ASCII character set.
+(defclass* (measurement-domain
+            :conc-name #:measurement-)
+    ()
+  ((quantity-name simple-string :read-only t)
+   (print-label simple-string :read-only t)
+   (print-name simple-string :read-only t)
+   (symbol symbol :read-only t)))
 
-In common practice, some measurement units are denoted with non-ASCII
-characters and qualities of typesetting -- including subscript
-characters and greek letter characters -- some of which are available
-however, within the Unicode Code Set. 
-
-This program system will endeavor to define the following values for
-each type of measurment unit (slots of class, MEASUREMENT-UNIT)
-
-* QUANTITY-NAME - Name of base quantity, e.g "time, duration"
-
-* PRINT-LABEL - A singular, verbose, printable name for the measurement
-  unit, wtihout symbolic characters e.g. "meter", "newton meter"
-
-* PRINT-NAME - A singular, printable name for symbolic
-  representation of the measurment unit in conventional syntax -- in 
-  which instance, this system assumes that the Lisp implementation
-  implements the Unicode Code Set -- e.g. "m", "°", "Ω", or "Lᵥ"
-
-* NAME - A Lisp symbolic name, interned within the keyword package, for
-  application within the source code of Lisp programs -- e.g. :m :deg
-  (angular) :ohm, and :lux respectively. For purpose of this
-  definition, a number of standard practices will be defined of this
-  system:
-
-   * ASCII characters shall be represented as ASCII characters to be
-     interpreted in "readtable case"
-
-     e.g "m" => :m, "mol" => :mol, "K" => :k
-
-   * Superscirpt characters shall be prefixed with a caret "^"  and
-     represented without typesetting 
-
-     e.g. "cubic meter" = :m^3
-
-   * For measurement units defined by SI[1] with subscript characters,
-     a corresponding symbolic name shall be sought of the NIST
-     specification[2] 
-
-     e.g symbolic name "Lᵥ" in SI[1], interpreted rather as "lx" in
-     NIST[2] and therefore => :lx
-
-
-   * For measurement units whose conventional symbolic name denotes a
-     ratio among measurement units, the character denoting the ratio
-     shall be retained
-
-     e.g "kg/m³" => :kg/m^3
-
-   
-   * For measurement units whose conventional symbolic name includes a
-     subscript character, the character shall be prefixed by an
-     underscore "_" and rendered without typesetting
-
-     e.g. "mₑ" => :m_e
-
-   * For the special instance of the radian or steradian, this program
-     system shall retain the respective, conventional symbolic name --
-     respectively "rad" or "sr" i.e. :rad or :sr in Lisp symoblic
-     syntax. This decision is correlated with a note: That in a
-     conventional shorthand practice for mathematical equations,
-     namely the symbolic name of the radain may be omitted from 
-     mathematical equations; radians, as a measurement unit, amy
-     contextually be differentiated from degrees, as a measurment
-     unit, in that a mesurement denoting a degree measure would be
-     suffixed with the printed name "°"
-
-   * For the special instance of "rad" as a ratio of Grays, this
-     proram system shall use the symbolic name "rd" i.e :rd
-
-   * For each of the special instances of a measure in units of 
-     "degree" (angular measure) or "degree Celsius" (thermodynamic
-     temperature). the non-ASCII character "°" shall be transposed to
-     a short hand letter form - respectively, :deg, :deg-c
-
-   * For the non-SI unit of measurement "degree Farenheit", similarly
-     the shothand form :deg-f shall be applied
-
-   * For the SI unit of measurement "degree Kelvin", the shorthand
-     form :k shall be applied, as transposing the symbolic unit
-     identity "K"
-
-   * For measures of plane angle in units of minutes or of seconds,
-     this system shall use the letter forms respectively
-     :min_angular and :sec_angular, with printed representation
-     respectively "'" and '"'
-
-   * For the special instance of the measurement unit, angstrom "Å",
-     this system shall use the conventional name of the measurement
-     unit, without diacritic marks, i.e. :angstrom
-
-In defining those policies for Lisp symoblic names for measurement
-units, this sytem endeavors to present a convenient balance between
-needs for symbolic uniqueness and expressive clarity.
-
-In denoting formal printable labels for measurement units, this system
-shall defer firstly to to the SI brochure[1] (noting, namely, Tables 1
-through 4, table 6, etc) excepting those centimetere-gram-second (CGS)
-units of measure as denoted "Unacceptable" by the NIST guide[2]
-sections 5.3.1 and 5.3.2
-
-For printed names utilizing special typographic characters in
-superscript or subscript notations, this system will apply the Unicode
-character equivalent of the respective supercript or subscript, when
-available.  
-
-It should be noted that an alternate syntax may be developed in
-extending of  MathML syntax, such that may be integrated with
-electronic publishing systems. However, until if this sytsem may have
-reached an extent of development as to provide an integration for
-MathML with a corresponding desktop interface and office document
-publishing system, this system shall instead apply a typographic
-shorthand of those letters' special typographic forms, so far as
-available withinin the Unicode code set.
-
-[1] BIPM. SI Brochure: The International System of Units (SI) [8th
-    edition, 2006; updated in 2014]
-    available: http://www.bipm.org/en/publications/si-brochure/ 
-
-[2] NIST. Guide for the Use of the International System of Units (SI)
-    http://www.nist.gov/pml/pubs/sp811/index.cfm 
-
-|#
-
-(defclass measurement-domain ()
-  ((quantity
-    ;; FIXME: #I18N - localize the base-quantity name during class initailization
-    :type simple-string
-    :initarg :quantity
-    :reader :measurement-domain-quantity
-   (unit
-    ;; symbol for measurement base unit 
-    ;;
-    ;; applied as a canonical representation of a measurement unit,
-    ;; within program source code
-    ;;
-    ;; syntax: 
-    ;;
-    ;; 1. when the standard symbol for the measurement unit may be
-    ;;    expressed, in its entirety, as an ANSI CLtL 'base-char',
-    ;;    then the standard measurement symbol, transposed to reader
-    ;;    case
-    ;;
-    ;; 2. when the standard symbol for the measurement unit is
-    ;;    expressed as a greek letter -- e.g. "upper case" omega for
-    ;;    measure of electrical resistance -- ... ?
-    ;;
-    ;; For instances in which a measurement unit is defined with a
-    ;; standard symbol outside the range of ASCII character text
-    ;; (i.e. ANSI CLtL 'base-char' characters) -- such as lumious
-    ;; intesnity (I subscript V) or electric resistance 
-    :type symbol
-    :initarg :unit
-    :reader measurement-domain-unit)
-   (unit-label
-    ;; human-readable name of a measurement unit, per [...]
-    ;; e.g. "metre" (FIXME: #I18N...)
-    ;;
-    ;; notes:
-    ;; * some measurement units have more than one standard
-    ;;    symbol, e.g. "wavenumber" and "mass concentration"
-    :type simple-string
-    :initarg :unit-label
-    :reader measurement-domain-unit-label)
-   (unit-symbol-label
-    :type sipmle-string
-    :initarg :unit-symbol-label
-    :reader measurement-domain-unit-symbol-label
-    )))
 
 (defclass measurement-class (measurement-domain standard-class)
   ())
 
 
+(define-condition class-nont-found (error)
+  ((s
+    :initarg :measurement-symbol
+    :reader frob-measurement-symbol))
+  (:report
+   (lambda (c s)
+     (format s "No measureent class registered for ~S"
+             (frob-measurement-symbol c)))))
 
-#+NIL ;; utility form - eval in REPL, transpose to source file
-(dolist (spec '((meter "length" "metre" "m" :m)
-                (kilogram "mass" "kilogram" "kg" :kg)
-                (second "time, duration" "second" "s" :s)
-                (ampere "electric current" "ampere" "A" :a)
-                (kelvin "thermodyamic temperature" "kelvin" "K" :k)
-                (mole "amount of substance" "mole" "mol" :mol)
-                (candela "luminous intensity" "candela" "cd" :cd)))
-  (destructuring-bind 
-        (class quantity label s-label s) spec
-    
-    (print `(defclass ,class ()
-              ()
-              (:unit . ,s)
-              (:unit-symbol-label . ,s-label)
-              (:unit-label . ,label)
-              (:quantity . ,quantity)
-              (:class measurement-class))
-           t)))
+   
 
 
-(defmacro register-measurement-class (name unit)
-  (with-gensym (class)
-  `(let ((,class (defclass ,name ()
-                   ()
-                   (:unit . ,unit)
-                   ...
-                   )))
-     )))
+#+SBCL
+(defmethod sb-mop:validate-superclass ((class measurement-class)
+                                       (superclass standard-class))
+  (values t))
 
-(defun find-unit-using-symbol (s)
-  (declare (type symbol s)
-           (values measurement-class))
-  (
 
-(defgeneric convert (scalar unit)
-  (:method (scalar (unit symbol))
-    (convert scalar (find-unit-using-symbol unit))
-    ))
-                   
+(let ((%classes% (make-array 7 :fill-pointer 0))
+      (%classes-lock% (make-lock "%CLASSES%")))
+  ;; FIXME: lock %classes% #THREADSAFETY
+  (defun register-measurement-class (c)
+    (with-lock-held (%classes-lock%)
+      (let* ((s (measurement-symbol c))
+             (n (position s %classes%
+                          :test #'eq
+                          :key #'measurement-symbol)))
+        (cond 
+          ((and n (not (eq (aref %classes% n) c)))
+           (simple-style-warning 
+            "Redfining measurement class for ~S" s)
+           (setf (aref %classes% n) c))
+          (t (vector-push-extend c %classes%)))
+        (values c))))
+
+  (defun find-measurement-class (s)
+    (declare (type symbol s)
+             (values measurement-class))
+    (with-lock-held (%classes-lock%)
+      (or (find s %classes%
+               :test #'eq
+               :key #'measurement-symbol)
+          (error 'class-not-found :measurement-symbol s))))
+  )
   
 
-(DEFCLASS METER NIL NIL (:UNIT . :M) (:UNIT-SYMBOL-LABEL . "m")
-          (:UNIT-LABEL . "metre") (:QUANTITY . "length")
-          (:CLASS MEASUREMENT-CLASS)) 
 
-(DEFCLASS KILOGRAM NIL NIL (:UNIT . :KG) (:UNIT-SYMBOL-LABEL . "kg")
-          (:UNIT-LABEL . "kilogram") (:QUANTITY . "mass")
-          (:CLASS MEASUREMENT-CLASS)) 
+(defgeneric measurement-magnitude (instance))
 
-(DEFCLASS SECOND NIL NIL (:UNIT . :S) (:UNIT-SYMBOL-LABEL . "s")
-          (:UNIT-LABEL . "second") (:QUANTITY . "time, duration")
-          (:CLASS MEASUREMENT-CLASS)) 
+(defclass* measurement ()
+    ((magnitude real)))
 
-(DEFCLASS AMPERE NIL NIL (:UNIT . :A) (:UNIT-SYMBOL-LABEL . "A")
-          (:UNIT-LABEL . "ampere") (:QUANTITY . "electric current")
-          (:CLASS MEASUREMENT-CLASS)) 
 
-(DEFCLASS KELVIN NIL NIL (:UNIT . :K) (:UNIT-SYMBOL-LABEL . "K")
-          (:UNIT-LABEL . "kelvin") (:QUANTITY . "thermodyamic temperature")
-          (:CLASS MEASUREMENT-CLASS)) 
 
-(DEFCLASS MOLE NIL NIL (:UNIT . :MOL) (:UNIT-SYMBOL-LABEL . "mol")
-          (:UNIT-LABEL . "mole") (:QUANTITY . "amount of substance")
-          (:CLASS MEASUREMENT-CLASS)) 
+;; FIXME: does not work in SBCL, but should.
+;;
+;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
+;;
+;; something about the walker hopping over a binding??
+;; - https://bugs.launchpad.net/sbcl/+bug/1368847
+;;
+;; so, must define the methods, each, manually
+#+NIL
+(labels ((defbounce (sl)
+           (let ((name 
+                  (intern-formatted "~A~A" 
+                                    (quote #:measurement-)
+                                    (slot-definition-name sl))))
+             (macrolet ((defbounce% ()
+                          `(defmethod ,name ((instance measurement))
+                             (,name (class-of instance)))))
+               (defbounce%)))))
+  
+  ;; for direct slots in MEASUREMENT-CLASS, define accessors onto
+  ;; MEASUREMENT to access the respective slot of the same class
+  (dolist (sl (class-direct-slots 
+               (find-class 'measurement-domain)))
+    (defbounce sl)))
 
-(DEFCLASS CANDELA NIL NIL (:UNIT . :CD) (:UNIT-SYMBOL-LABEL . "cd")
-          (:UNIT-LABEL . "candela") (:QUANTITY . "luminous intensity")
-          (:CLASS MEASUREMENT-CLASS)) 
+(defmethod measurement-quantity-name ((instance measurement))
+  (measurement-quantity-name (class-of instance)))
+
+(defmethod measurement-print-label ((instance measurement))
+  (measurement-print-label (class-of instance)))
+
+(defmethod measurement-print-name ((instance measurement))
+  (measurement-print-name (class-of instance)))
+
+(defmethod measurement-symbol ((instance measurement))
+  (measurement-symbol (class-of instance)))
+
+
+
+(defmethod print-object ((object measurement) (stream stream))
+  (print-unreadable-object (object stream :type t :identity t)
+    (multiple-value-bind (mag boundp)
+        (slot-value* object 'magnitude)
+      (princ (cond
+               (boundp mag)
+               ;; FIXME: #I18N
+               (t "{no magnitude}"))
+             stream)
+    (measurement-print-label (class-of object)))))
+
+;;; define base unit classes
+(labels ((do-def (c quantity print-label print-name name)
+           (let ((c (c2mop:ensure-class 
+                     c
+                     :direct-superclasses (list (find-class 'measurement))
+                     :symbol name
+                     :print-name print-name
+                     :print-label print-label
+                     :quantity-name quantity
+                     :metaclass (find-class 'measurement-class)
+                     #+SBCL :definition-source 
+                     #+SBCL (sb-c:source-location) 
+                     )))
+             (register-measurement-class c))))
+  (mapcar (lambda (spec)
+            (destructuring-bind 
+                  (c quantity print-label print-name name) spec
+              (do-def c quantity print-label print-name name)))
+          '((meter "length" "metre" "m" :m)
+            (kilogram "mass" "kilogram" "kg" :kg)
+            (second "time, duration" "second" "s" :s)
+            (ampere "electric current" "ampere" "A" :a)
+            (kelvin "thermodyamic temperature" "kelvin" "K" :k)
+            (mole "amount of substance" "mole" "mol" :mol)
+            (candela "luminous intensity" "candela" "cd" :cd)))
+  )
+
+;; (find-measurement-class :m)
+;; (find-measurement-class :kg)
+;; (find-measurement-class :s)
+;; (find-measurement-class :a)
+;; (find-measurement-class :k)
+;; (find-measurement-class :mol)
+;; (find-measurement-class :cd)
+
+(defun make-measurement (magnitude unit)
+  (declare (type real magnitude)
+           (type class-designator unit))
+  (make-instance (find-measurement-class unit)
+                 :magnitude magnitude))
+
+;; (make-measurement 1 :m)
+
+;; (measurement-print-name (make-measurement 1 :m))
+;; => "m"
+
+
+;; (defgeneric convert (scalar unit)
+;;   (:method (scalar (unit symbol))
+;;     (convert scalar (find-unit-using-symbol unit))
+;;     ))
+                   
+  
 
 ;; SEE ALSO...
 ;; http://goldbook.iupac.org/list_math.html
@@ -360,30 +300,12 @@ available withinin the Unicode code set.
 
 
 
-(defclass scalar ()
-  ((magnitude
-    :type real
-    :accessor scalar-magnitude)
-   (exponent
-    :type integer)
-   ))
-   
+;;; % Geometry
+
+(defgeneric scalar-measurement (instance))
+
+(defclass* scalar ()
+  ((measurement measurement)))
 
 
-#| a short reference onto the unit-formulas system
 
-  unit-formulas::*units* => hash table (EQL) [internal]
-    key: STRING. value: UNIT 
-
-  REDUCE-UNIT  - when provided with a symoblic unit name, accesses unit-formulas::*units* to return a UNIT object; errs if no unit is defined for the unit name
- 
-  UNIT-FORMULAS::UNITS-OF - ? [accessor] [internal] 
-
-
-  QUERY-UNIT - "Return a plist of unit value and unit exponents", with consing
-  e.g (query-unit (reduce-unit :degree))
-
-  (CONVERT-UNIT
-
-
-|#
