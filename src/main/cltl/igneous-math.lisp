@@ -65,16 +65,22 @@
                  (list (if read-only-p :reader :accessor)
                        (intern-formatted "~A~A" conc-name slot))))
              (initarg (slot)
-               (list :initarg (intern (symbol-name slot) :keyword))))
+               (list :initarg (intern (symbol-name slot) :keyword)))
+
+             (initform (form infp)
+               (when infp
+                 (list :initform form))))
              
       `(defclass ,name (,@superclasses) 
          ,(mapcar (lambda (spec)
                     (destructuring-bind (name &optional (type t)
-                                              &key read-only)
+                                              &key read-only
+                                              (initform nil infp))
                         spec
                       `(,name ,@(acc name read-only)
                           ,@(initarg name)
-                          :type ,type)))
+                          :type ,type
+                          ,@(initform initform infp))))
                   slot-definitions)
          ,@initargs))))
 
@@ -103,14 +109,12 @@
   ())
 
 
-(define-condition class-nont-found (error)
-  ((s
-    :initarg :measurement-symbol
-    :reader frob-measurement-symbol))
+(define-condition class-not-found (entity-not-found)
+  ()
   (:report
    (lambda (c s)
-     (format s "No measureent class registered for ~S"
-             (frob-measurement-symbol c)))))
+     (format s "No measureent class registered for name ~S"
+             (entity-not-found-name c)))))
 
    
 
@@ -123,6 +127,7 @@
 (let ((%classes% (make-array 7 :fill-pointer 0))
       (%classes-lock% (make-lock "%CLASSES%")))
   (defun register-measurement-class (c)
+    (declare (type measurement-class c))
     (with-lock-held (%classes-lock%)
       (let* ((s (measurement-symbol c))
              (n (position s %classes%
@@ -143,15 +148,141 @@
       (or (find s %classes%
                :test #'eq
                :key #'measurement-symbol)
-          (error 'class-not-found :measurement-symbol s))))
+          (error 'class-not-found :name s))))
   )
   
 
 
+
 (defgeneric measurement-magnitude (instance))
 
+(defgeneric measurement-degree (instance))
+
+
 (defclass* measurement ()
-    ((magnitude real)))
+    ((magnitude real :initform 0)
+     ;; degree : an exponent of 10
+     (degree fixnum :initform 0)))
+
+(defun base-magnitude (m)
+  (declare (type measurement m)
+           (values real))
+  (let ((deg (measurement-degree m)))
+    (cond 
+      ((zerop deg) (measurement-magnitude m))
+      (t (* (measurement-magnitude m)
+            (expt 10 deg))))))
+
+(defgeneric magnitude-for-degree (measurement degree)
+  (:method ((m measurement) (deg fixnum))
+    (let ((next-deg (+ deg (measurement-degree m))))
+      (cond
+        ((zerop next-deg) (measurement-magnitude m))
+        (t (* (measurement-magnitude m)
+              (expt 10 next-deg)))))))
+
+;; (magnitude-for-degree (make-measurement 1 :m 3) 0)
+;; => 1000
+
+;; (magnitude-for-degree (make-measurement 1 :m 3) -3)
+;; => 1
+
+
+;;; % Prefix Notation 
+
+;; NB: "Engineering notation" typically uses only prefixes for degrees
+;; in multiples of 3
+
+(defgeneric prefix-degree (instance))
+(defgeneric prefix-print-label (instance))
+(defgeneric prefix-print-name (instance))
+(defgeneric prefix-symbol (instance))
+
+
+(deftype prefix-degree ()
+  '(integer -24 24))
+
+(defclass* prefix ()
+  ((degree prefix-degree)
+   (print-label simple-string)
+   (print-name simple-string)
+   (symbol symbol)))
+
+
+(defmethod print-object ((instance prefix) stream)
+  (print-unreadable-object (instance stream :type t :identity t)
+    (princ (slot-value* instance 'print-label) stream)))
+
+  (define-condition entity-not-found (error)
+  ((name
+    :initarg :name
+    :reader entity-not-found-name)))
+  
+
+(define-condition prefix-not-found (entity-not-found)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No measureent prefix registered for name ~S"
+             (entity-not-found-name c)))))
+
+(define-condition prefix-degree-not-found (entity-not-found)
+  ()
+  (:report
+   (lambda (c s)
+     (format s "No measureent prefix registered for degree ~S"
+             (entity-not-found-name c)))))
+
+
+(declaim (type simple-vector %prefixes%))
+(defvar %prefixes% (make-array 22))
+
+
+(defun find-prefix (s)
+  (declare (type symbol s)
+           (values prefix))
+  (or (find s %prefixes%
+            :test #'eq
+            :key #'measurement-symbol)
+      (error 'prefix-not-found :name s)))
+
+
+;; define prefix classes
+(let ((n -1))
+  (labels ((do-def (p degree print-name name)
+             (let ((p (make-instance 'prefix
+                                     :symbol name
+                                     :degree degree
+                                     :print-name print-name
+                                     :print-label (string-downcase (symbol-name p))
+                                     )))
+               (setf (svref %prefixes% (incf n)) p)
+               (values p))))
+    (mapcar (lambda (spec)
+              (destructuring-bind 
+                    (c  degree print-name name) spec
+                (do-def c degree print-name name)))
+          '((yotta 24 "Y" :|Y|)
+            (zetta 21 "Z" :|Z|)
+            (exa 18 "E" :|e|)
+            (peta  15 "P" :|p|)
+            (tera  15 "T" :|t|)
+            (giga  9 "G" :|g|)
+            (mega  6 "M" :|M|)
+            (kilo  3 "k" :|k|)
+            (hecto  2 "h" :|h|)
+            (deca  1 "da" :|da|)
+            (deci  -1 "d" :|d|)
+            (centi  -2 "c" :|c|)
+            (milli  -3 "m" :|m|)
+            (micro  -6 "μ" :|u|)
+            (nano  -9 "n" :|n|)
+            (pico  -12 "p" :|p|)
+            (femto  -15 "f" :|f|)
+            (atto  -18 "a" :|a|)
+            (zepto  -21 "z" :|z|)
+            (yocto  -24 "y" :|y|)))))
+
 
 
 
@@ -160,6 +291,7 @@
 ;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
 ;;
 ;; something about the walker hopping over a binding??
+
 ;; - https://bugs.launchpad.net/sbcl/+bug/1368847
 ;;
 ;; so, must define the methods, each, manually
@@ -194,7 +326,7 @@
 
 
 
-(defmethod print-object ((object measurement) (stream stream))
+(defmethod print-object ((object measurement) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (multiple-value-bind (mag boundp)
         (slot-value* object 'magnitude)
@@ -202,8 +334,21 @@
                (boundp mag)
                ;; FIXME: #I18N
                (t "{no magnitude}"))
-             stream)
-    (measurement-print-label (class-of object)))))
+             stream))
+
+    (multiple-value-bind (deg boundp)
+        (slot-value* object 'degree)
+      (cond
+        (boundp (unless (zerop deg)
+                  (format stream "E~@D" deg)))
+        (t (write-char #\Space stream)
+           ;; FIXME: #I18N
+           (princ "{no degree}" stream))))
+
+    (write-char #\Space stream)
+
+    (princ (measurement-print-name (class-of object))
+             stream)))
 
 ;;; define base unit classes
 (labels ((do-def (c quantity print-label print-name name)
@@ -240,16 +385,40 @@
 ;; (find-measurement-class :mol)
 ;; (find-measurement-class :cd)
 
-(defun make-measurement (magnitude unit)
+(defun make-measurement (magnitude unit &optional (degree 0))
   (declare (type real magnitude)
            (type class-designator unit))
+  ;; note: consequences are undefined if DEGREE represents a prefix 
+  ;; not indexed in %PREFIXES%
   (make-instance (find-measurement-class unit)
-                 :magnitude magnitude))
+                 :magnitude magnitude
+                 :degree degree))
 
 ;; (make-measurement 1 :m)
 
+;; (make-measurement 1 :m 3)
+
 ;; (measurement-print-name (make-measurement 1 :m))
 ;; => "m"
+
+(defun prefix-of (m)
+  (declare (type measurement m)
+           (values prefix))
+  (let ((deg (measurement-degree m)))
+    (or  (find deg %prefixes%
+               :key #'prefix-degree
+               :test #'(lambda (a b)
+                         (declare (type prefix-degree a b))
+                         (= a b)))
+         (error 'prefix-degree-not-found :name deg))))
+
+
+;; (prefix-of (make-measurement 1 :m 24))
+;; => <<yotta>>
+
+;;; referencing http://physics.nist.gov/cuu/pdf/sp811.pdf
+
+
 
 
 ;; (defgeneric convert (scalar unit)
