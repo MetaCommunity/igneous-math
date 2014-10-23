@@ -872,6 +872,7 @@ See also: `rescale'"))
      (let ((n 0))
        (declare (fixnum n))
        (loop
+          #+NIL (format t "~%FROB: ~s ~S" d n)
           (multiple-value-bind (a r)
               (truncate d 10) 
             (cond
@@ -919,11 +920,9 @@ decimal scaling, it may serve to avoid floating point errors, in some
 instances.
 
 This funcdtion implements a calculation similar to a base-10
-calculation of the significand and exponent of D, with D represented
-consistently as a floating point number. However, this function
-calculates only the significant digits in the decimal portion of D
-
-" 
+calculation of the significand and exponent of `d`. However, this
+function calculates the significant digits only in the decimal 
+portion of `d'"
   (declare (type (or integer float) d)
            (values fixnum integer))
   (let ((b d)
@@ -931,20 +930,48 @@ calculates only the significant digits in the decimal portion of D
     (declare (type (or integer float) b)
              (type fixnum n) )
     (loop  
-       #+nil (format t "~%FROB: ~s" d)
+       #+NIL (format t "~%FROB.: ~s ~s" b n)
        (setq b (* b 10))
        (multiple-value-bind (b r) 
            (truncate b)
          (cond
            ((zerop r) 
-            ;; n.b: This effectively works around a matter
-            ;; of floating point error - see following
-            ;; comments
+            ;; n.b: This effectively works around some matters
+            ;; of floating point error, such as when 
+            ;;
+            ;; (* 10  1.201d0)
+            ;;  => 12.010000000000002d0
+            ;;
+            ;; however
+            ;; (float-shift-digits 1.201d0)
+            ;; => -3, 1201
+            (multiple-value-bind (scaled-magnitude r)
+                ;; truncate so as to ensure an integral value is passed
+                (truncate (* d (expt 10 n)))
+              (unless (zerop r)
+                ;; effectively, "Round up"
+                ;;
+                ;; e.g. when 
+                ;;
+                ;;   d = 4.159265358979312d0
+                ;;   n = 15
+                ;;
+                ;; i.e
+                ;;
+                ;; (truncate (* 4.159265358979312d0 (expt 10 15)))
+                ;;  => 4159265358979311, 0.5d0
+                ;;
+                ;; That may be a result of rounding in the floating
+                ;; point implementation.
+                ;;
+                ;; Without the following adjustment, the containing
+                ;; function would return an inaccurate value,
+                ;; in that instance.
+                (incf scaled-magnitude))
             (multiple-value-bind (scale-shift magnitude)
-                (integer-shift-digits
-                 (truncate (* d (expt 10 n))))
+                (integer-shift-digits scaled-magnitude)
               (return (values (- scale-shift n)
-                              magnitude))))
+                              magnitude)))))
            (t (incf n)))))))
 
 ;; (float-shift-digits 12)
@@ -966,34 +993,8 @@ calculates only the significant digits in the decimal portion of D
 ;; (float-shift-digits 1.201d0)
 ;; => -3, 1201
 ;; ^ subtly works around a matter of floating point error
-;;   i.e. in which
-;;   (* 10  1.201d0)
-;;   => 12.010000000000002d0
-;;
-;; so...
-;; (integer-shift-digits 12010000000000000)
-;; => 13, 1201
-;;
-;; (+ -16 13)
-;; => -3
-;;
-;; (float (* 1201 (expt 10 -3)))
-;; => 1.201
-
-#+NIL
- (multiple-value-bind (scale-1 magnitude-1) 
-     (float-shift-digits 1.201d0)
-   (multiple-value-bind (scale-2 magnitude-2)
-       (integer-shift-digits magnitude-1)
-     (values (+ scale-1 scale-2) magnitude-2 )))
-;; => -3, 1201
-;;
-;; (float (* 1201 (expt 10 -3)))
-;; => 1.201
-
-;; n.b.
-;; (float (* 12010000000000000 (expt 10 -16)))
-;; => 1.201
+;;   i.e. in which (* 10  1.201d0)
+;;                  => 12.010000000000002d0
 
 ;; (float-shift-digits 1.201)
 ;; => -3, 1201
@@ -1006,12 +1007,19 @@ calculates only the significant digits in the decimal portion of D
 ;; (* 10 4.159265358979312d0)
 ;; => 41.592653589793116d0
 ;;
-;; and still there is some error:
+;; so, until some further error filtering, there was an
 ;; (float-shift-digits 4.159265358979312d0)
-;; => -15, 4159265358979311
+;; => -15, 4159265358979312
+;; previously => -15, 4159265358979311
 ;;
-;; (=  4.159265358979312d0 (* 4159265358979311 (expt 10 -15)))
-;; => NIL
+;; noticing:
+;; (truncate (* 4.159265358979312d0 (expt 10 15)))
+;; 4159265358979311, 0.5d0
+;; ^ thus the additional filtering is defined
+
+;; (truncate (* 1.201 (expt 10 3)))
+
+
 
 ;; sidebar: sb-impl::make-float
 
