@@ -460,10 +460,13 @@ See also: `rescale'"))
        (m-2 (rescale m 3))
        (m-3 (rescale m -3)))
   (values m m-2 m-3
+          (mapcar #'scalar-magnitude 
+                  (list m m-2 m-3))
           (apply #'= (mapcar #'scalar-magnitude 
                              (list m m-2 m-3)))))
+
 ;; => #<METER 1 m {1006330FD3}>, 
-;;    #<METER 1 m {1006331AF3}>, 
+;;    #<METER 1/1000 km {1006331AF3}>, ;; "RATIO QUIRK"
 ;;    #<METER 1 m {1006332293}>, 
 ;;    T 
 ;; ^ Implementation note: The magnitude of the measurement is 1,

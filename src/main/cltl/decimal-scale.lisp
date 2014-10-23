@@ -217,13 +217,27 @@ Notes:
            (type fixnum degree)
            (type measurement-class-designator unit)
            (values measurement))
-  (multiple-value-bind (scale adj-magnitude)
-      (float-shift-digits magnitude)
-    (make-instance  (etypecase unit
-                    (symbol (find-measurement-class unit))
-                    (measurement-class unit))
-                  :magnitude adj-magnitude
-                  :degree (+ degree scale))))
+  (let ((class (etypecase unit
+                   (symbol (find-measurement-class unit))
+                   (measurement-class unit))))
+    (etypecase magnitude
+      (ratio (make-instance class :magnitude magnitude 
+                            :degree degree))
+      (real 
+       (multiple-value-bind (scale adj-magnitude)
+           (float-shift-digits magnitude)
+         (make-instance 
+          class
+          :magnitude adj-magnitude
+          :degree (+ degree scale)))))))
+
+#+NIL
+(let* ((m (make-measurement 1 :m))
+       (m-2 (rescale m 3))
+       (m-3 (rescale m -3)))
+  (values  (apply #'= (mapcar #'scalar-magnitude 
+                             (list m m-2 m-3)))))
+;; => T
 
 ;; (make-measurement 1 :m 5)
 ;; => #<METER 100 km {1003FF93A3}>
