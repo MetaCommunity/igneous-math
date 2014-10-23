@@ -245,3 +245,63 @@ programming environment.
 
 [5] Martin Bryan. Using HyTime for Scheduling Events
     available: http://www.is-thought.co.uk/schedule.htm
+
+
+## TO DO
+
+1) Define an ASDF system for this source file
+
+X) Define a reader macro syntax for measurement units
+   also cf. Jakub Higersberger's unit-formula system
+
+Y) Extend MEASUREMENT-CLASS with a new class,
+   DERIVED-MEASUREMENT-CLASS, such that would publish an accessor
+   for calculating a formula for measurement unit converstions
+
+2) Implement YouTrack and TeamCity onto AWS (cf. Nr 4)
+
+3) Move DEFCLASS* into the mci-cltl-utils source tree
+
+4) Define, within YouTrack and TeamCity, such TO DO items as are
+   denoted within the commentary in the DEFCLASS* macro definition 
+
+5) Define a convenient syntax for extension of this measurement
+   protocol in definition of custom measurement units
+
+6) Continue with definition of the geometry component of this
+   system, toward DEFCLASS VECTOR etc.
+
+7) "Back track" to the TO DO items defined then in YouTrack/TeamCity
+
+8) At some point, refine the comments in this file into a form of
+   normative documentation for this program system
+
+9) Define a desktop interface for this system - carefully avoiding
+   any manner of a competitive spirit towards Wolfram Mathematica
+   and the respective MathML implementations available within the
+   contemporary computing domain - albeit all within proprietary/
+   closed source software systems, "those" -- also maxing reference
+   onto the ACL2 "theorem prover" system  and Maxima. Although this
+   system is being defined morso for a purpose of supporting
+   applicationso of analytic geometry, as primarily with regards
+   to electical engineering, however there must be some references
+   made onto theoretical mathematics, throughout this system.
+
+
+FIXME: The following documentation items were transposed from
+measurement.lisp and should be edited for presentation in this
+_markdown_ file
+
+## Sidebar: Measurement Definitions in HyTime
+
+* http://www.is-thought.co.uk/schedule.htm
+* http://crism.maden.org/consulting/pub/hytime/meas.html
+* http://www.hytime.org/materials/hi2mdhyt.sgm
+    * ^ cf %hygrand
+
+see also:
+* http://physics.nist.gov/cuu/units/
+* http://physics.nist.gov/pubs/sp811/appenb.html 
+    * ^ esp. for conversions regarding foot, mile, yard , ...
+
+
