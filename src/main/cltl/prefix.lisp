@@ -357,6 +357,18 @@ See also: `rescale'"))
 
 
 (defun prefix-of (m)
+  "Select and return a PREFIX object representative of the scalar
+magnitude and degree of measurement M. The second return value will
+represent the magnitude of M scaled for decimal degrees of the prefix
+value. 
+
+If the deree of M is not equivalent to a degree of an SI prefix
+value, a corresponding prefix value will be calculated and
+returned. In such an instance, the second return value will be
+inequivalent to the actual magnitude of M.
+
+See also:
+* `rescale', `nrescale'"
   ;; FIXME: Memoize the PREFIX value for MEASUREMENT instance
   (declare (type measurement m)
            (values prefix fixnum))
