@@ -368,7 +368,11 @@ returned. In such an instance, the second return value will be
 inequivalent to the actual magnitude of M.
 
 See also:
-* `rescale', `nrescale'"
+* `measurement-magnitude'
+* `scalar-magnitude'
+* `rescale', `nrescale'
+* `find-prefix'
+* `find-prefix='"
   (declare (type measurement m)
            (values prefix fixnum))
   (let ((deg (measurement-degree m))
