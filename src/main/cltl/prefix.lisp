@@ -512,9 +512,9 @@ See also: `rescale'"))
 #+NIL ;; instance test - nrescale
 (let* ((m (make-measurement 1 :m))
        (m-2 (nrescale m 3)))
-  (values m-2 (eq m-2 m)))
+  (values m-2 (eq m-2 m) (= 1 (scalar-magnitude m))))
 
 ;; => #<METER 1/1000 km {1005F4C4D3}>, 
-;;    T
+;;    T, T
 
 
