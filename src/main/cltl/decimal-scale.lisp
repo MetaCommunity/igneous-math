@@ -193,9 +193,9 @@ portion of `d'"
 ;; => 3, 12
 
 (defun make-measurement (magnitude unit &optional (degree 0))
-  "Crate a MEAUREMENT object of the specified MAGNITUDE representing a
-scalar measurement of measurement unit UNIT. The scalar magnitude of
-the measurement.
+  "Crate a MEAUREMENT object of the specified MAGNITUDE of a decimal
+scale denoted by DEGREE, representing a scalar measurement of
+the measurement unit denoted by UNIT. 
 
 Examples:
 
@@ -203,7 +203,7 @@ Examples:
   => #<METER 1 m {1006289003}>
 
  (make-measurement 1 :m -3)
- => #<METER 1E-3 m {10062E90C3}>
+ => #<METER 1 mm {10062E90C3}>
 
 
 See also: 
@@ -222,15 +222,16 @@ Notes:
                    (symbol (find-measurement-class unit))
                    (measurement-class unit))))
     (etypecase magnitude
-      (ratio (make-instance class :magnitude magnitude 
-                            :degree degree))
+      (ratio 
+       (values (make-instance class :magnitude magnitude 
+                              :degree degree)))
       (real 
        (multiple-value-bind (scale adj-magnitude)
            (float-shift-digits magnitude)
-         (make-instance 
-          class
-          :magnitude adj-magnitude
-          :degree (+ degree scale)))))))
+         (values (make-instance 
+                  class
+                  :magnitude adj-magnitude
+                  :degree (+ degree scale))))))))
 
 #+NIL
 (let* ((m (make-measurement 1 :m))
@@ -244,6 +245,24 @@ Notes:
 ;; => #<METER 100 km {1003FF93A3}>
 ;; (measurement-magnitude (make-measurement 1 :m 5))
 ;; => 1
+
+
+;;- Ratio magnitude (unscaled)
+;; (make-measurement 1/5 :m)
+;; => #<METER 100 km {1003FF93A3}>
+;; (measurement-magnitude (make-measurement 1/5 :m))
+;; => 1/5
+;;
+;; (make-measurement 1/5 :m 3)
+;; => #<METER 1/5 km {1007B81023}>
+;; (measurement-magnitude (make-measurement 1/5 :m 3))
+;; => 1/5
+;;
+;; (scalar-magnitude (make-measurement 1/5 :m 3))
+;; => 200 ;; i.e. 200 m
+;;
+;; (scalar-magnitude (make-measurement 1/5 :m))
+;; => 1/5 ;; i.e. 1/5 m
 
 
 ;; (make-measurement 1 :m 3)

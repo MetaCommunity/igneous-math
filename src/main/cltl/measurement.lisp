@@ -352,6 +352,8 @@ measurement unit of M"
 
 (defgeneric scalar-magnitude (scalar)
   (:method ((scalar measurement))
+    "Return the magnitude of the SCALAR measurement onto the base unitx
+for the measurement"
     (base-magnitude scalar)))
 
 ;; (scalar-magnitude (make-measurement 1 :m -3))

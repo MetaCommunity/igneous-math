@@ -258,9 +258,6 @@ See also: `rescale'"))
 
 ;; (find-prefix= -9)
 ;;  <<nano>>
-           
-
-
 
 ;; define prefix classes
 (let ((n -1))
@@ -328,32 +325,6 @@ See also: `rescale'"))
     (princ (measurement-print-name (class-of object))
            stream)))
 
-
-;; FIXME: does not work in SBCL, but probably should.
-;;
-;; In macroexapansion for DEFBOUNCE%, NAME is said to be unbound
-;;
-;; something about the walker hopping over a binding??
-
-;; - https://bugs.launchpad.net/sbcl/+bug/1368847
-;;
-;; so, must define the methods, each, manually
-#+NIL
-(labels ((defbounce (sl)
-           (let ((name 
-                  (intern-formatted "~A~A" 
-                                    (quote #:measurement-)
-                                    (slot-definition-name sl))))
-             (macrolet ((defbounce% ()
-                          `(defmethod ,name ((instance measurement))
-                             (,name (class-of instance)))))
-               (defbounce%)))))
-  
-  ;; for direct slots in MEASUREMENT-CLASS, define accessors onto
-  ;; MEASUREMENT to access the respective slot of the same class
-  (dolist (sl (class-direct-slots 
-               (find-class 'measurement-domain)))
-    (defbounce sl)))
 
 
 (defun prefix-of (m)
@@ -476,7 +447,7 @@ See also:
                              (list m m-2 m-3)))))
 
 ;; => #<METER 1 m {1006330FD3}>, 
-;;    #<METER 1/1000 km {1006331AF3}>, ;; "RATIO QUIRK"
+;;    #<METER 1/1000 km {1006331AF3}>, ;; "RATIO QUIRK" (Unscaled)
 ;;    #<METER 1 m {1006332293}>, 
 ;;    T 
 ;; ^ Implementation note: The magnitude of the measurement is 1,
@@ -532,4 +503,7 @@ See also:
 ;; => #<METER 1/1000 km {1005F4C4D3}>, 
 ;;    T, T
 
+;; rescale of ratio magnitude
+;; (let ((m (make-measurement 1/5 :m))) (rescale m -3))
+;; => #<METER 2 dm {1005F4C4D3}>, 
 
