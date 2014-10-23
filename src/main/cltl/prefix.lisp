@@ -291,7 +291,7 @@ See also: `rescale'"))
             (deci  -1 "d" :|d|)
             (centi  -2 "c" :|c|)
             (milli  -3 "m" :|m|)
-            (micro  -6 "Î¼" :|u|)
+            (micro  -6 #.(string (code-char #x3BC)) :|u|)
             (nano  -9 "n" :|n|)
             (pico  -12 "p" :|p|)
             (femto  -15 "f" :|f|)
@@ -310,6 +310,34 @@ See also: `rescale'"))
          (multiple-value-bind (deg boundp)
              (slot-value* object 'degree)
            (cond
+             ((and boundp (subtypep (class-of object) 'kilogram))
+              (error "FIXME: Printed representation for Kilgraom measurements")
+              ;; FIXME: The fact that the base quanity, kilogram, is
+              ;; actually a unit defined with a prefix over the base
+              ;; unit for mass, gram -- though it may seem like
+              ;; a cliched anachronism, but it is a standardized
+              ;; anachronism -- in effect, it may serve to require
+              ;; that all of the prefix/degree/scaling procedures
+              ;; would be, henceforward, "Buried" within methods
+              ;; specialized onto generic functions.
+              ;;
+              ;; For instance, the function SCALE-FOR-SI-DEGREE should
+              ;; be defined as to dispatch onto the measurement unit
+              ;; type for the scale. When the measurement is a
+              ;; KILOGRAM, then it must be scaled with +3 implicit
+              ;; degree, in addition to the measurement degree
+              ;; e.g. new name and lamba list:
+              ;;  SCALE-SI (MEASUREMENT &OPTIONAL EE-P)
+
+              ;; similar for SHIFT-MAGNITUDE  (cf. RESCALE)
+              ;; e.g new lambda list:
+              ;;  SHIFT-MAGNITUDE MEASUREMENT NEW-DEGREE
+
+              ;; Both changes will require redefinitions of the
+              ;; respective functions, and changes to all calling
+              ;; functions. 
+              )
+             
              (boundp
               (multiple-value-bind (adj-mag deg)
                   (scale-for-si-degree mag deg)
@@ -328,6 +356,8 @@ See also: `rescale'"))
 
 
 (defun prefix-of (m)
+  ;; FIXME: Rename to SCALAR-PREFIX
+
   "Select and return a PREFIX object representative of the scalar
 magnitude and degree of measurement M. The second return value will
 represent the magnitude of M scaled for decimal degrees of the prefix
