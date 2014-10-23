@@ -2,12 +2,28 @@
 (in-package #:math)
 ;: ^ FIXME: move into #:utils
 
+(defun class-subclass-p (c1 c2)
+  (declare (type class-designator c1 c2)
+           (values boolean))
+  (let ((%c1 (compute-class c1))
+        (%c2 (compute-class c2)))
+    (or (eq %c1 %c2)
+        (when (find %c2 (cdr (class-precedence-list %c1))
+                    :test #'eq)
+          (values t)))))
+;; ^ other utiil
+
+;; (class-subclass-p 'string t)
+;; => T
+;; (class-subclass-p 'ratio 'complex)
+;; => NIL
 
 (defmacro defclass* (name-form (&rest superclasses) 
                              (&rest slot-definitions)
                      &rest initargs)
   ;; FIXME: This macro does not, of itself, provide a complete
   ;; "DEFCLASS* SOMEWHAT LIKE DEFSTRUCT"  implementation. Features
+
   ;; presently lacking of this implementation, in that regards
   ;; may include:
   ;; 
