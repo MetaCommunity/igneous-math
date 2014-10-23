@@ -856,8 +856,215 @@ See also: `rescale'"))
 ;;; % DERIVED MEASUREMENT UNITS
 
 
-;;; referencing http://physics.nist.gov/cuu/pdf/sp811.pdf
-;; ... define measurement-classes, conversion matrices
+(defclass derived-measurement-class (measurement-class)
+  ())
+
+
+;; decimal-scale.lisp --------------------
+
+(defun integer-shift-digits (d)
+  (declare (type integer d)
+           (values fixnum integer))
+  (cond
+    ((zerop d)
+     (values 0 0))
+    (t 
+     (let ((n 0))
+       (declare (fixnum n))
+       (loop
+          (multiple-value-bind (a r)
+              (truncate d 10) 
+            (cond
+              ((zerop r) (setq d a) (incf n))
+              (t (return (values n d))))))))))
+    
+#+NIL ;;instance tests
+(labels ((frob-test (n)
+           (multiple-value-bind (scale magnitude)
+               (integer-shift-digits n)
+             (values scale magnitude
+                     (= n (* magnitude (expt 10 scale)))))))
+  ;; (frob-test 1020)
+  ;; => 1, 102, T
+  
+  ;; (frob-test 102)
+  ;; => 0, 102, T
+
+  ;; (frob-test 10)
+  ;; => 1, 1, T
+
+  ;; (frob-test 1)
+  ;; => 0, 1, T
+
+  ;; (frob-test 0)
+  ;; => 0, 0, T
+  )
+                                                           
+
+
+(defun float-shift-digits (d) 
+"A floating point value, `d`, with a known number of significant
+decimal digits, `n`, may be represented as a sequence of values 
+`(a, n)` for  `a = d * 10^n`. 
+
+ For example, with d=3.14, n=-2, d=314
+
+For rhetorical purposes, `a` would be denoted as the _magnitude_ of
+`d`, and `n` denoted as the _scale_ of `d`.  
+
+When `n` is known, calculations evaluated on `d`, may instead be 
+evaluated on `(a, n)` -- `a` and `n` both being integer type
+values. In implementing mathematical operations with this manner of
+decimal scaling, it may serve to avoid floating point errors, in some
+instances.
+
+This funcdtion implements a calculation similar to a base-10
+calculation of the significand and exponent of D, with D represented
+consistently as a floating point number. However, this function
+calculates only the significant digits in the decimal portion of D
+
+" 
+  (declare (type (or integer float) d)
+           (values fixnum integer))
+  (let ((b d)
+        (n 1))
+    (declare (type (or integer float) b)
+             (type fixnum n) )
+    (loop  
+       #+nil (format t "~%FROB: ~s" d)
+       (setq b (* b 10))
+       (multiple-value-bind (b r) 
+           (truncate b)
+         (cond
+           ((zerop r) 
+            ;; n.b: This effectively works around a matter
+            ;; of floating point error - see following
+            ;; comments
+            (multiple-value-bind (scale-shift magnitude)
+                (integer-shift-digits
+                 (truncate (* d (expt 10 n))))
+              (return (values (- scale-shift n)
+                              magnitude))))
+           (t (incf n)))))))
+
+;; (float-shift-digits 12)
+;; => 0, 12
+;; (float-shift-digits 12.0)
+;; => 0, 12
+;; (float-shift-digits 12.1)
+;; => -1, 121
+;;
+;;
+;; (float-shift-digits pi)
+;; => -15, 3141592653589793
+
+;; n.b: 
+;; (* 10 314.1592653589793d0)
+;; => 3141.5926535897934d0
+;; ^ a decimal digit is introduced
+
+;; (float-shift-digits 1.201d0)
+;; => -3, 1201
+;; ^ subtly works around a matter of floating point error
+;;   i.e. in which
+;;   (* 10  1.201d0)
+;;   => 12.010000000000002d0
+;;
+;; so...
+;; (integer-shift-digits 12010000000000000)
+;; => 13, 1201
+;;
+;; (+ -16 13)
+;; => -3
+;;
+;; (float (* 1201 (expt 10 -3)))
+;; => 1.201
+
+#+NIL
+ (multiple-value-bind (scale-1 magnitude-1) 
+     (float-shift-digits 1.201d0)
+   (multiple-value-bind (scale-2 magnitude-2)
+       (integer-shift-digits magnitude-1)
+     (values (+ scale-1 scale-2) magnitude-2 )))
+;; => -3, 1201
+;;
+;; (float (* 1201 (expt 10 -3)))
+;; => 1.201
+
+;; n.b.
+;; (float (* 12010000000000000 (expt 10 -16)))
+;; => 1.201
+
+;; (float-shift-digits 1.201)
+;; => -3, 1201
+
+;; (float-shift-digits 11.0d0)
+;; 0, 11
+
+
+;; n.b !!!!
+;; (* 10 4.159265358979312d0)
+;; => 41.592653589793116d0
+;;
+;; and still there is some error:
+;; (float-shift-digits 4.159265358979312d0)
+;; => -15, 4159265358979311
+;;
+;; (=  4.159265358979312d0 (* 4159265358979311 (expt 10 -15)))
+;; => NIL
+
+;; sidebar: sb-impl::make-float
+
+
+;; / decimal-scale.lisp --------------------
+
+#|
+
+Issue: Towards a methodology for linear unit conversion
+
+NIST SP 811[1] appendix B defines an effective table of conversion
+factors for standard measurement units recognized by the NIST. The
+table is defined with a format, effectively: (S,D,F,E) for 
+  S: source measurement unit
+  D: destination measurement unit
+  F: factor for converstion
+  E: decimal exponent for factor of conversion
+
+S and D do not appear uniquely in the table, but the set {S,D) is
+unique within the 
+
+In transposing that measurement conversions table into this software
+system, a number of matters may be considered, for example:
+
+1. That a floating-point value 3.048 E-03 (imay be represented similarly
+   as 3048 E-6, with the exponent value stored seperate to the integral
+   magnitude -- thus, ensuring that a manner of integral arithmetic
+   may be applied onto the integral magnitude and its integral decimal
+   degree.
+
+2. that for any measurement converstion path A..D in which the
+   following measurement conversion paths are available:
+     A..B
+     B..C
+     C..D
+   ...the converstion from A to D may be accomplished directly by
+   multiplying the factors for the conversions A..B, B..C, and C..D
+   and summing their decimal degrees
+
+   
+
+NIST SP 811[1] clause B.9, furthermore, definesa set of individual
+measurement domains and subdomains.
+
+
+
+
+
+[1] NIST. Guide for the Use of the International System of Units
+     http://physics.nist.gov/cuu/pdf/sp811.pdf
+
+
+|#
 
 
 
