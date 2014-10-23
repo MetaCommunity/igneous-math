@@ -519,17 +519,125 @@ See also: `rescale'"))
     (prefix-symbol (prefix-of instance))))
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant *si-degrees*
+    (cond
+      ((boundp '*si-degrees*)
+       (values *si-degrees*))
+      (t 
+       (make-array 21
+                   :element-type '(integer -24 24)
+                   :initial-contents
+                   '(24 21 18 15 12 9 6 3 2 1 
+                     0
+                     -1 -2 -3 -6 -9 -12 -15 -18 -21 -24))
+      ))))
+
+
 (deftype prefix-degree ()
   '(and (integer -24 24)
     ;; formally onto the SI standard for decimal prefixes
-    (member 0 
-     1 2 3 6 9 12 15 18 21 24
-     -1 -2 -3 -6 -9 -12 -15 -18 -21 -24)))
+    #.(cons 'member (coerce *si-degrees* 'list))))
 
 ;; (typep -5 'prefix-degree)
 ;; => NIL
 ;; (typep 9 'prefix-degree)
 ;; => T
+
+
+(defun find-nearest-degree (deg &optional ee-p)
+  (declare (type fixnum deg)
+           (values prefix-degree))
+  (cond
+    ((zerop deg) (values 0))
+    ((> deg 24) (values 24))
+    ((< deg -24) (values -24))
+    (t 
+     (let ((n (unless ee-p
+                (find deg *si-degrees* :test #'=))))
+       (cond
+         (n (values n))
+         (t 
+          (labels ((test (a b)
+                     (declare (type fixnum a)
+                              (type (integer -24 24)
+                                    b))
+                     (cond
+                       (ee-p 
+                        (and (= (gcd b 3) 3)
+                             (> a b)))
+                       (t (> a b)))))
+            (let ((n (position deg *si-degrees*
+                               :test #'test)))
+              (aref *si-degrees* n)))))))))
+
+;; (find-nearest-degree 0)
+;; => 0
+
+;; (find-nearest-degree 25)
+;; => 24
+
+;; (find-nearest-degree -25)
+;; => -24
+
+;; (find-nearest-degree 5)
+;; => 3
+
+;; (find-nearest-degree -5)
+;; => -6
+
+;; (find-nearest-degree -2)
+;; => -2
+;; (find-nearest-degree -2 t)
+;; => -3
+
+
+;; (find-nearest-degree 1)
+;; => 1
+;; (find-nearest-degree 1 t)
+;; => 0
+
+
+(defun scale-for-si-degree (magnitude scale &optional ee-p)
+  (declare (type real magnitude)
+           (type fixnum scale)
+           (values real prefix-degree))
+  (cond
+    ((zerop scale) 
+     (values magnitude sale))
+    (t 
+     (let ((deg (find-nearest-degree scale ee-p)))
+       (values (* magnitude (expt 10 (- scale deg)))
+               deg)
+       ))))
+
+;; (scale-for-si-degree 1 5)
+;; => 100, 3
+;; (= 1E+05 100E+03)
+
+;; (scale-for-si-degree 1 -5)
+;; => 10, -6
+;;
+;; (= 1E-05 10E-06)
+;; => T
+
+;; (scale-for-si-degree 1 -2)
+;; => 1, -2
+
+;; (scale-for-si-degree 1 -2 t)
+;; => 10, -3
+
+
+;; (scale-for-si-degree 1 2)
+;; => 1, 2
+
+;; (scale-for-si-degree 1 2 t)
+;; => 10, 1
+;;
+;; (= (* 1 (expt 10 2)) (* 10 (expt 10 1)))
+;; => T
+
+
 
 (defclass* prefix ()
   ;; NOTE: This class is applied effectively as a DECIMAL-PREFIX 
@@ -599,8 +707,25 @@ See also: `rescale'"))
            (values prefix))
   (or (find s %prefixes%
             :test #'eq
-            :key #'measurement-symbol)
+            :key #'prefix-symbol)
       (error 'prefix-not-found :name s)))
+
+;; (find-prefix :|m|)
+
+
+(defun find-prefix= (d)
+  (declare (type prefix-degree d)
+           (values prefix))
+  (or (find d %prefixes%
+            :test #'=
+            :key #'prefix-degree)
+      (error 'prefix-degree-not-found
+             :name d)))
+
+;; (find-prefix= -9)
+;;  <<nano>>
+           
+
 
 
 ;; define prefix classes
@@ -650,23 +775,20 @@ See also: `rescale'"))
     (multiple-value-bind (mag boundp)
         (slot-value* object 'magnitude)
       (cond 
-        ((and boundp (typep mag 'ratio))
-         (princ (float mag) stream))
         (boundp
-         (princ mag stream))
+         (multiple-value-bind (deg boundp)
+             (slot-value* object 'degree)
+           (cond
+             (boundp
+              (multiple-value-bind (adj-mag deg)
+                  (scale-for-si-degree mag deg)
+                (let ((prefix (find-prefix= deg))) 
+                  (princ adj-mag stream)
+                  (write-char #\Space stream)
+                  (princ (prefix-print-name prefix) stream))))
+             (t (princ mag stream)))))
         (t
          (princ "{no magnitude}" stream))))
-
-    (multiple-value-bind (deg boundp)
-        (slot-value* object 'degree)
-      (cond
-        ((and boundp (zerop (the fixnum deg)))
-         (write-char #\Space stream))
-        (boundp
-         (format stream "E~@D" deg)
-         (write-char #\Space stream)
-         (princ (prefix-print-name (prefix-of object)) stream))
-        (t  (princ "{no degree} " stream))))
     
     (princ (measurement-print-name (class-of object))
            stream)))
@@ -1060,8 +1182,13 @@ portion of `d'"
                       unit 
                       (+ degree scale))))
 
+;; (make-measurement-1 1 :m 5)
+;; => #<METER 100 km {1003FF93A3}>
+;; (measurement-magnitude (make-measurement-1 1 :m 5))
+;; => 1
+
 ;; (make-measurement-1 1 :m 3)
-;; => #<METER 1E+3 km {1003FF93A3}>
+;; => #<METER 1 km {1003FF93A3}>
 ;
 ;; (measurement-magnitude (make-measurement 1 :m 3))
 ;; => 1
@@ -1074,8 +1201,9 @@ portion of `d'"
 ;; (measurement-degree (make-measurement-1 1 :m 3))
 ;; => 3
 
+;; original:
 ;; (make-measurement-1 1000 :m 3)
-;; => #<METER 1E+3 km {1003FF93A3}>
+;; => #<METER 1 Mm {1003FF93A3}>
 ;
 ;; (measurement-magnitude (make-measurement 1000 :m 3))
 ;; => 1000
@@ -1083,6 +1211,7 @@ portion of `d'"
 ;; (measurement-degree (make-measurement 1000 :m 3))
 ;; => 3
 
+;; improved:
 ;; (measurement-magnitude (make-measurement-1 1000 :m 3))
 ;; => 1
 ;; (measurement-degree (make-measurement-1 1000 :m 3))
