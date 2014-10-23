@@ -321,10 +321,11 @@ See also: `rescale'"))
              (boundp
               (multiple-value-bind (adj-mag deg)
                   (scale-for-si-degree mag deg)
-                (let ((prefix (find-prefix= deg))) 
                   (princ adj-mag stream)
                   (write-char #\Space stream)
-                  (princ (prefix-print-name prefix) stream))))
+                (unless (zerop deg)
+                  (let ((prefix (find-prefix= deg))) 
+                    (princ (prefix-print-name prefix) stream)))))
              (t (princ mag stream)))))
         (t
          (princ "{no magnitude}" stream))))
@@ -462,8 +463,8 @@ See also: `rescale'"))
           (apply #'= (mapcar #'scalar-magnitude 
                              (list m m-2 m-3)))))
 ;; => #<METER 1 m {1006330FD3}>, 
-;;    #<METER (1/1000)E+3 km {1006331AF3}>, 
-;;    #<METER 1000E-3 mm {1006332293}>, 
+;;    #<METER 1 m {1006331AF3}>, 
+;;    #<METER 1 m {1006332293}>, 
 ;;    T 
 ;; ^ Implementation note: The magnitude of the measurement is 1,
 ;;   in each of those three instances. 
@@ -515,7 +516,7 @@ See also: `rescale'"))
        (m-2 (nrescale m 3)))
   (values m-2 (eq m-2 m)))
 
-;; => #<METER 0.001E+3 km {1005F4C4D3}>, 
+;; => #<METER 1/1000 km {1005F4C4D3}>, 
 ;;    T
 
 
