@@ -73,6 +73,7 @@ portion of `d'"
        (setq b (* b 10))
        (multiple-value-bind (b r) 
            (truncate b)
+         (declare (ignore b))
          (cond
            ((zerop r) 
             ;; n.b: This effectively works around some matters
