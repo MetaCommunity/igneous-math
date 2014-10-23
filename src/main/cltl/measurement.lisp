@@ -237,6 +237,12 @@
 (deftype measurement-class-designator ()
   '(or symbol measurement-class))
 
+
+(define-condition entity-not-found (error)
+  ((name
+    :initarg :name
+    :reader entity-not-found-name)))
+
 (define-condition class-not-found (entity-not-found)
   ()
   (:report

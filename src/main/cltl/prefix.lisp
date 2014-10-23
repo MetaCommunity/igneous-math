@@ -216,11 +216,6 @@ See also: `rescale'"))
     (princ (slot-value* instance 'print-label "{no label}") 
            stream)))
 
-(define-condition entity-not-found (error)
-  ((name
-    :initarg :name
-    :reader entity-not-found-name)))
-  
 
 (define-condition prefix-not-found (entity-not-found)
   ()
