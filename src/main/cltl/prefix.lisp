@@ -369,7 +369,6 @@ inequivalent to the actual magnitude of M.
 
 See also:
 * `rescale', `nrescale'"
-  ;; FIXME: Memoize the PREFIX value for MEASUREMENT instance
   (declare (type measurement m)
            (values prefix fixnum))
   (let ((deg (measurement-degree m))
@@ -388,7 +387,7 @@ See also:
 ;; => <<yotta>>, 1
 
 ;; (prefix-of (make-measurement 1 :m 23))
-;; --> <<zetta>>, 100
+;; => <<zetta>>, 100
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
 ;;
