@@ -22,6 +22,7 @@
   :serial t
   :components 
   ((:file "math-package")
+   (:file "defclass-star") ;; FIXME: move into .utils
    (:file "measurement")
    (:file "decimal-scale")
    (:file "prefix")
