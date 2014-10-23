@@ -47,7 +47,8 @@
   (values t))
 
 
-(let ((%classes% (make-array 7 :fill-pointer 0))
+(let ((%classes% (make-array 7 :fill-pointer 0
+                             :element-type 'measurement-class))
       (%classes-lock% (make-lock "%CLASSES%")))
   (defun register-measurement-class (c)
     (declare (type measurement-class c))
@@ -66,11 +67,11 @@
 
   (defun find-measurement-class (s)
     (declare (type symbol s)
-             (values measurement-class))
+             (values measurement-class &optional))
     (with-lock-held (%classes-lock%)
       (or (find s %classes%
-               :test #'eq
-               :key #'measurement-symbol)
+                :test #'eq
+                :key #'measurement-symbol)
           (error 'class-not-found :name s))))
   )
   
@@ -129,9 +130,9 @@ measurement unit of M"
            (values real))
   (let ((deg (measurement-degree m)))
     (cond 
-      ((zerop deg) (measurement-magnitude m))
-      (t (* (measurement-magnitude m)
-            (expt #.%factor-base% deg))))))
+      ((zerop deg) (values (measurement-magnitude m)))
+      (t (values (* (measurement-magnitude m)
+                    (expt #.%factor-base% deg)))))))
 
 ;; (base-magnitude (make-measurement 1 :m 3))
 ;; => 1000
