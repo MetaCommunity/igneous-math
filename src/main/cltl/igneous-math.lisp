@@ -308,6 +308,7 @@
 
 (defgeneric measurement-magnitude (instance))
 
+;; FIXME: rename to measurement-scale
 (defgeneric measurement-degree (instance))
 
 
@@ -974,6 +975,9 @@ portion of `d'"
                               magnitude)))))
            (t (incf n)))))))
 
+;; (float-shift-digits 1)
+;; => 0, 1
+
 ;; (float-shift-digits 12)
 ;; => 0, 12
 ;; (float-shift-digits 12.0)
@@ -1019,9 +1023,73 @@ portion of `d'"
 
 ;; (truncate (* 1.201 (expt 10 3)))
 
-
-
 ;; sidebar: sb-impl::make-float
+
+;; (defstruct (decimal
+;;              (:constructor %make-decimal (magnitude scale)))
+;;   ;; FIXME: This reproduces MEASUREMENT and SCALAR
+;;   (magnitude 0 :type fixnum)
+;;   (scale 0 :type fixnum))
+
+;; (defun make-decimal (n)
+;;   (declare (type real n)
+;;            (values decimal))
+;;   (multiple-value-bind (scale magnitude)
+;;       (float-shift-digits n)
+;;     (%make-decimal magnitude scale)))
+
+;; (defun decimal-value (d)
+;;   (declare (type decimal d)
+;;            (values real))
+;;   (* (decimal-magnitude d)
+;;      (expt 10 (decimal-scale d))))
+
+;; ;; (make-decimal pi)
+;;
+;; (= (float (decimal-value (make-decimal pi)) most-positive-double-float) pi)
+;; => T
+
+
+;; (float-shift-digits 12000)
+;; => 3, 12
+
+(defun make-measurement-1 (magnitude unit &optional (degree 0))
+  (multiple-value-bind (scale adj-magnitude)
+      (float-shift-digits magnitude)
+    (make-measurement adj-magnitude 
+                      unit 
+                      (+ degree scale))))
+
+;; (make-measurement-1 1 :m 3)
+;; => #<METER 1E+3 km {1003FF93A3}>
+;
+;; (measurement-magnitude (make-measurement 1 :m 3))
+;; => 1
+;;
+;; (measurement-degree (make-measurement 1 :m 3))
+;; => 3
+
+;; (measurement-magnitude (make-measurement-1 1 :m 3))
+;; => 1
+;; (measurement-degree (make-measurement-1 1 :m 3))
+;; => 3
+
+;; (make-measurement-1 1000 :m 3)
+;; => #<METER 1E+3 km {1003FF93A3}>
+;
+;; (measurement-magnitude (make-measurement 1000 :m 3))
+;; => 1000
+;;
+;; (measurement-degree (make-measurement 1000 :m 3))
+;; => 3
+
+;; (measurement-magnitude (make-measurement-1 1000 :m 3))
+;; => 1
+;; (measurement-degree (make-measurement-1 1000 :m 3))
+;; => 6
+
+
+
 
 
 ;; / decimal-scale.lisp --------------------
