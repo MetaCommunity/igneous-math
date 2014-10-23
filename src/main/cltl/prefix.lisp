@@ -363,26 +363,30 @@ See also: `rescale'"))
 (defun prefix-of (m)
   ;; FIXME: Memoize the PREFIX value for MEASUREMENT instance
   (declare (type measurement m)
-           (values prefix))
-  (let ((deg (measurement-degree m)))
-    (or  (find deg %prefixes%
-               :key #'prefix-degree
-               :test #'(lambda (a b)
-                         (declare (type prefix-degree a b))
-                         (= a b)))
-         (error 'prefix-degree-not-found :name deg))))
-
+           (values prefix fixnum))
+  (let ((deg (measurement-degree m))
+        (mag (measurement-magnitude m)))
+    (multiple-value-bind (mag-adj deg-adj)
+        (scale-for-si-degree mag deg)
+      (let ((prefix
+             (find deg-adj %prefixes%
+                   :key #'prefix-degree
+                   :test #'(lambda (a b)
+                             (declare (type prefix-degree a b))
+                             (= a b)))))
+        (values prefix mag-adj)))))
 
 ;; (prefix-of (make-measurement 1 :m 24))
-;; => <<yotta>>
+;; => <<yotta>>, 1
 
 ;; (prefix-of (make-measurement 1 :m 23))
-;; --> error
+;; --> <<zetta>>, 100
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
 ;;
 ;;  1 m => 1000 mm
 ;;      => 0.001 km
+
 ;;
 ;; syntax: 
 ;;   (<magnitude>, <degree>)
