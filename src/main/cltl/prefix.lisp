@@ -141,24 +141,35 @@ See also: `rescale'"))
   (declare (type real magnitude)
            (type fixnum scale)
            (values real prefix-degree))
+  ;; FIXME: Update functional form, for special handling of KILOGRAM
+  ;; measurements 
   (cond
     ((zerop scale) 
      (values magnitude scale))
     (t 
      (let ((deg (find-nearest-degree scale ee-p)))
-       (values (* magnitude (expt 10 (- scale deg)))
-               deg)
-       ))))
+       (values  (shift-magnitude magnitude scale deg)
+                deg)))))
 
 ;; (scale-for-si-degree 1 5)
 ;; => 100, 3
 ;; (= 1E+05 100E+03)
+
+;; (scale-for-si-degree 10 5)
+;; => 1000, 3
+;; (= 10E+05 1000E+03)
+;; => T
 
 ;; (scale-for-si-degree 1 -5)
 ;; => 10, -6
 ;;
 ;; (= 1E-05 10E-06)
 ;; => T
+
+;; (scale-for-si-degree 10 -5)
+;; => 100, -6
+;;
+
 
 ;; (scale-for-si-degree 1 -2)
 ;; => 1, -2
@@ -331,7 +342,8 @@ See also: `rescale'"))
 
               ;; similar for SHIFT-MAGNITUDE  (cf. RESCALE)
               ;; e.g new lambda list:
-              ;;  SHIFT-MAGNITUDE MEASUREMENT NEW-DEGREE
+              ;;  SHIFT-MAGNITUDE (MEASUREMENT NEW-DEGREE)
+              ;; ^ used internal to RESCALE
 
               ;; Both changes will require redefinitions of the
               ;; respective functions, and changes to all calling
@@ -433,10 +445,21 @@ See also:
                         &optional (factor-base #.%factor-base%))
   ;; utility function - implementation of the "decimal shift"
   ;; algorithm denoted in the above
+
+  ;; FIXME: Functionally redundant onto SCALE-FOR-SI-DEGREE,
+  ;;        though this function uses a different syntax for its
+  ;;        second return value
+  
   (declare (type real magnitude)
-           (type fixnum degree new-degree factor-base))
+           (type fixnum degree new-degree factor-base)
+           (values real fixnum))
+  ;; FIXME: This allows for DEGREE not within the SI prefixes,
+  ;;        unlike SCALE-FOR-SI-DEGREE
   (values (* magnitude (expt factor-base (- degree new-degree)))
           (+ degree new-degree)))
+
+;; (* 1/5 (expt 10 (- 0 -3)))
+;; (+ 0 -5)
 
 
 (defmethod rescale ((scalar measurement) (prefix fixnum))
@@ -445,7 +468,7 @@ See also:
                        (prefix-degree scalar)
                        prefix
                        #.%factor-base%)
-    (make-measurement new-mag  (class-of scalar)
+    (make-measurement new-mag (class-of scalar)
                       new-deg)))
 
 (defmethod rescale ((scalar measurement) (prefix prefix))
@@ -471,6 +494,7 @@ See also:
        (m-2 (rescale m 3))
        (m-3 (rescale m -3)))
   (values m m-2 m-3
+          #+NIL
           (mapcar #'scalar-magnitude 
                   (list m m-2 m-3))
           (apply #'= (mapcar #'scalar-magnitude 
@@ -536,4 +560,12 @@ See also:
 ;; rescale of ratio magnitude
 ;; (let ((m (make-measurement 1/5 :m))) (rescale m -3))
 ;; => #<METER 2 dm {1005F4C4D3}>, 
+
+
+;; rescale "outside of SI"
+;; (rescale (make-measurement 1/8 :m) 5)
+;; => #<METER 1/8000 km {1007AD9433}>
+;;
+;; (rescale (make-measurement 1/8 :m) -5)
+;; => #<METER 125 mm {1007B71283}>
 

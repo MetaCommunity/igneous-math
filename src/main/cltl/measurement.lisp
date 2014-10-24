@@ -140,9 +140,16 @@ measurement unit of M"
 ;; (base-magnitude (make-measurement 1 :m -3))
 ;; => 1/1000
 
+;; (base-magnitude (make-measurement 1/5 :m))
+;; => 1/5
+
+;; (base-magnitude (make-measurement 1/5 :m -3))
+;; => 1/5000
+
+
 (defgeneric scalar-magnitude (scalar)
   (:method ((scalar measurement))
-    "Return the magnitude of the SCALAR measurement onto the base unitx
+    "Return the magnitude of the SCALAR measurement onto the base unit
 for the measurement"
     (base-magnitude scalar)))
 
@@ -185,6 +192,7 @@ for the measurement"
               (do-def c quantity print-label print-name name)))
           '((meter "length" "metre" "m" :m)
             (kilogram "mass" "kilogram" "kg" :kg)
+            ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
             (second "time, duration" "second" "s" :s)
             (ampere "electric current" "ampere" "A" :a)
             (kelvin "thermodyamic temperature" "kelvin" "K" :k)

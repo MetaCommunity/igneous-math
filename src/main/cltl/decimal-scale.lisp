@@ -265,6 +265,13 @@ Notes:
 ;; => 1/5 ;; i.e. 1/5 m
 
 
+;; (make-measurement 1 :kg)
+;; => #<METER 1 kg {1006260FC3}>
+
+;; (make-measurement 1 :kg 6)
+;; => #<METER 1 Mkg {1006260FC3}> ;; INCORRECT
+
+
 ;; (make-measurement 1 :m 3)
 ;; => #<METER 1 km {1003FF93A3}>
 
