@@ -137,12 +137,13 @@ See also: `rescale'"))
 ;; => 0
 
 
-(defun scale-for-si-degree (magnitude scale &optional ee-p)
+(defun scale-si (magnitude scale &optional ee-p)
   (declare (type real magnitude)
            (type fixnum scale)
            (values real prefix-degree))
   ;; FIXME: Update functional form, for special handling of KILOGRAM
   ;; measurements 
+  
   (cond
     ((zerop scale) 
      (values magnitude scale))
@@ -151,37 +152,37 @@ See also: `rescale'"))
        (values  (shift-magnitude magnitude scale deg)
                 deg)))))
 
-;; (scale-for-si-degree 1 5)
+;; (scale-si 1 5)
 ;; => 100, 3
 ;; (= 1E+05 100E+03)
 
-;; (scale-for-si-degree 10 5)
+;; (scale-si 10 5)
 ;; => 1000, 3
 ;; (= 10E+05 1000E+03)
 ;; => T
 
-;; (scale-for-si-degree 1 -5)
+;; (scale-si 1 -5)
 ;; => 10, -6
 ;;
 ;; (= 1E-05 10E-06)
 ;; => T
 
-;; (scale-for-si-degree 10 -5)
+;; (scale-si 10 -5)
 ;; => 100, -6
 ;;
 
 
-;; (scale-for-si-degree 1 -2)
+;; (scale-si 1 -2)
 ;; => 1, -2
 
-;; (scale-for-si-degree 1 -2 t)
+;; (scale-si 1 -2 t)
 ;; => 10, -3
 
 
-;; (scale-for-si-degree 1 2)
+;; (scale-si 1 2)
 ;; => 1, 2
 
-;; (scale-for-si-degree 1 2 t)
+;; (scale-si 1 2 t)
 ;; => 100, 0
 ;;
 ;; (= (* 1 (expt 10 2)) (* 100 (expt 10 0)))
@@ -332,7 +333,7 @@ See also: `rescale'"))
               ;; would be, henceforward, "Buried" within methods
               ;; specialized onto generic functions.
               ;;
-              ;; For instance, the function SCALE-FOR-SI-DEGREE should
+              ;; For instance, the function SCALE-SI should
               ;; be defined as to dispatch onto the measurement unit
               ;; type for the scale. When the measurement is a
               ;; KILOGRAM, then it must be scaled with +3 implicit
@@ -352,7 +353,7 @@ See also: `rescale'"))
              
              (boundp
               (multiple-value-bind (adj-mag deg)
-                  (scale-for-si-degree mag deg)
+                  (scale-si mag deg)
                   (princ adj-mag stream)
                   (write-char #\Space stream)
                 (unless (zerop deg)
@@ -391,7 +392,7 @@ See also:
   (let ((deg (measurement-degree m))
         (mag (measurement-magnitude m)))
     (multiple-value-bind (mag-adj deg-adj)
-        (scale-for-si-degree mag deg)
+        (scale-si mag deg)
       (let ((prefix
              (find deg-adj %prefixes%
                    :key #'prefix-degree
@@ -446,7 +447,7 @@ See also:
   ;; utility function - implementation of the "decimal shift"
   ;; algorithm denoted in the above
 
-  ;; FIXME: Functionally redundant onto SCALE-FOR-SI-DEGREE,
+  ;; FIXME: Functionally redundant onto SCALE-SI,
   ;;        though this function uses a different syntax for its
   ;;        second return value
   
@@ -454,7 +455,7 @@ See also:
            (type fixnum degree new-degree factor-base)
            (values real fixnum))
   ;; FIXME: This allows for DEGREE not within the SI prefixes,
-  ;;        unlike SCALE-FOR-SI-DEGREE
+  ;;        unlike SCALE-SI
   (values (* magnitude (expt factor-base (- degree new-degree)))
           (+ degree new-degree)))
 
