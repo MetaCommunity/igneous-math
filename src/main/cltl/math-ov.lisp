@@ -275,6 +275,14 @@ For each class C in CLASSES, then define methods:
       #-CCL integer-classes
       #+CCL (cons (find-class 'fixnum) integer-classes))))
 
+(let ((integer-classes 
+       (compute-end-classes (find-class 'float))))
+  (dolist (name '(ffloor fceiling ftruncate fround ))
+    (defop name 
+        :classes 
+      #-CCL integer-classes
+      #+CCL (cons (find-class 'fixnum) integer-classes))))
+
 
 ;;; % Overloading for Other Monadic Functions
 
