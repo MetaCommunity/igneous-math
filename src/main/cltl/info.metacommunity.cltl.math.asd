@@ -26,4 +26,5 @@
    (:file "measurement")
    (:file "decimal-scale")
    (:file "prefix")
+   (:file "geometry")
    ))
