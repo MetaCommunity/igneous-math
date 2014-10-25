@@ -70,6 +70,8 @@ See also: `rescale'"))
       ))))
 
 
+;; (map 'list #'find-prefix= %si-degrees%)
+
 (deftype prefix-degree ()
   '(and (integer -24 24)
     ;; formally onto the SI standard for decimal prefixes
@@ -87,42 +89,63 @@ See also: `rescale'"))
   ;; require that the prefix degree is a multiple of 3
   (declare (type fixnum deg)
            (values prefix-degree))
-  (cond
-    ((zerop deg) (values 0))
-    ((> deg 24) (values 24))
-    ((< deg -24) (values -24))
-    (t 
-     (let ((n (unless ee-p
-                (find deg %si-degrees% :test #'=))))
-       (cond
-         (n (values n))
-         (t 
-          (labels ((test (a b)
-                     (declare (type fixnum a)
-                              (type (integer -24 24)
-                                    b))
-                     (cond
-                       (ee-p 
-                        (and (= (gcd b 3) 3)
-                             (> a b)))
-                       (t (> a b)))))
-            (let ((n (position deg %si-degrees%
-                               :test #'test)))
-              (aref %si-degrees% n)))))))))
+  (macrolet ((find* (test)
+               `(find deg %si-degrees% :test (function ,test))))
+    (labels ((ee-prefix= (a b)
+               (declare (type fixnum a) (type (integer -24 24) b))
+               (and (= (gcd b 3) 3)
+                    (= a b)))
+             (ee-prefix> (a b)
+               (declare (type fixnum a) (type (integer -24 24) b))
+               (and (= (gcd b 3) 3)
+                    (> a b)))
+             (find-or-approximate ()
+               (or (find* =) 
+                   (find* >)
+                   ;; the error condition should not ever be reached,
+                   ;; but this would satisfy the compiler's walker [SBCL]
+                   (error 'prefix-degree-not-found
+                          :name deg)))
+             (find-or-approximate-ee ()
+               (or (find* ee-prefix=)
+                   (find* ee-prefix>)
+                   (error 'prefix-degree-not-found
+                          :name deg))))
+      (cond
+        ((zerop deg) (values 0))
+        ((> deg 24) (values 24))
+        ((< deg -24) (values -24))
+        (ee-p (find-or-approximate-ee))
+        (t (find-or-approximate))))))
 
 ;; (find-nearest-degree 0)
 ;; => 0
 
+;; (find-nearest-degree 3)
+;; => 3
+
+;; (find-nearest-degree 3 t)
+;; => 3
+
 ;; (find-nearest-degree 25)
 ;; => 24
 
+;; (find-nearest-degree 25 t)
+;; => 24
+
 ;; (find-nearest-degree -25)
+;; => -24
+
+;; (find-nearest-degree -25 t)
 ;; => -24
 
 ;; (find-nearest-degree 5)
 ;; => 3
 
 ;; (find-nearest-degree -5)
+;; => -6
+
+;; (find-nearest-degree -5 t)
 ;; => -6
 
 ;; (find-nearest-degree -2)
@@ -137,57 +160,7 @@ See also: `rescale'"))
 ;; => 0
 
 
-(defun scale-si (magnitude scale &optional ee-p)
-  (declare (type real magnitude)
-           (type fixnum scale)
-           (values real prefix-degree))
-  ;; FIXME: Update functional form, for special handling of KILOGRAM
-  ;; measurements 
-  
-  (cond
-    ((zerop scale) 
-     (values magnitude scale))
-    (t 
-     (let ((deg (find-nearest-degree scale ee-p)))
-       (values  (shift-magnitude magnitude scale deg)
-                deg)))))
-
-;; (scale-si 1 5)
-;; => 100, 3
-;; (= 1E+05 100E+03)
-
-;; (scale-si 10 5)
-;; => 1000, 3
-;; (= 10E+05 1000E+03)
-;; => T
-
-;; (scale-si 1 -5)
-;; => 10, -6
-;;
-;; (= 1E-05 10E-06)
-;; => T
-
-;; (scale-si 10 -5)
-;; => 100, -6
-;;
-
-
-;; (scale-si 1 -2)
-;; => 1, -2
-
-;; (scale-si 1 -2 t)
-;; => 10, -3
-
-
-;; (scale-si 1 2)
-;; => 1, 2
-
-;; (scale-si 1 2 t)
-;; => 100, 0
-;;
-;; (= (* 1 (expt 10 2)) (* 100 (expt 10 0)))
-;; => T
-
+(defgeneric scale-si (measurement &optional engineering-notation-p))
 
 
 (defclass* prefix ()
@@ -259,6 +232,7 @@ See also: `rescale'"))
 ;; (find-prefix :|m|)
 
 
+
 (defun find-prefix= (d)
   (declare (type prefix-degree d)
            (values prefix))
@@ -270,6 +244,9 @@ See also: `rescale'"))
 
 ;; (find-prefix= -9)
 ;;  <<nano>>
+
+;; (map 'list #'find-prefix= %si-degrees%)
+
 
 ;; define prefix classes
 (let ((n -1))
@@ -294,7 +271,7 @@ See also: `rescale'"))
             (zetta 21 "Z" :|Z|)
             (exa 18 "E" :|e|)
             (peta  15 "P" :|p|)
-            (tera  15 "T" :|t|)
+            (tera  12 "T" :|t|)
             (giga  9 "G" :|g|)
             (mega  6 "M" :|M|)
             (kilo  3 "k" :|k|)
@@ -318,48 +295,16 @@ See also: `rescale'"))
     (multiple-value-bind (mag boundp)
         (slot-value* object 'magnitude)
       (cond 
-        (boundp
-         (multiple-value-bind (deg boundp)
-             (slot-value* object 'degree)
-           (cond
-             ((and boundp (subtypep (class-of object) 'kilogram))
-              (error "FIXME: Printed representation for Kilgraom measurements")
-              ;; FIXME: The fact that the base quanity, kilogram, is
-              ;; actually a unit defined with a prefix over the base
-              ;; unit for mass, gram -- though it may seem like
-              ;; a cliched anachronism, but it is a standardized
-              ;; anachronism -- in effect, it may serve to require
-              ;; that all of the prefix/degree/scaling procedures
-              ;; would be, henceforward, "Buried" within methods
-              ;; specialized onto generic functions.
-              ;;
-              ;; For instance, the function SCALE-SI should
-              ;; be defined as to dispatch onto the measurement unit
-              ;; type for the scale. When the measurement is a
-              ;; KILOGRAM, then it must be scaled with +3 implicit
-              ;; degree, in addition to the measurement degree
-              ;; e.g. new name and lamba list:
-              ;;  SCALE-SI (MEASUREMENT &OPTIONAL EE-P)
-
-              ;; similar for SHIFT-MAGNITUDE  (cf. RESCALE)
-              ;; e.g new lambda list:
-              ;;  SHIFT-MAGNITUDE (MEASUREMENT NEW-DEGREE)
-              ;; ^ used internal to RESCALE
-
-              ;; Both changes will require redefinitions of the
-              ;; respective functions, and changes to all calling
-              ;; functions. 
-              )
-             
-             (boundp
-              (multiple-value-bind (adj-mag deg)
-                  (scale-si mag deg)
-                  (princ adj-mag stream)
-                  (write-char #\Space stream)
-                (unless (zerop deg)
-                  (let ((prefix (find-prefix= deg))) 
-                    (princ (prefix-print-name prefix) stream)))))
-             (t (princ mag stream)))))
+        ((and boundp (slot-boundp object 'degree))
+         (multiple-value-bind (adj-mag deg)                  
+             (scale-si object t)
+           (declare (type real adj-mag) (type fixnum deg))
+           (princ adj-mag stream)
+           (write-char #\Space stream)
+           (unless (zerop deg)
+             (let ((prefix (find-prefix= deg))) 
+               (princ (prefix-print-name prefix) stream)))))
+        (boundp (princ mag stream))
         (t
          (princ "{no magnitude}" stream))))
     
@@ -368,7 +313,7 @@ See also: `rescale'"))
 
 
 
-(defun prefix-of (m)
+(defun prefix-of (m &optional (ee-p t))
   ;; FIXME: Rename to SCALAR-PREFIX
 
   "Select and return a PREFIX object representative of the scalar
@@ -389,23 +334,36 @@ See also:
 * `find-prefix='"
   (declare (type measurement m)
            (values prefix fixnum))
-  (let ((deg (measurement-degree m))
-        (mag (measurement-magnitude m)))
-    (multiple-value-bind (mag-adj deg-adj)
-        (scale-si mag deg)
-      (let ((prefix
-             (find deg-adj %prefixes%
-                   :key #'prefix-degree
-                   :test #'(lambda (a b)
-                             (declare (type prefix-degree a b))
-                             (= a b)))))
-        (values prefix mag-adj)))))
+  (multiple-value-bind (magnitude deg-si)
+      (scale-si m ee-p)
+    (let ((prefix
+           (find deg-si %prefixes%
+                 :key #'prefix-degree
+                 :test #'(lambda (a b)
+                           (declare (type prefix-degree a b))
+                           (= a b)))))
+      (values prefix magnitude))))
 
 ;; (prefix-of (make-measurement 1 :m 24))
 ;; => <<yotta>>, 1
 
 ;; (prefix-of (make-measurement 1 :m 23))
 ;; => <<zetta>>, 100
+
+;; (prefix-of (make-measurement 1 :m 22))
+;; => <<zetta>>, 10
+
+;; (prefix-of (make-measurement 1 :m 21))
+;; => <<zetta>>, 1
+
+;; (untrace scale-si)
+;; (untrace shift-magnitude)
+;; (untrace find-nearest-degree)
+
+;; (prefix-of (make-measurement 1 :m 3))
+
+;; (prefix-of (make-measurement 1 :m 16))
+;; => <<peta>>, 10
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
 ;;
@@ -440,35 +398,39 @@ See also:
                  (+ degree new-degree))))
     (values (decimal-shift 3)
             (decimal-shift -3))))
-  
 
-(defun shift-magnitude (magnitude degree new-degree 
-                        &optional (factor-base #.%factor-base%))
+
+
+;; (fmakunbound 'shift-magnitude)
+
+(defgeneric shift-magnitude (measurement new-degree)
   ;; utility function - implementation of the "decimal shift"
   ;; algorithm denoted in the above
 
-  ;; FIXME: Functionally redundant onto SCALE-SI,
-  ;;        though this function uses a different syntax for its
-  ;;        second return value
-  
-  (declare (type real magnitude)
-           (type fixnum degree new-degree factor-base)
-           (values real fixnum))
-  ;; FIXME: This allows for DEGREE not within the SI prefixes,
-  ;;        unlike SCALE-SI
-  (values (* magnitude (expt factor-base (- degree new-degree)))
-          (+ degree new-degree)))
+  ;; NOTE: This function allows for shifting to an arbitrary decimal
+  ;; DEGREE unlike SCALE-SI
 
-;; (* 1/5 (expt 10 (- 0 -3)))
-;; (+ 0 -5)
+  ;; see also: `SCALE-SI'
+
+
+  ;; FIXME: SBCL 1.2.1 (win32 x86-64) is unable to evaluate the
+  ;; encosed DEFMETHOD form, when the specified VALUES declaration is
+  ;; included.
+  (:method ((measurement measurement) (new-degree fixnum))
+    (let ((magnitude (measurement-magnitude measurement))
+          (degree (measurement-degree measurement))
+          (factor-base (measurement-factor-base measurement)))
+      (declare (type real magnitude)
+               (type fixnum degree factor-base)
+               #-(and :SBCL :win32 :x86-64)
+               (values real fixnum))
+      (values (* magnitude (expt factor-base (- degree new-degree)))
+              (+ degree new-degree)))))
 
 
 (defmethod rescale ((scalar measurement) (prefix fixnum))
   (multiple-value-bind (new-mag new-deg) 
-      (shift-magnitude (measurement-magnitude scalar)
-                       (prefix-degree scalar)
-                       prefix
-                       #.%factor-base%)
+      (shift-magnitude scalar prefix)
     (make-measurement new-mag (class-of scalar)
                       new-deg)))
 
@@ -478,10 +440,7 @@ See also:
 
 (defmethod nrescale ((scalar measurement) (prefix fixnum))
   (multiple-value-bind (new-mag new-deg) 
-      (shift-magnitude (measurement-magnitude scalar)
-                       (prefix-degree scalar)
-                       prefix
-                       #.%factor-base%)
+      (shift-magnitude scalar prefix)
     (setf (measurement-degree scalar) new-deg)
     (setf (measurement-magnitude scalar) new-mag)
     (values scalar)))
@@ -569,4 +528,44 @@ See also:
 ;;
 ;; (rescale (make-measurement 1/8 :m) -5)
 ;; => #<METER 125 mm {1007B71283}>
+
+
+(defmethod scale-si ((measurement measurement) &optional (ee-p t))
+  (declare (values real prefix-degree))
+  (let ((magnitude (measurement-magnitude measurement))
+        (scale (measurement-degree measurement)))
+    (declare (type real magnitude)
+             (type fixnum scale))
+    (cond
+      ((zerop scale) 
+       (values magnitude scale))
+      (t 
+       (let ((deg (find-nearest-degree scale ee-p)))
+         (values  (shift-magnitude measurement deg)
+                  deg))))))
+
+;; (scale-si (make-measurement 1 :m 5))
+;; => 100, 3
+;; (= 1E+05 100E+03)
+;; => T
+
+;; (scale-si (make-measurement 10 :m 5))
+;; => 1, 6
+;; (= 10E+05 1E+06)
+;; => T
+
+;; (scale-si (make-measurement 1 :m -5))
+;; => 10, -6
+;;
+;; (= 1E-05 10E-06)
+;; => T
+
+;; (scale-si (make-measurement 10 :m -5))
+;; => 100, -6
+
+;; (scale-si (make-measurement 1 :m -2))
+;; => 10, -3
+
+;; (scale-si (make-measurement 1 :m 2))
+;; => 100, 0
 

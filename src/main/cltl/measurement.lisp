@@ -41,8 +41,8 @@
 
    
 
-#+SBCL ;; FIXME: also port to other impmls. using PCL
-(defmethod sb-mop:validate-superclass ((class measurement-class)
+#+(or SBCL CMU CCL) ;; FIXME: Wrap this in a portability layer
+(defmethod validate-superclass ((class measurement-class)
                                        (superclass standard-class))
   (values t))
 
@@ -109,15 +109,10 @@
    ;; iin the Lisp environment
    ))
 
+(defgeneric measurement-factor-base (measurement)
+  (:method ((measurement measurement))
+    (values 10)))
 
-;; FIXME: Move this DEFCONSTANT into prefix handling code, and consider
-;; refactoring this system for defining an accessor FACTOR-BASE onto a
-;; new class PREFIX-CLASS - such that would allow for defining
-;; prefixes for an octal factor base, as for measurements of data
-;; quantities within information systems
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant %factor-base% 10)
-  )
 
 (defun base-magnitude (m)  
   "Calculate the scalar magnitude of the measurement M for the base
@@ -132,7 +127,8 @@ measurement unit of M"
     (cond 
       ((zerop deg) (values (measurement-magnitude m)))
       (t (values (* (measurement-magnitude m)
-                    (expt #.%factor-base% deg)))))))
+                    (expt (measurement-factor-base m) 
+                          deg)))))))
 
 ;; (base-magnitude (make-measurement 1 :m 3))
 ;; => 1000
