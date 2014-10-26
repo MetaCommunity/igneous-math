@@ -34,6 +34,14 @@
 ;; (@+@)
 ;;
 ;; Those forms have all been tested successfully in CCL.
+;;
+;;
+;; It may have something to do with the method dispatching protocol in
+;; SBCL's fork of PCL
+;;
+;; One notes the prevalence of SB-PCL::GF-DISPATCH calls in the backtrace
+;; from the following:
+;; (funcall (method-function (car (compute-applicable-methods-using-classes #'math::@+@ nil) )) 1 2 3)
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -199,14 +207,14 @@ For each class C in CLASSES, then define methods:
 (defop '*)
 (defop '/)
 
-;; single instane test, ensure +
+;; single instance test, ensure +
 ;; (%+ 1)
 ;; => 1
-;; single instane test, ensure +
+;; single instance test, ensure +
 ;; (@+ 1 1)
 ;; => 2
 
-;; single instane test, ensure +
+;; single instance test, ensure +
 ;; (@+@ 1 2 3)
 ;; => 6
 
