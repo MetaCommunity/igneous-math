@@ -509,7 +509,19 @@ For each class C in CLASSES, then define methods:
 		      2d0)))))
 
 ;; (geometric-sum 3 4)
-;; => 5.0
+;; => 5.0d0
 
 ;; (geometric-sum 3d0 4d0)
 ;; => 5.0d0
+
+;; Host library integration in [SBCL]
+;
+;; Note the applications of foreign-function calls into the host's
+;; floating point library, namely within #p"sbcl:src;code;irrat"
+;;
+;; ...used in the instance of such as (EXPT DOUBLE-FLOAT DOUBLE-FLOAT)
+;;
+;;
+;; If applicable, the DEF-MATH-RTN calls within that file may be
+;; called, instead, directly onto the native VFP[+NEON] (armhf)  or
+;; SSE2 (intel) hardware.
