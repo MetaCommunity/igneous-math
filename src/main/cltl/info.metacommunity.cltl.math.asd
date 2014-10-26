@@ -23,6 +23,7 @@
   :components 
   ((:file "math-package")
    (:file "defclass-star") ;; FIXME: move into .utils
+   (:file "monotonic-genf")
    (:file "math-ov")
    (:file "measurement")
    (:file "decimal-scale")
