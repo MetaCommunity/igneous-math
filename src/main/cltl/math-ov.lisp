@@ -170,12 +170,14 @@ For each class C in CLASSES, then define methods:
            (values gf-diadic gf-monadic gf-variadic)))
         (t (values gf-diadic gf-monadic nil))))))
 
-;; define functions:
+;;; % Overloading for Monadic/Diadic/Variadic Functions
+
+;;; %% Nary Basic Math Operations
+
 ;; %+ @+ @+@
 ;; %- @- @-@
 ;; %* @* @*@
 ;; %/ @/ @/@
-;; with respective monadic, diadic (same class), and variadic methods
 
 (defop '+)
 (defop '-)
@@ -195,9 +197,11 @@ For each class C in CLASSES, then define methods:
 
 ;; FIXME : run unit tests on each operation, for each %NUMERIC-END-CLASSES%
 
-
 ;; single instance test, ensure error
 ;; (@+@)
+
+
+;;; %% Nary Comparison Functions
 
 (defop '=)
 (defop '/=)
@@ -205,6 +209,8 @@ For each class C in CLASSES, then define methods:
 (defop '>)
 (defop '<=)
 (defop '>=)
+
+;;; %% MAX, MIN
 
 (defop 'max)
 (defop 'min)
@@ -221,14 +227,12 @@ For each class C in CLASSES, then define methods:
            (if top-gt-p top stack-max)))
         (t top)))))
 
-
 ;; (%max 1)
 ;; => 1
 ;; (@max 2 1)
 ;; => 2
 ;; (@max@ 1 3 2)
 ;; => 3
-
 
 ;; redefine @min@ to apply @< internally
 (defgeneric @min@ (&rest values)
@@ -249,19 +253,21 @@ For each class C in CLASSES, then define methods:
 ;; (@min@ 3 1 2)
 ;; => 1
 
+;;; % GCD, LCM
 
-;;; % Overloading for Diadic Non-Comutative Functions
+;;; % Overloading for Strictly Diadic, Non-Comutative Functions
+
+;;; %% Exponentiation with arbitrary degree
 
 (defgeneric @expt (a b)
   (:method ((a number) (b number))
     (expt a b)))
 
-;; ...
-
-;;; % Overloading for Transcendental Functions
-
+;;; %% MOD, REM
 
 ;;; % Overloading for Alternately Monadic/Diadic Functions
+
+;;; %% FLOOR, FFLOOR &FAMILY
 
 ;; FIXME: Possibly loosing more optimizations, here.
 ;; When possible, try to call directly to the underlying machine
@@ -290,6 +296,9 @@ For each class C in CLASSES, then define methods:
 ;; (@ffloor@ 2.0 2.0d0)
 ;; => 1.0D0, 0.0D0
 
+;; %% ATAN
+
+;; %% LOG
 
 ;;; % Overloading for Other Monadic Functions
 
@@ -298,6 +307,31 @@ For each class C in CLASSES, then define methods:
 ;; lost in the broad dispatching on NUMBER. Ideally, this
 ;; implementation would present all possible optimizations to the
 ;; compiler
+
+;;; %% Miscellaneous Monadic Functions
+
+;;; %%% EXP
+
+;;; %%% SIGNUM
+
+;;; %%% SQRT, ISQRT
+
+;;; %%% CIS
+
+;;; %%% CONJUGATE
+
+;;; %%% PHASE
+
+;;; %%% Structural Accessor Functions
+
+;;; %%%% REALPART, IMAGPART
+
+;;; %%%% NUMERATOR, DENOMINATOR
+
+
+;;; %% Overloading for Monadic Predicate Functions
+
+;;; %%% "Number-Line" Predicates
 
 (defgeneric %minusp (a)
   (:method ((a number))
@@ -310,4 +344,17 @@ For each class C in CLASSES, then define methods:
 (defgeneric %zerop (a)
   (:method ((a number))
     (zerop a)))
+
+;; %%% EVENP, ODDP
+
+;;; %% Overloading for Monadic Increment Functions
+
+;;; 1+, 1-
+;;; INCF, DECF (?)
+
+;;; %% Overloading for Strictly Monadic Transcendental Functions
+
+;; %%% SIN, COS, TAN
+;; %%% ASIN, ACOS
+
 
