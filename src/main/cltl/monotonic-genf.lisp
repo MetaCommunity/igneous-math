@@ -28,6 +28,24 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 	  (symbol (find-class ,c))
 	  (class ,c))))))
 
+#+NIL ;; unused
+(defgeneric method-specifier (method)
+  (:documentation
+   "create a specifier for a method, such that would be compatible with MAKE-LOAD-FORM")
+  (:method ((method standard-method))
+    (list* (generic-function-name (method-generic-function genf))
+	   (mapcar #'(lambda (a c)
+		       (typecase c
+			 (class (list a (class-name c)))
+			 (t (list a c))))
+		   (method-lambda-list method)
+		   (method-specializers method))
+	   (method-qualifiers method))))
+
+;; (method-specifier (car (generic-function-methods #'@+)))
+
+
+
 ;;; %% Monotonic Generic Functions, Methods, and Method Combination
 
 ;; A Monotonic Generic Functions' effective method, when provided
@@ -42,8 +60,15 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
   ())
 
 
+(defgeneric method-lambda-body (method))
+(defgeneric (setf method-lambda-body) (new-value method))
+
 (defclass monotonic-method (standard-method)
-  ())
+  ((lambda-body
+    :initarg :lambda-body
+    :type list
+    :accessor method-lambda-body)))
+
 
 (defclass monotonic-generic-function (standard-generic-function)
   ()
@@ -62,23 +87,37 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 (defmethod make-method-lambda ((genf monotonic-generic-function)
 			       (method monotonic-method)
 			       lambda environment)
-  (declare (ignore environment))
-  (with-gensym (method-lambda-args next-methods)
-    ;; referencing AMOP, CLOSER-MOP
-    `(lambda (,method-lambda-args ,next-methods)
+  (declare (ignore genf environment))
+  (with-gensym (method-lambda-args next-methods this-method)
+    ;; referencing the MOP specification, CLOSER-MOP, and SB-PCL
+    (setf (method-lambda-body method) lambda)
+    `(lambda (,method-lambda-args ,next-methods ,this-method)
        (declare (ignore ,next-methods))
        (labels ((call-next-method (&rest cnm-args)
-		  (apply #'no-next-method ,genf ,method cnm-args))
+		  (apply #'no-next-method 
+			 (method-generic-function ,this-method)
+			 ,this-method cnm-args))
+		(this-method () (values ,this-method))
 		(next-method-p () nil))
-	 (apply ,(compile nil lambda)
+	 (declare (ignorable (function call-next-method)
+			     (function next-method-p)))
+	 ;; KLUDGE. A direct reference to the compiled form of LAMBDA
+	 ;; most likely cannot be dumped to a FASL file.
+	 ;;
+	 ;; Note that the COMPILE call should only be called once,
+	 ;; however, when the METHOD-LAMBDA itself is compiled.
+	 ;;
+	 ;; FIXME: Capture errors and warnings from the COMPILE call
+	 (apply (compile nil ,lambda)
 		,method-lambda-args)))))
 
 (defmethod compute-effective-method ((genf monotonic-generic-function)
 				     (combin monotonic-method-combination)
 				     applicable-methods)
   (declare (ignore genf combin))
-  (values `(call-method ,(car applicable-methods))
-	  nil))
+  (let ((the-method (car applicable-methods)))
+    (values `(call-method ,the-method nil ,the-method)
+	    nil)))
 
 #+NIL
 (defgeneric frob (a b)
