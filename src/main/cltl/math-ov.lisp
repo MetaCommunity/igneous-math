@@ -525,3 +525,6 @@ For each class C in CLASSES, then define methods:
 ;; If applicable, the DEF-MATH-RTN calls within that file may be
 ;; called, instead, directly onto the native VFP[+NEON] (armhf)  or
 ;; SSE2 (intel) hardware.
+
+;; regarding reading of floating point values,
+;; on a sidebar, see also SB-IMPL::MAKE-FLOAT

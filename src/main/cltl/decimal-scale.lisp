@@ -2,7 +2,29 @@
 
 (in-package #:math)
 
+#|
+
+ (defun total-integer-part-digits (n)
+   (1+ (truncate (log n 10))))
+
+ (total-integer-part-digits 1020.1)
+ ;; => 4
+
+ (total-integer-part-digits 102.1)
+ ;; => 3
+
+|#
+
 (defun integer-shift-digits (d)
+  "Perform a decimal shift of D to the minimum significant digits of D, returning the scale and the shifted magnitude
+
+Example:
+
+  (multiple-value-bind (scale magnitude)
+    (integer-shift-digits 1020)
+   (= (* magnitude (expt 10 scale)) 1020))
+  => T
+"
   (declare (type integer d)
            (values fixnum integer))
   (cond
@@ -40,28 +62,30 @@
   ;; (frob-test 0)
   ;; => 0, 0, T
   )
-                                                           
+
+
+;; FIXME: The syntax of INTEGER-SHIFT-DIGITS and FLOAT-SHIFT-DIGITS
+;; is counterintuitive, namely in the ordering of the return values.
+;; Both should => MAGNITUDE, SCALE
 
 (defun float-shift-digits (d) 
-"A floating point value, `d`, with a known number of significant
-decimal digits, `n`, may be represented as a sequence of values 
-`(a, n)` for  `a = d * 10^n`. 
+"A floating point value, `d`, with a known number of significant decimal digits, `n`, may be represented as a sequence of rational values
+   `(a, n)` for  `a = d * 10^n`. 
 
- For example, with d=3.14, n=-2, d=314
+For example, with d=3.14, then n=-2, d=314
 
-For rhetorical purposes, `a` would be denoted as the _magnitude_ of
-`d`, and `n` denoted as the _scale_ of `d`.  
+For rhetorical purposes, `a` may be denoted as the magnitude of
+`d`, and `n` denoted as the scale of `d`.  
 
-When `n` is known, calculations evaluated on `d`, may instead be 
-evaluated on `(a, n)` -- `a` and `n` both being integer type
-values. In implementing mathematical operations with this manner of
-decimal scaling, it may serve to avoid floating point errors, in some
-instances.
+When `n` is known, then calculations evaluated on `d`, may instead be 
+evaluated on `(a, n)`, with `a` and `n` both being of type, rational. 
+In implementations of mathematical operations with this manner of
+decimal scaling, it may serve to avoid some floating point errors, in
+some implementations -- moreover, allowing for an implementation of
+strictly rational calculations for mathematical operations.
 
 This funcdtion implements a calculation similar to a base-10
-calculation of the significand and exponent of `d`. However, this
-function calculates the significant digits only in the decimal 
-portion of `d'"
+calculation of the significand and exponent of `d`."
   (declare (type (or integer float) d)
            (values fixnum integer))
   (let ((b d)
@@ -124,9 +148,16 @@ portion of `d'"
 ;; (float-shift-digits 12.1)
 ;; => -1, 121
 ;;
-;;
+
+;; (float-shift-digits 120.1)
+;; => -1, 1201
+
 ;; (float-shift-digits pi)
 ;; => -15, 3141592653589793
+;; ^ not all the same as (RATIONALIZE PI)
+
+;; (float-shift-digits 12000)
+;; => 3, 12
 
 ;; n.b: 
 ;; (* 10 314.1592653589793d0)
@@ -146,23 +177,25 @@ portion of `d'"
 ;; 0, 11
 
 
-;; n.b !!!!
+;; n.b
 ;; (* 10 4.159265358979312d0)
 ;; => 41.592653589793116d0
 ;;
-;; so, until some further error filtering, there was an
+;; thus, towards numerical filtering, i.e. float-to-rational conversion
+;;
 ;; (float-shift-digits 4.159265358979312d0)
 ;; => -15, 4159265358979312
-;; previously => -15, 4159265358979311
+;; previously, without the filtering, would => -15, 4159265358979311
 ;;
-;; noticing:
+;; for example:
 ;; (truncate (* 4.159265358979312d0 (expt 10 15)))
 ;; 4159265358979311, 0.5d0
 ;; ^ thus the additional filtering is defined
 
-;; (truncate (* 1.201 (expt 10 3)))
+;; (float-shift-digits (rationalize 4.159265358979312d0))
+;; ^ N/A (FIXME)
 
-;; sidebar: sb-impl::make-float
+;; ...
 
 ;; (defstruct (decimal
 ;;              (:constructor %make-decimal (magnitude scale)))
@@ -188,9 +221,6 @@ portion of `d'"
 ;; (= (float (decimal-value (make-decimal pi)) most-positive-double-float) pi)
 ;; => T
 
-
-;; (float-shift-digits 12000)
-;; => 3, 12
 
 (defun make-measurement (magnitude unit &optional (degree 0))
   "Crate a MEAUREMENT object of the specified MAGNITUDE of a decimal
