@@ -100,6 +100,7 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 		(this-method () (values ,this-method))
 		(next-method-p () nil))
 	 (declare (ignorable (function call-next-method)
+			     (function this-method)
 			     (function next-method-p)))
 	 ;; KLUDGE. A direct reference to the compiled form of LAMBDA
 	 ;; most likely cannot be dumped to a FASL file.
