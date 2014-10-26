@@ -2,23 +2,38 @@
 
 (in-package #:math)
 
-;; FIXME: This code does not "work" in SBCL (1.2.1 MSWin x86-64)
-;; but does "work" in CCL (1.9-r15765 windows x86-64)
+;; FIXME: This code does not evalute successfully in SBCL 
+;; but this does evaluate successfully in CCL
+;;
+;; Versions tested
+;; * SBCL 1.2.1 (MSWin x86-64)
+;; * SBCL 1.2.3 (Linux x86-64)
+;; * CCL 1.9-r15765 (windows x86-64)
 ;; 
-;; Presumably, theres's something in how DEFOP is evaluted, in each
-;; implementation.
+;; Presumably, there may be something in how DEFOP is evaluted, in each
+;; respective implementation.
 ;;
 ;; Specifically, the following forms do not evaluate successfully,
-;; in that version of SBCL:
+;; in those versions of SBCL:
 ;;
 ;; (%+ 1)
+;;  --> wrong number of arguments: 2 (???)
 ;;
 ;; (@+ 1 1)
+;;  --> The value (1 1) is not of type FIXNUM (????)
 ;;
-;; Furthermore, the following form causes that version of SBCL to
-;; exit, when evaluated via SLIME:
+;; Furthermore, the following form causes those versions of SBCL to
+;; exhaust the control stack -- existing, on win32
 ;;
 ;;  (@+@ 1 2 3)
+;;
+;; siimlarly, though the following form should immediately result in
+;; an error being signaled, but it results in the control stack being
+;; exhausted, in SBCL:
+;;
+;; (@+@)
+;;
+;; Those forms have all been tested successfully in CCL.
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

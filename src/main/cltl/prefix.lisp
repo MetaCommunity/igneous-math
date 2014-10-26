@@ -409,16 +409,18 @@ See also:
   ;; see also: `SCALE-SI'
 
 
-  ;; FIXME: SBCL 1.2.1 (win32 x86-64) is unable to evaluate the
-  ;; encosed DEFMETHOD form, when the specified VALUES declaration is
-  ;; included.
+  ;; FIXME: SBCL is unable to evaluate the encosed DEFMETHOD form,
+  ;; when the specified VALUES declaration is included.
+  ;;
+  ;; tested with SBCL 1.2.1 (win32 x86-64)
+  ;; and SBCL 1.2.3 (Linux x86-64)
   (:method ((measurement measurement) (new-degree fixnum))
     (let ((magnitude (measurement-magnitude measurement))
           (degree (measurement-degree measurement))
           (factor-base (measurement-factor-base measurement)))
       (declare (type real magnitude)
                (type fixnum degree factor-base)
-               #-(and :SBCL :win32 :x86-64)
+               #-:SBCL
                (values real fixnum))
       (values (* magnitude (expt factor-base (- degree new-degree)))
               (+ degree new-degree)))))
