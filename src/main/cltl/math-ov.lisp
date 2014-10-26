@@ -2,47 +2,6 @@
 
 (in-package #:math)
 
-;; FIXME: This code does not evalute successfully in SBCL 
-;; but this does evaluate successfully in CCL
-;;
-;; Versions tested
-;; * SBCL 1.2.1 (MSWin x86-64)
-;; * SBCL 1.2.3 (Linux x86-64)
-;; * CCL 1.9-r15765 (windows x86-64)
-;; 
-;; Presumably, there may be something in how DEFOP is evaluted, in each
-;; respective implementation.
-;;
-;; Specifically, the following forms do not evaluate successfully,
-;; in those versions of SBCL:
-;;
-;; (%+ 1)
-;;  --> wrong number of arguments: 2 (???)
-;;
-;; (@+ 1 1)
-;;  --> The value (1 1) is not of type FIXNUM (????)
-;;
-;; Furthermore, the following form causes those versions of SBCL to
-;; exhaust the control stack -- existing, on win32
-;;
-;;  (@+@ 1 2 3)
-;;
-;; siimlarly, though the following form should immediately result in
-;; an error being signaled, but it results in the control stack being
-;; exhausted, in SBCL:
-;;
-;; (@+@)
-;;
-;; Those forms have all been tested successfully in CCL.
-;;
-;;
-;; It may have something to do with the method dispatching protocol in
-;; SBCL's fork of PCL
-;;
-;; One notes the prevalence of SB-PCL::GF-DISPATCH calls in the backtrace
-;; from the following:
-;; (funcall (method-function (car (compute-applicable-methods-using-classes #'math::@+@ nil) )) 1 2 3)
-
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 (defun compute-end-classes (c)
@@ -102,22 +61,7 @@ For each class C in CLASSES, then define methods:
   ;; classes, but it will not allow for optimizations onto types
   ;; derived of numeric classes, e.g. signed/unsigned values
 
-  (let* ((monadic-op-name (intern (format nil "%~A" op)))
-         #+SBCL (src (sb-c:source-location))
-         (gf-monadic
-          (ensure-generic-function monadic-op-name
-                                   :lambda-list '(a)
-                                   :argument-precedence-order '(a)
-                                   #+SBCL :definition-source #+SBCL src
-                                   ))
-         (diadic-op-name (intern (format nil "@~A" op)))
-         (gf-diadic 
-          (ensure-generic-function diadic-op-name
-                                   :lambda-list '(a b)
-                                   :argument-precedence-order '(a b)
-                                   #+SBCL :definition-source #+SBCL src
-                                   )))
-        
+  (let (#+SBCL (src (sb-c:source-location)))
     (labels ((mklambda  (ll op specializers form)
                `(lambda ,ll 
                   (declare (inline ,op)
@@ -126,72 +70,87 @@ For each class C in CLASSES, then define methods:
                                                `(type ,(class-name c) ,arg))
                                            ll specializers)))
                   ,form))
+
+	     (ensure-gfn (name lambda &optional (prec lambda))
+	       (ensure-generic-function 
+		name
+		:lambda-list lambda
+		:argument-precedence-order prec
+		:generic-function-class (find-class 'monotonic-generic-function)
+		#+SBCL :definition-source #+SBCL src))
+
              (makem (gf op specializers lambda form)
                (let* ((lform (mklambda lambda op specializers form))
-                      (m
-                       (progn 
-                         #+NIL (warn "FOO ~S" lform)
-                         (make-instance
-                          'standard-method 
-                          :specializers specializers
-                          :lambda-list lambda
-                          #+SBCL :definition-source #+SBCL src
-                          :function (compile nil lform)))))
+		      (m (make-instance (generic-function-method-class gf)
+					:specializers specializers
+					:lambda-list lambda
+					#+SBCL :definition-source #+SBCL src
+					:function 
+					;; FIXME: Catch errors/warnings
+					;; from COMPILE
+					(compile nil 
+						 (compute-method-lambda gf lform nil)))))
+
                  (add-method gf m))))
-    
-      (dolist (c classes)
-        (let* ((%c (compute-class c)))
-          ;; Define methods for diadic and monadic functions
-          ;; specialized onto each C
-          (makem gf-diadic op (list %c %c) '(a b)
-                 `(funcall ,(fdefinition op) a b))
-          (makem gf-monadic op (list %c) '(a)
-                 `(funcall ,(fdefinition op) a))))
-      
-      (when default 
-        ;; Define a diadic method specialized onto DEFAULT
-        ;;
-        ;; NB: In some implementations, this "default" method may
-        ;; effectively loose compiler optimizations, such that may be
-        ;; available for some instances of A and B delcared
-        ;; explicitly for their respective numeric types -- moreover,
-        ;; in instances when the classes of A and B are not EQ.
-        ;;
-        ;; With OP declared incline, however, maybe it would be
-        ;; possible for the compiler to further optimize the following
-        ;; form.
-        (let ((%c (compute-class default)))
-          (makem gf-diadic op (list %c %c) '(a b)
-                 `(funcall ,(fdefinition op) a b))))
 
-      (cond
-        (variadic-p
-         ;; Define a variadic function.
-         ;;
-         ;; FIXME: This produces a generic function that canot be
-         ;; any further specialized
-         (let* ((variadic-op-name (intern (format nil "@~A@" op)))
-                (gf-variadic 
-                 (ensure-generic-function variadic-op-name
-                                          :lambda-list '(&rest values)
-                                          #+SBCL :definition-source #+SBCL src
-                                          )))
-           (makem gf-variadic op nil '(&rest values)
-                  `(progn
-                    (unless (consp values)
-                      (simple-program-error 
-                       `,(format* "~A called with no arguments"
-                                  (quote ,variadic-op-name))))
-                    (let ((rest (cdr values)))
-                      (cond
-                        (rest 
-                         (funcall ,gf-diadic 
-                                  (car values)
-                                  (apply ,gf-variadic rest)))
-                        (t (funcall ,gf-monadic (car values)))))))
+      (let* ((monadic-op-name (intern (format nil "%~A" op)))
+	     (gf-monadic (ensure-gfn monadic-op-name '(a)))
+	     (diadic-op-name (intern (format nil "@~A" op)))
+	     (gf-diadic (ensure-gfn diadic-op-name  '(a b))))
+        
+	(dolist (c classes)
+	  (let* ((%c (compute-class c)))
+	    ;; Define methods for diadic and monadic functions
+	    ;; specialized onto each C
+	    (makem gf-diadic op (list %c %c) '(a b)
+		   `(funcall (function ,op) a b))
+	    (makem gf-monadic op (list %c) '(a)
+		   `(funcall (function ,op) a))))
+	
+	(when default 
+	  ;; Define a diadic method specialized onto DEFAULT
+	  ;;
+	  ;; NB: In some implementations, this "default" method may
+	  ;; effectively loose compiler optimizations, such that may be
+	  ;; available for some instances of A and B delcared
+	  ;; explicitly for their respective numeric types -- moreover,
+	  ;; in instances when the classes of A and B are not EQ.
+	  ;;
+	  ;; With OP declared incline, however, maybe it would be
+	  ;; possible for the compiler to further optimize the following
+	  ;; form.
+	  (let ((%c (compute-class default)))
+	    (makem gf-diadic op (list %c %c) '(a b)
+		   `(funcall (function ,op) a b))))
 
-           (values gf-diadic gf-monadic gf-variadic)))
-        (t (values gf-diadic gf-monadic nil))))))
+	(cond
+	  (variadic-p
+	   ;; Define a variadic function.
+	   ;;
+	   ;; FIXME: This produces a generic function that canot be
+	   ;; any further specialized
+	   (let* ((variadic-op-name (intern (format nil "@~A@" op)))
+		  (gf-variadic 
+		   (ensure-gfn variadic-op-name '(&rest values) nil)))
+
+	     (makem gf-variadic op nil '(&rest values)
+		    `(progn
+		       (unless (consp values)
+			 (simple-program-error 
+			  `,(format* "~A called with no arguments"
+				     (quote ,variadic-op-name))))
+		       (let ((rest (cdr values)))
+			 (cond
+			   (rest 
+			    (funcall (function ,diadic-op-name)
+				     (car values)
+				     (apply (function ,variadic-op-name)
+					    rest)))
+			   (t (funcall (function ,monadic-op-name)
+				       (car values)))))))
+
+	     (values gf-diadic gf-monadic gf-variadic)))
+	  (t (values gf-diadic gf-monadic nil)))))))
 
 ;;; % Overloading for Monadic/Diadic/Variadic Functions
 
@@ -239,16 +198,15 @@ For each class C in CLASSES, then define methods:
 (defop 'min)
 
 ;; redefine @max@ to apply @> internally
-(defgeneric @max@ (&rest values)
-  (:method (&rest values)
-    (let ((top (car values))
-          (stack (cdr values)))
-      (cond
-        (stack
-         (let* ((stack-max (apply #'@max stack))
-                (top-gt-p (@> top stack-max)))
-           (if top-gt-p top stack-max)))
-        (t top)))))
+(defmethod @max@ (&rest values)
+  (let ((top (car values))
+	(stack (cdr values)))
+    (cond
+      (stack
+       (let* ((stack-max (apply #'@max stack))
+	      (top-gt-p (@> top stack-max)))
+	 (if top-gt-p top stack-max)))
+      (t top))))
 
 ;; (%max 1)
 ;; => 1
@@ -258,16 +216,15 @@ For each class C in CLASSES, then define methods:
 ;; => 3
 
 ;; redefine @min@ to apply @< internally
-(defgeneric @min@ (&rest values)
-  (:method (&rest values)
-    (let ((top (car values))
-          (stack (cdr values)))
-      (cond
-        (stack
-         (let* ((stack-min (apply #'@min stack))
-                (top-lt-p (@< top stack-min)))
-           (if top-lt-p top stack-min)))
-        (t top)))))
+(defmethod @min@ (&rest values)
+  (let ((top (car values))
+	(stack (cdr values)))
+    (cond
+      (stack
+       (let* ((stack-min (apply #'@min stack))
+	      (top-lt-p (@< top stack-min)))
+	 (if top-lt-p top stack-min)))
+      (t top))))
 
 ;; (%min 1)
 ;; => 1
