@@ -31,7 +31,7 @@
       (t (list c)))))
 )
 
-(defconstant %numeric-instance-classes%
+(defconstant* %numeric-instance-classes%
     (let ((the-end-classes
            (compute-end-classes (find-class 'number))))
       #+CCL

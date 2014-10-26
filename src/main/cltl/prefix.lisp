@@ -56,18 +56,14 @@ See also: `rescale'"))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant %si-degrees%
-    (cond
-      ((boundp '%si-degrees%)
-       (values %si-degrees%))
-      (t 
-       (make-array 21
-                   :element-type '(integer -24 24)
-                   :initial-contents
-                   '(24 21 18 15 12 9 6 3 2 1 
-                     0
-                     -1 -2 -3 -6 -9 -12 -15 -18 -21 -24))
-      ))))
+  (defconstant* %si-degrees%
+      (make-array 21
+                  :element-type '(integer -24 24)
+                  :initial-contents
+                  '(24 21 18 15 12 9 6 3 2 1 
+                    0
+                    -1 -2 -3 -6 -9 -12 -15 -18 -21 -24))
+      ))
 
 
 ;; (map 'list #'find-prefix= %si-degrees%)
