@@ -503,7 +503,10 @@ For each class C in CLASSES, then define methods:
   (:method ((a number) (b number))
     ;; FIXME: This completely looses optimizations,
     ;; though it does allow for overloaded math operations
-    (%sqrt (@+ (@expt a 2) (@expt b 2)))))
+    (%sqrt (@+ (@expt (coerce a 'double-float)
+		      2d0) 
+	       (@expt (coerce b 'double-float)
+		      2d0)))))
 
 ;; (geometric-sum 3 4)
 ;; => 5.0
