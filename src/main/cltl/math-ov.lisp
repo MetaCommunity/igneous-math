@@ -37,10 +37,11 @@
 
 (defun defop (op &key 
                    (classes %numeric-instance-classes%)
-                   (default (find-class 'number))
 		   (monadic-p t)
 		   (diadic-p t)
-                   (variadic-p t))
+                   (variadic-p diadic-p)
+		   (default (when diadic-p
+			      (find-class 'number))))
   (declare (type symbol op)
            (type (or class-designator null) default)
            (type cons classes)
@@ -377,12 +378,6 @@ For each class C in CLASSES, then define methods:
 
 (defop 'log :variadic-p nil)
 
-(defun log10 (a)
-  (declare (inline log))
-  (@log a 10))
-
-(defop 'log10 :variadic-p nil :diadic-p nil)
-
 ;;; % Overloading for Other Monadic Functions
 
 ;; FIXME : Observing the implementation of the respetive CL functions
@@ -394,8 +389,7 @@ For each class C in CLASSES, then define methods:
 ;;; %% Miscellaneous Monadic Functions
 
 (labels ((defop-monadic (op &optional (classes %numeric-instance-classes%))
-	   (defop op :diadic-p nil :variadic-p nil
-		  :default nil :classes classes)))
+	   (defop op :diadic-p nil :classes classes)))
 
 ;;; %%% EXP
 
@@ -520,3 +514,18 @@ For each class C in CLASSES, then define methods:
 
 ;; regarding reading of floating point values,
 ;; on a sidebar, see also SB-IMPL::MAKE-FLOAT
+
+(defun log10 (a)
+  "Calculate the decimal logarithm of A"
+  (declare (inline @log))
+  (@log a 10))
+
+(defop 'log10 :diadic-p nil)
+
+(defun log-10 (a)
+  "Calcluate the inverse decimal logarithm of A, 
+i.e 10 rasied to A degree"
+  (declare (inline @expt))
+  (@expt 10 a))
+
+(defop 'log-10 :diadic-p nil)
