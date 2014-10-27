@@ -26,7 +26,7 @@ Example:
   => T
 "
   (declare (type integer d)
-           (values fixnum integer))
+           (values integer fixnum))
   (cond
     ((zerop d)
      (values 0 0))
@@ -39,34 +39,30 @@ Example:
               (truncate d 10) 
             (cond
               ((zerop r) (setq d a) (incf n))
-              (t (return (values n d))))))))))
+              (t (return (values d n))))))))))
     
 #+NIL ;;instance tests
 (labels ((frob-test (n)
-           (multiple-value-bind (scale magnitude)
+           (multiple-value-bind (magnitude scale)
                (integer-shift-digits n)
              (values scale magnitude
                      (= n (* magnitude (expt 10 scale)))))))
   ;; (frob-test 1020)
-  ;; => 1, 102, T
+  ;; => 102, 1, T
   
   ;; (frob-test 102)
-  ;; => 0, 102, T
+  ;; => 102, 0, T
 
   ;; (frob-test 10)
   ;; => 1, 1, T
 
   ;; (frob-test 1)
-  ;; => 0, 1, T
+  ;; => 1, 0, T
 
   ;; (frob-test 0)
   ;; => 0, 0, T
   )
 
-
-;; FIXME: The syntax of INTEGER-SHIFT-DIGITS and FLOAT-SHIFT-DIGITS
-;; is counterintuitive, namely in the ordering of the return values.
-;; Both should => MAGNITUDE, SCALE
 
 (defun float-shift-digits (d) 
 "A floating point value, `d`, with a known number of significant decimal digits, `n`, may be represented as a sequence of rational values
@@ -87,7 +83,7 @@ strictly rational calculations for mathematical operations.
 This funcdtion implements a calculation similar to a base-10
 calculation of the significand and exponent of `d`."
   (declare (type (or integer float) d)
-           (values fixnum integer))
+           (values integer fixnum))
   (let ((b d)
         (n 1))
     (declare (type (or integer float) b)
@@ -108,7 +104,7 @@ calculation of the significand and exponent of `d`."
             ;;
             ;; however
             ;; (float-shift-digits 1.201d0)
-            ;; => -3, 1201
+            ;; => 1201, -3
             (multiple-value-bind (scaled-magnitude r)
                 ;; truncate so as to ensure an integral value is passed
                 (truncate (* d (expt 10 n)))
@@ -132,32 +128,32 @@ calculation of the significand and exponent of `d`."
                 ;; function would return an inaccurate value,
                 ;; in that instance.
                 (incf scaled-magnitude))
-            (multiple-value-bind (scale-shift magnitude)
+            (multiple-value-bind (magnitude scale-shift)
                 (integer-shift-digits scaled-magnitude)
-              (return (values (- scale-shift n)
-                              magnitude)))))
+              (return (values magnitude
+			      (- scale-shift n))))))
            (t (incf n)))))))
 
 ;; (float-shift-digits 1)
-;; => 0, 1
+;; => 1, 0
 
 ;; (float-shift-digits 12)
-;; => 0, 12
+;; => 12, 0
 ;; (float-shift-digits 12.0)
-;; => 0, 12
+;; => 12, 0
 ;; (float-shift-digits 12.1)
-;; => -1, 121
+;; => 121, -1
 ;;
 
 ;; (float-shift-digits 120.1)
-;; => -1, 1201
+;; => 1201, -1
 
 ;; (float-shift-digits pi)
-;; => -15, 3141592653589793
+;; => 3141592653589793, -15
 ;; ^ not all the same as (RATIONALIZE PI)
 
 ;; (float-shift-digits 12000)
-;; => 3, 12
+;; => 12, 3
 
 ;; n.b: 
 ;; (* 10 314.1592653589793d0)
@@ -165,16 +161,16 @@ calculation of the significand and exponent of `d`."
 ;; ^ a decimal digit is introduced
 
 ;; (float-shift-digits 1.201d0)
-;; => -3, 1201
+;; => 1201, -3
 ;; ^ subtly works around a matter of floating point error
 ;;   i.e. in which (* 10  1.201d0)
 ;;                  => 12.010000000000002d0
 
 ;; (float-shift-digits 1.201)
-;; => -3, 1201
+;; => 1201, -3
 
 ;; (float-shift-digits 11.0d0)
-;; 0, 11
+;; => 11, 0
 
 
 ;; n.b
@@ -184,8 +180,8 @@ calculation of the significand and exponent of `d`."
 ;; thus, towards numerical filtering, i.e. float-to-rational conversion
 ;;
 ;; (float-shift-digits 4.159265358979312d0)
-;; => -15, 4159265358979312
-;; previously, without the filtering, would => -15, 4159265358979311
+;; => 4159265358979312, -15
+;; previously, without the filtering, would => 4159265358979311, -15
 ;;
 ;; for example:
 ;; (truncate (* 4.159265358979312d0 (expt 10 15)))
@@ -256,7 +252,7 @@ Notes:
        (values (make-instance class :magnitude magnitude 
                               :degree degree)))
       (real 
-       (multiple-value-bind (scale adj-magnitude)
+       (multiple-value-bind (adj-magnitude scale)
            (float-shift-digits magnitude)
          (values (make-instance 
                   class
