@@ -435,6 +435,15 @@ See also:
 (defmethod rescale ((scalar measurement) (prefix prefix))
   (rescale scalar (prefix-degree prefix)))
 
+#+NIL
+(let* ((m (make-measurement 1 :m))
+       (m-2 (rescale m 3))
+       (m-3 (rescale m -3)))
+  (values  (apply #'= (mapcar #'scalar-magnitude 
+                             (list m m-2 m-3)))))
+;; => T
+
+
 
 (defmethod nrescale ((scalar measurement) (prefix fixnum))
   (multiple-value-bind (new-mag new-deg) 

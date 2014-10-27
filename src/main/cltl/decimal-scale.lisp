@@ -80,7 +80,7 @@ decimal scaling, it may serve to avoid some floating point errors, in
 some implementations -- moreover, allowing for an implementation of
 strictly rational calculations for mathematical operations.
 
-This funcdtion implements a calculation similar to a base-10
+This function implements a calculation similar to a base-10
 calculation of the significand and exponent of `d`."
   (declare (type (or integer float) d)
            (values integer fixnum))
@@ -243,6 +243,19 @@ See also:
   (let ((class (etypecase unit
                    (symbol (find-measurement-class unit))
                    (measurement-class unit))))
+    ;; FIXME: This does not explicitly scale the {MAGNITUDE, DEGREE}
+    ;; down to the base measurement unit. 
+
+    ;; In an optimized implementation, all measurement values may be
+    ;; scaled to integer/magnitude+exponent values onto the base
+    ;; measurement unit -- thus, allowing for direct application of
+    ;; formulas likewise defined onto the base measurement unit,
+    ;; without further magnitude+exponent scaling -- essentially,
+    ;; leaving any conversion from/to non-base measurement units to the
+    ;; input/display components of the implementation.
+    ;;
+    ;; Presently, this system applies a mehtodology essentialy of
+    ;; "Scaling to significant digits".
     (etypecase magnitude
       (ratio 
        (values (make-instance class :magnitude magnitude 
@@ -255,19 +268,22 @@ See also:
                   :magnitude adj-magnitude
                   :degree (+ degree scale))))))))
 
-#+NIL
-(let* ((m (make-measurement 1 :m))
-       (m-2 (rescale m 3))
-       (m-3 (rescale m -3)))
-  (values  (apply #'= (mapcar #'scalar-magnitude 
-                             (list m m-2 m-3)))))
-;; => T
-
 ;; (make-measurement 1 :m 5)
 ;; => #<METER 100 km {1003FF93A3}>
 ;; (measurement-magnitude (make-measurement 1 :m 5))
 ;; => 1
 
+;; Example: Scaling to significant digits
+;;
+;; (measurement-magnitude (make-measurement 103 :m 10))
+;; => 103
+;; (measurement-degree (make-measurement 103 :m 10))
+;; => 10
+;;
+;; (measurement-magnitude (make-measurement 1030 :m 9))
+;; => 103
+;; (measurement-degree (make-measurement 1030 :m 9))
+;; => 10
 
 ;;- Ratio magnitude (unscaled)
 ;; (make-measurement 1/5 :m)
@@ -288,10 +304,10 @@ See also:
 
 
 ;; (make-measurement 1 :kg)
-;; => #<METER 1 kg {1006260FC3}>
+;; => #<KILOGRAM 1 kg {1006260FC3}>
 
 ;; (make-measurement 1 :kg 6)
-;; => #<METER 1 Mkg {1006260FC3}> ;; INCORRECT
+;; => #<KILOGRAM 1 Mkg {1006260FC3}> ;; INCORRECT
 
 
 ;; (make-measurement 1 :m 3)
