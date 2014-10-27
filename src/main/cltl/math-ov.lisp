@@ -269,8 +269,8 @@ For each class C in CLASSES, then define methods:
 
 ;;; % GCD, LCM
 
-(defop 'gcd)
-(defop 'lcm)
+(defop 'gcd :classes %integer-instance-classes%)
+(defop 'lcm :classes %integer-instance-classes%)
 
 ;;; % Overloading for Strictly Diadic, Non-Comutative Functions
 
