@@ -490,7 +490,7 @@ For each class C in CLASSES, then define methods:
 
 ;;; % New Functions
 
-(defgeneric geometric-sum (a b)
+(defgeneric @geometric-sum (a b)
   (:generic-function-class monotonic-generic-function)
   (:method ((a number) (b number))
     ;; FIXME: This completely looses optimizations,
@@ -500,10 +500,10 @@ For each class C in CLASSES, then define methods:
 	       (@expt (coerce b 'double-float)
 		      2d0)))))
 
-;; (geometric-sum 3 4)
+;; (@geometric-sum 3 4)
 ;; => 5.0d0
 
-;; (geometric-sum 3d0 4d0)
+;; (@geometric-sum 3d0 4d0)
 ;; => 5.0d0
 
 ;; Host library integration in [SBCL]
