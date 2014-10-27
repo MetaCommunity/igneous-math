@@ -26,10 +26,10 @@ Effective version history:
 
 (defsystem #:info.metacommunity.cltl.math
   :description 
-  "Implementation of a Mathematical System in Common Lisp"
+  "A Mathematical Object System in Common Lisp"
   :version "1.3"
-  ;; :homepage "https://github.com/MetaCommunity/igneous-math"
-  ;; :license "https://github.com/MetaCommunity/igneous-math/blob/master/LICENSE"
+   :homepage "https://github.com/MetaCommunity/igneous-math"
+   :license "https://github.com/MetaCommunity/igneous-math/blob/master/LICENSE"
   :depends-on 
   (#:info.metacommunity.cltl.utils
    #:closer-mop
