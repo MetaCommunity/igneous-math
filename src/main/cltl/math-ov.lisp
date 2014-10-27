@@ -293,26 +293,12 @@ For each class C in CLASSES, then define methods:
 
 ;;; %% FLOOR, FFLOOR &FAMILY
 
-;; FIXME: Possibly loosing more optimizations, here.
-;; When possible, try to call directly to the underlying machine
-;; instructions (Architecture-specific code - cf. SSE, etc)
 
-(let ((integer-classes 
-       (compute-end-classes (find-class 'integer))))
-  (dolist (name '(floor ceiling truncate round ))
-    (defop name 
-        :classes 
-      #-CCL integer-classes
-      #+CCL (cons (find-class 'fixnum) integer-classes))))
+(defop 'floor :variadic-p nil)
+(defop 'ffloor :variadic-p nil)
 
-(let ((float-classes 
-       (compute-end-classes (find-class 'float))))
-  (dolist (name '(ffloor fceiling ftruncate fround ))
-    (defop name  :classes float-classes
-           :default (find-class 'float))))
-
-;; (%ffloor 1.0)
-;; => 1.0, 0.0
+;; (%ffloor 1)
+;; => 1.0, 0
 ;;
 ;; (@ffloor@ 2.0 2.0)
 ;; => 1.0, 0.0
