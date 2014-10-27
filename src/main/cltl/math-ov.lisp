@@ -15,7 +15,7 @@
 
 (defconstant* %integer-instance-classes%
   (let ((c (compute-end-classes (find-class 'integer))))
-    #+CCL (cons '(find-clas fixnum) c)
+    #+CCL (cons (find-class 'fixnum) c)
     #-CCL c))
 
 (defconstant* %float-instance-classes%
@@ -317,8 +317,16 @@ For each class C in CLASSES, then define methods:
 ;; (= (/ pi 4) (@atan 2d0 2d0))
 ;; => T
 
+;; (= (/ pi 4) (@atan 2 2))
+;; => NIL
+
 ;; also
 ;; (= (rationalize (/ pi 4d0)) (rationalize (@atan 2d0 2d0)))
+;; = T
+;;
+;; as well:
+;; (= (rationalize (/ pi 4)) (rationalize (@atan 2d0 2d0)))
+;; => T ;; noting, pi is already a doulbe-float value
 ;;
 ;; although
 ;; (= (/ (rationalize pi) 4) (rationalize (@atan 2d0 2d0)))
@@ -328,9 +336,7 @@ For each class C in CLASSES, then define methods:
 ;; (= (/ (rational pi) 4) (rational (@atan 2d0 2d0)))
 ;; => T
 ;;
-;; furthermore
-;; (= (rationalize (/ pi 4d0)) (rationalize (@atan 2d0 2d0)))
-;; => T
+
 ;;
 ;; thus illustrating some of the contrasting qualities of CL:RATIONAL 
 ;; and CL:RATIONALIZE - onto that simple wrapper for diadic ATAN
