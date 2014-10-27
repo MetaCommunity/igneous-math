@@ -377,6 +377,12 @@ For each class C in CLASSES, then define methods:
 
 (defop 'log :variadic-p nil)
 
+(defun log10 (a)
+  (declare (inline log))
+  (@log a 10))
+
+(defop 'log10 :variadic-p nil :diadic-p nil)
+
 ;;; % Overloading for Other Monadic Functions
 
 ;; FIXME : Observing the implementation of the respetive CL functions
