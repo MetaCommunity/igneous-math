@@ -1,4 +1,4 @@
-;; decimal-scale.lisp
+;; decimal-scale.lisp - exponent-based rational storage for decimal values
 
 (in-package #:math)
 
@@ -235,11 +235,7 @@ Examples:
 See also: 
 * `scalar-magnitude'
 * `prefix-of'
-* `rescale', `nrescale'
-
-Notes:
-* Results are undefined if DEGREE represents a prefix not available
-  to `find-prefix'"
+* `rescale', `nrescale'"
   (declare (type real magnitude)
            (type fixnum degree)
            (type measurement-class-designator unit)
