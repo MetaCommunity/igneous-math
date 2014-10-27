@@ -1,189 +1,267 @@
+Igneous-Math - A Mathematical Object System in Common Lisp
+==========================================================
 
-## measurement unit structure
+## Overview
 
-the systeme internationale (si) defines seven base measurement units,
-of which any addditional measurement units may be directly ro
-indirectly derived[1]. this program system represents those respective
-measurement units as corresponding to measurement domains.
+**Availability:** [git@github.com:MetaCommunity/igneous-math.git][igneous-math]
 
-* length
-* mass
-* time, duratin
-* electric current
-* thermodynamic temperature
-* amount of substance
-* luminous intensity
+**Dependencies:**
 
-each of the fundamental measurement domains is defined with a
-corresponding base unit.
+* [mci-cltl-utils][mci-cltl-utils]
+* [closer-mop][c2mop]
+* [bordeaux-threads][bordeaux-threads]
 
-* length: meter (alternately, metre)
-* mass:  kilogram
-* time, duration: second
-* electric current: ampere
-* thermodynamic temperature: kelvin
-* amount of substance: mole
-* luminous intesity: candela
+**License:** [Eclipse Public License 1.0][license]
 
-in standards published by the si, and in standards published by the
-nist, those base units are subsequently extended with formulas
-describing the mathematical natures of conventional derived
-units. [1][2]
+### Features (Current Edition)
 
-### conventional prefixes for decimal multiples of measurements
+* _**Object model for measurments**_, extending of the Common Lisp Object System (CLOS)
+* _**Mathematical operations overloaded**_ within CLOS methods and optimized method forms, extending of the Common Lisp MetaObjet Protocol (MOP)
+* _**Coercion for floating-point values**_, on input, into rational scalar objects, each comprised of an integer magnitude and an integer prefix value
 
-the systeme internationale defines a standard set of symbolic names
+### Features (Planned)
+
+* Implementation of an object model for coordinate systems and coordinate syntaxes, independent of the Common Lisp Interface Manager (CLIM)
+    * Euclidean Coordinate Plane
+	* Polar Coordinate Plane
+* Implementation of spatial object systems
+	* 3 Space (Euclidean)
+	* Spherical Space
+* Graph model for visual coordinate system presentation, integrating with CLIM
+* Object model for vector mathematics in common lisp (planar and
+  spatial object systems) 
+* Comprehensive integration with standard systems of measurement,
+  referencing the Systeme Inernationale (BIPM) and NIST guidelines
+* Automatic adjustment of measurement values onto the decimal prefix
+  system, for standard measurement units 
+* Automatic adjustment of measurement values onto the binary+decimal
+  (2^10) prefix system, for quantities of digital information
+  [][#jedec:jesd-100b.01][][#wikipedia:byte] preferring the JEDEC
+  convention for prefixes "K", "M", and "G" for units of bits, "b",
+  and bytes, "B"  with user option for selection of a consitent IEC
+  prefix system [][#wikipedia:byte]
+
+### Features (Planned) (Tentative)
+
+* Implementation of an object model for formulas in CLOS -- referencing the KR system in the [Garnet][garnet] codebase
+* Interation with machine-specific numeric operations
+* Applications towards modeling and analysis of principles developed
+  in the electrical sciences, seperately onto domains of alternating
+  current and direct current 
+* Integration with formal reference texts, eBook and print editions
+
+## Measurement Units - Old Notes
+
+The following text represents a body of notes developed during initial
+prototyping of the Igneous Math system.
+
+### Measurement Domains
+
+The Systeme Internationale (SI), published by the _Bureau Intrenational
+des Poids et Mesures_ (BIPM), defines seven base measurement units,
+of which any addditional measurement units may be directly or
+indirectly derived[BIPM][#BIPM].
+
+* *length*
+* *mass*
+* *time, duration*
+* *electric current*
+* *thermodynamic temperature*
+* *amount of substance*
+* *luminous intensity*
+
+Each of the fundamental _measurement domains_ is defined with a
+corresponding _measurement base unit_.
+
+* **Length:** meter (alternately, metre)
+* **Mass:**  kilogram
+* **Time, Duration:** second
+* **Electric Current:** ampere
+* **Thermodynamic Temperature:** kelvin
+* **Amount of Substance**: mole
+* **Luminous Intesity**: candela
+
+This program system represents those respective measurement units,
+each, as corresponding to a _measurement domain_, each represented
+with a single _measurement class_ named according to the respective
+_measurement base unit_ 
+
+* `math:meter`
+* `math:kilogram`
+* `math:second`
+* `math:ampere`
+* `math:kelvin`
+* `math:mole`
+* `math:candela`
+
+
+In standards published by the BIPM and in standards published by the
+NIST, those base units are subsequently extended with formulas
+describing the mathematical natures of conventional _derived
+units_. [BIPM][#BIPM][NIST][#NIST]
+
+
+#### Conventional Prefixes for Decimal Multiples of Measurements
+
+The Systeme Internationale defines a standard set of symbolic names
 for decimal exponents of measurement values, in a range from
--24 to 24 degrees. conventionally referred to as "engineering
-notation"[3], these decimal prefixes allow for a succinct
-representation of the magnitudes of measurement values.
+-24 to 24 degrees. Those decimal prefixes allow for succinct
+representation of _magnitudes_ of _measurement values_, within
+limits of _significant digits_.
 
-### measurement accuracy and significant digits
+#### Measurement Accuracy and Significant Digits
 
-(to do)
+(To Do: Computation of significant digits within input values, with
+corresponding limits onto significant digits for printed values)
 
-cf. http://www.degruyter.com/view/j/cclm.2004.42.issue-9/cclm.2004.216/cclm.2004.216.xml
+See Also: Garcia-Santamarina, Sareta, et. al. _[Significant decimals and rounding](http://www.degruyter.com/view/j/cclm.2004.42.issue-9/cclm.2004.216/cclm.2004.216.xml)_
 
-### structure of virtual measurement units
+#### Structure of Virtual Measurement Units
 
-in addition to the si base units, this system endeavors to define a
-number of additional measurement domain, inspired by the hytime
-standard[4] specifically an abstract "virtual measurement"
-domain. the "virtual measurement" domain is extended with non-abstract
-base units, "virtual time" and "virutal space", as for purpose of
-representing measurable quanities within a software system, such as
-pal frame rate and pixel coordinates[5]
+In addition to the SI base units, this system may endeavor to define a
+set of additional measurement domains, such as inspired by the
+HyTime  standard[HyTime][#HyTime] -- specifically, such an abstract _virtual 
+measurement_ domain -- as well as a measurement domain for quantities
+of digital information.
 
-## measurement unit names
+The _virtual measurement_ domain is extended with base units, namely,
+_virtual time_ and _virutal space_ -- applicable as for purpose of a
+representation of measurable quanities within a software system
+respectively, such as _PAL frame rate_ and _pixel coordinates_[MBryan][#MBryan]
 
-this program system will endeavor to adopt a consistent syntax for
+
+
+### Measurement Syntax
+
+This program system will endeavor to adopt a consistent syntax for
 measurement names, within the context of this program system.
 
-consulting the si brochure[1], all of the seven si base units[1] are
-defined, each, around a specific measurement domain, denoted by a type
-of base quantity.
+### Structure of Measurement Units
 
-each type of base quantity is assigned with one or more conventional
-symbols, such as for variables denoting of such a quantity. the
-applications may vary, for those conventional symbols for quantities
-of the base unit -- for example, "l" being applied commonly for
-measure of linear dimesion, and "r" applied commonly for radial
-magnitude, each of the previous  denoted as a conventional symbol for
-a variable denoting of a measure of length. this application system
-will not make a formal defintion of those conventional symbols for
-variables denoting of quantity. 
+Each type of _base quantity_ is assigned with one or more conventional
+symbols, such as for variables denoting measurements of such a
+quantity. Certainly, applications may vary, for those conventional
+symbols for quantities of the base unit -- for example, "l" being
+applied commonly for measure of linear dimesion, and "r" applied
+commonly for radial magnitude, each of the previous being denoted as a 
+conventional symbol for a variable denoting of a measure of
+length. 
 
-each type of measurement base quantity corresponds to exactly one
-measurement base unit. 
+Each type of measurement _base quantity_ corresponds to exactly one
+_measurement base unit_. 
 
-each base unit is denoted with a unit name -- for instance, "second"
--- and one or more symbols denoting of the measurement unit -- for
-instance "s". 
+Each _base unit_ is denoted with a _unit name_ -- for instance,
+"second" -- and one or more _symbols_ denoting of the measurement unit
+-- for instance "s". 
 
-for purpose of referene within software applications, this program
+For purpose of reference within software applications, this program
 system will endeavor to define a normative syntax for measurement
-units, consistent with common practice. in that context, it is a 
-requirement of this system that all measurement units defined by this
-system may be referenced with a symbolic name comprised of printing
-characters within the ascii character set.
+units, consistent with common practice. As well as to implement the
+syntaxes of printable names for measurement units, it is a requirement
+of this system that all measurement units defined by this system may
+be referenced, each with a symbolic name suitable for input into a
+Lisp reader, a name comprised of _printing characters_ within the
+ASCII _character set_, and representing a Common Lisp symbol interened
+within the package, _keyword_.
 
-in common practice, some measurement units are denoted with non-ascii
-characters and qualities of typesetting -- including subscript
-characters and greek letter characters -- some of which are available
-however, within the unicode code set. 
+In common practice, some measurement units are denoted with non-ASCII
+characters, including of qualities of typesetting -- such as of Greek
+letter characters and alphanumeric subscript characters -- some of
+which are available however, within the Unicode code set. 
 
-this program system will endeavor to define the following values for
+
+This program system will endeavor to define the following values for
 each type of measurment unit (slots of class, measurement-unit)
 
-* quantity-name - name of base quantity, e.g "time, duration"
+* `quantity-name` - name of base quantity, e.g "time, duration"
 
-* print-label - a singular, verbose, printable name for the measurement
+* `print-label` - a singular, verbose, printable name for the measurement
   unit, wtihout symbolic characters e.g. "meter", "newton meter"
 
-* print-name - a singular, printable name for symbolic
+* `print-name` - a singular, printable name for symbolic
   representation of the measurment unit in conventional syntax -- in 
   which instance, this system assumes that the lisp implementation
   implements the unicode code set -- e.g. "m", "°", "ω", or "lᵥ"
 
-* symbol - A Lisp symbolic name, interned within the keyword package, for
-  application within the source code of Lisp programs -- e.g. :m :deg
-  (angular) :ohm, and :lux respectively. For purpose of this
-  definition, a number of standard practices will be defined of this
+* `symbol` - A Lisp symbolic name, interned within the keyword package, for
+  application within the source code of Lisp programs -- e.g. `:m`,
+  `:deg`, (angular), `:ohm`, and `:lux`. For purpose of this
+  definition, a number of standard practices will be defined of this 
   system:
 
    * ASCII characters shall be represented as ASCII characters to be
      interpreted in "readtable case"
 
-     e.g "m" => :m, "mol" => :mol, "K" => :k
+     e.g `"m" => :m`, `"mol" => :mol`, `"K" => :k`
 
    * Superscirpt characters shall be prefixed with a caret "^"  and
      represented without typesetting 
 
-     e.g. "cubic meter" = :m^3
+     e.g. `"cubic meter" = :m^3`
 
-   * For measurement units defined by SI[1] with subscript characters,
+   * For measurement units defined by SI[BIPM][#BIPM] with subscript characters,
      a corresponding symbolic name shall be sought of the NIST
-     specification[2] 
+     specification[NIST][#NIST] 
 
-     e.g symbolic name "Lᵥ" in SI[1], interpreted rather as "lx" in
-     NIST[2] and therefore => :lx
+     e.g symbolic name `"Lᵥ"` in SI[BIPM][#BIPM], interpreted rather as `"lx"` in
+     NIST[NIST][#NIST] and therefore `=> :lx`
 
 
    * For measurement units whose conventional symbolic name denotes a
      ratio among measurement units, the character denoting the ratio
      shall be retained
 
-     e.g "kg/m³" => :kg/m^3
+     e.g `"kg/m³" => :kg/m^3`
 
    
    * For measurement units whose conventional symbolic name includes a
      subscript character, the character shall be prefixed by an
      underscore "_" and rendered without typesetting
 
-     e.g. "mₑ" => :m_e
+     e.g. `"mₑ" => :m_e`
 
    * For the special instance of the radian or steradian, this program
      system shall retain the respective, conventional symbolic name --
-     respectively "rad" or "sr" i.e. :rad or :sr in Lisp symoblic
+     respectively `"rad"` or `"sr"` i.e. `:rad` or `:sr` in Lisp symoblic
      syntax. This decision is correlated with a note: That in a
      conventional shorthand practice for mathematical equations,
      namely the symbolic name of the radain may be omitted from 
      mathematical equations; radians, as a measurement unit, amy
      contextually be differentiated from degrees, as a measurment
      unit, in that a mesurement denoting a degree measure would be
-     suffixed with the printed name "°"
+     suffixed with the printed name `"°"`
 
-   * For the special instance of "rad" as a ratio of Grays, this
-     proram system shall use the symbolic name "rd" i.e :rd
+   * For the special instance of `"rad"` as a ratio of Grays, this
+     program system shall use the symbolic name `"rd"` i.e `:rd`
 
    * For each of the special instances of a measure in units of 
      "degree" (angular measure) or "degree Celsius" (thermodynamic
-     temperature). the non-ASCII character "°" shall be transposed to
-     a short hand letter form - respectively, :deg, :deg-c
+     temperature). the non-ASCII character `"°"` shall be transposed to
+     a short hand letter form - respectively, `:deg`, `:deg-c`
 
    * For the non-SI unit of measurement "degree Farenheit", similarly
-     the shothand form :deg-f shall be applied
+     the shothand form `:deg-f` shall be applied
 
    * For the SI unit of measurement "degree Kelvin", the shorthand
-     form :k shall be applied, as transposing the symbolic unit
+     form `:k` shall be applied, as transposing the symbolic unit
      identity "K"
 
    * For measures of plane angle in units of minutes or of seconds,
-     this system shall use the letter forms respectively :|'| and
-     :|"|, with printed representation respectively "'" and '"'
+     this system shall use the letter forms respectively `:|'|` and
+     `:|"|`, with printed representation respectively `"'"` and `'"'`
 
-   * For the special instance of the measurement unit, angstrom "Å",
+   * For the special instance of the measurement unit, angstrom `"Å"`,
      this system shall use the conventional name of the measurement
-     unit, without diacritic marks, i.e. :angstrom
+     unit, without diacritic marks, i.e. `:angstrom`
 
 In defining those policies for Lisp symoblic names for measurement
 units, this sytem endeavors to present a convenient balance between
 needs for symbolic uniqueness and expressive clarity.
 
 In denoting formal printable labels for measurement units, this system
-shall defer firstly to to the SI brochure[1] (noting, namely, Tables 1
+shall defer firstly to to the SI brochure[BIPM][#BIPM] (noting, namely, Tables 1
 through 4, table 6, etc) excepting those centimetere-gram-second (CGS)
-units of measure as denoted "Unacceptable" by the NIST guide[2]
+units of measure as denoted "Unacceptable" by the NIST guide[NIST][#NIST]
 sections 5.3.1 and 5.3.2
 
 For printed names utilizing special typographic characters in
@@ -201,7 +279,7 @@ shorthand of those letters' special typographic forms, so far as
 available withinin the Unicode code set.
 
 
-## Geometric Object Model
+### Geometric Object Model
 
 This system is being developed for a purpose of defining a consistent
 measurement model for application in analytic geometry. In order to
@@ -229,27 +307,9 @@ representation of geometric forms, specifically within a Common Lisp
 programming environment.
 
 
-[1] BIPM. SI Brochure: The International System of Units (SI) [8th
-    edition, 2006; updated in 2014]
-    available: http://www.bipm.org/en/publications/si-brochure/ 
+### TO DO
 
-[2] NIST. Guide for the Use of the International System of Units (SI)
-    available: http://www.nist.gov/pml/pubs/sp811/index.cfm 
-
-[3] The Engineering Toolbox. Stanard Form, Scientific, and Engineering
-    Notation.
-    available: http://www.engineeringtoolbox.com/standard-form-scientific-engineering-notation-d_1801.html 
-
-[4] HyTime Granule Definition Notation. 
-    available: http://www.hytime.org/materials/hi2mdhyt.sgm
-
-[5] Martin Bryan. Using HyTime for Scheduling Events
-    available: http://www.is-thought.co.uk/schedule.htm
-
-
-## TO DO
-
-1) Define an ASDF system for this source file
+1) Define an ASDF system for this source file [DONE]
 
 X) Define a reader macro syntax for measurement units
    also cf. Jakub Higersberger's unit-formula system
@@ -276,32 +336,46 @@ Y) Extend MEASUREMENT-CLASS with a new class,
 8) At some point, refine the comments in this file into a form of
    normative documentation for this program system
 
-9) Define a desktop interface for this system - carefully avoiding
-   any manner of a competitive spirit towards Wolfram Mathematica
-   and the respective MathML implementations available within the
-   contemporary computing domain - albeit all within proprietary/
-   closed source software systems, "those" -- also maxing reference
-   onto the ACL2 "theorem prover" system  and Maxima. Although this
-   system is being defined morso for a purpose of supporting
-   applicationso of analytic geometry, as primarily with regards
-   to electical engineering, however there must be some references
-   made onto theoretical mathematics, throughout this system.
-
+9) Define a desktop interface for this system
 
 FIXME: The following documentation items were transposed from
 measurement.lisp and should be edited for presentation in this
 _markdown_ file
 
-## Sidebar: Measurement Definitions in HyTime
+### Sidebar: Measurement Definitions in HyTime
 
-* http://www.is-thought.co.uk/schedule.htm
-* http://crism.maden.org/consulting/pub/hytime/meas.html
-* http://www.hytime.org/materials/hi2mdhyt.sgm
+* <http://www.is-thought.co.uk/schedule.htm>
+* <http://crism.maden.org/consulting/pub/hytime/meas.html>
+* <http://www.hytime.org/materials/hi2mdhyt.sgm>
     * ^ cf %hygrand
 
 see also:
-* http://physics.nist.gov/cuu/units/
-* http://physics.nist.gov/pubs/sp811/appenb.html 
+
+* <http://physics.nist.gov/cuu/units/>
+* <http://physics.nist.gov/pubs/sp811/appenb.html>
     * ^ esp. for conversions regarding foot, mile, yard , ...
 
 
+[igneous-math]: https://github.com/MetaCommunity/igneous-math
+[mci-cltl-utils]: https://github.com/MetaCommunity/mci-cltl-utils
+[c2mop]: http://sourceforge.net/projects/closer/
+[bordeaux-threads]: http://common-lisp.net/project/bordeaux-threads/
+[license]: https://github.com/MetaCommunity/igneous-math/blob/master/LICENSE
+[garnet]: http://garnetlisp.sourceforge.net/
+
+
+
+[#wikipedia:byte]: Wikipedia. _[Byte](http://en.wikipedia.org/wiki/Byte)_
+
+[#jedec:jesd-100b.01]: JEDEC. _[JESD-100B.01. Terms, Definitions, and Letter Symbols for Microcomputers, Microprocessors, and Memory Integrated Circuits](http://www.jedec.org/standards-documents/docs/jesd-100b01)_ 
+
+[#BIPM]: BIPM. _[SI Brochure: The International System of Units (SI)](http://www.bipm.org/en/publications/si-brochure/)_. 8th edition,
+	2006; updated in 2014. 
+
+[#NIST]: NIST. _[Guide for the Use of the International System of Units (SI)](http://www.nist.gov/pml/pubs/sp811/index.cfm)_
+
+[#EToolbox]: _[The Engineering Toolbox. Standard Form, Scientific, and Engineering Notation)(http://www.engineeringtoolbox.com/standard-form-scientific-engineering-notation-d_1801.html)_
+
+[#HyTime]: _[HyTime Granule Definition Notation](http://www.hytime.org/materials/hi2mdhyt.sgm)_
+
+[#MBryan]: Martin Bryan. _[Using HyTime for Scheduling Events](http://www.is-thought.co.uk/schedule.htm)_
