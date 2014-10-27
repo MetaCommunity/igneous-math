@@ -9,10 +9,25 @@
 (in-package #:math-system)
 
 
+
+#|
+
+Effective version history:
+
+ 1.0: Initial prototype
+
+ 1.1: Decimal scaling introduced
+
+ 1.2: DEFOP defined with MOP extension
+
+ 1.3: Definition of unit conversion formulas
+
+|#
+
 (defsystem #:info.metacommunity.cltl.math
   :description 
-  "Mathematical sysetm in Common Lisp"
-  :version "1.0"
+  "Implementation of a Mathematical System in Common Lisp"
+  :version "1.3"
   ;; :homepage "https://github.com/MetaCommunity/igneous-math"
   ;; :license "https://github.com/MetaCommunity/igneous-math/blob/master/LICENSE"
   :depends-on 
