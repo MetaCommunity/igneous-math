@@ -403,7 +403,7 @@ For each class C in CLASSES, then define methods:
 
 (labels ((defop-monadic (op &optional (classes %numeric-instance-classes%))
 	   (defop op :diadic-p nil :variadic-p nil
-		  :default nil)))
+		  :default nil :classes classes)))
 
 ;;; %%% EXP
 
