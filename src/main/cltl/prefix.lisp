@@ -317,6 +317,9 @@ PREFIX-NOT-FOUND is singaled"
 
 ;; (map 'list #'(lambda (p) (cons (prefix-symbol p) (prefix-degree p))) %prefixes%)
 
+;; (object-print-label (find-prefix= 9))
+;; => "G"
+
 
 (defmethod print-object ((object measurement) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -339,7 +342,6 @@ PREFIX-NOT-FOUND is singaled"
     
     (princ (object-print-label (class-of object))
            stream)))
-
 
 
 (defun prefix-of (m &optional (ee-p t))

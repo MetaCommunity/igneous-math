@@ -5,10 +5,6 @@
 ;; and http://physics.nist.gov/pubs/sp811/contents.html
     
 
-(defgeneric measurement-print-label (instance))
-;; ^ FIXME: Remove; Rename methods to OBJECT-PRINT-LABEL (Application object naming model)
-(defgeneric measurement-print-name (instance))
-;; ^ FIXME: Remove; Rename methods to OBJECT-PRINT-NAME (Application object naming model)
 (defgeneric measurement-symbol (instance))
 
 
@@ -16,7 +12,7 @@
 
 (defclass* (measurement-class 
 	    :conc-name #:measurement-)
-    (standard-class pretty-printable-object)
+    (pretty-printable-object standard-class)
   ((symbol symbol  :read-only t)))
 
 (validate-class measurement-class)
@@ -177,15 +173,8 @@ for the measurement"
 ;; (scalar-magnitude (make-measurement 1 :m -3))
 ;; => 1/1000
 
-(defmethod measurement-print-label ((instance measurement))
-  (measurement-print-label (class-of instance)))
-
-(defmethod measurement-print-name ((instance measurement))
-  (measurement-print-name (class-of instance)))
-
 (defmethod measurement-symbol ((instance measurement))
   (measurement-symbol (class-of instance)))
-
 
 ;;; %% Initialize core measurement domains and base unit classes
 
@@ -194,7 +183,7 @@ for the measurement"
       (mc-c (find-class 'measurement-class))
       (m-c (find-class 'measurement))
       #+SBCL (src (sb-c:source-location)))
-  (labels ((do-def (domain domain-name class print-label print-name name)
+  (labels ((do-def (domain domain-name class print-name print-label name)
 	     (let* ((d 
 		     (ensure-class 
 			domain
@@ -221,18 +210,18 @@ for the measurement"
 
     (mapcar (lambda (spec)
 	      (destructuring-bind 
-		    (domain domain-name class print-label print-name name) spec
+		    (domain domain-name class print-name print-label  name) spec
 		(multiple-value-bind (d c)
-		    (do-def domain domain-name class print-label print-name name)
+		    (do-def domain domain-name class print-name print-label  name)
 		  (cons d c))))
-	    '((length "length" meter "metre" "m" :m)
-	      (mass "mass" kilogram "kilogram" "kg" :kg)
+	    '((length "length" meter "metre" "m" :|m|)
+	      (mass "mass" kilogram "kilogram" "kg" :|kg|)
 	      ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
-	      (time "time, duration" second "second" "s" :s)
-	      (electrical-current "electric current" ampere "ampere" "A" :a)
-	      (temperature "thermodyamic temperature" kelvin "kelvin" "K" :k)
-	      (amount-substance "amount of substance" mole "mole" "mol" :mol)
-	      (luminous-intensity "luminous intensity" candela "candela" "cd" :cd)))
+	      (time "time, duration" second "second" "s" :|s|)
+	      (electrical-current "electric current" ampere "ampere" "A" :|a|)
+	      (temperature "thermodyamic temperature" kelvin "kelvin" "K" :|k|)
+	      (amount-substance "amount of substance" mole "mole" "mol" :|mol|)
+	      (luminous-intensity "luminous intensity" candela "candela" "cd" :|cd|)))
     ))
 
 ;; (eq (find-class 'length) (class-of (find-class 'meter)))
@@ -244,13 +233,21 @@ for the measurement"
 ;; (measurement-domain (make-instance 'meter))
 ;; => #<MEASUREMENT-DOMAIN LENGTH>
 
-;; (find-measurement-class :m)
-;; (find-measurement-class :kg)
-;; (find-measurement-class :s)
-;; (find-measurement-class :a)
-;; (find-measurement-class :k)
-;; (find-measurement-class :mol)
-;; (find-measurement-class :cd)
+;; (find-measurement-class :|m|)
+;; (find-measurement-class :|kg|)
+;; (find-measurement-class :|s|)
+;; (find-measurement-class :|a|)
+;; (find-measurement-class :|k|)
+;; (find-measurement-class :|mol|)
+;; (find-measurement-class :|cd|)
+
+;; (measurement-symbol (find-class 'meter))
+;; => :|m|
+
+;; (measurement-symbol  (make-measurement 1 :|m|)))
+
+
+
 
 #+TO-DO
 (defclass gram (kilogram)

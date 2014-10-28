@@ -323,5 +323,5 @@ See also:
 ;; (measurement-degree (make-measurement 1000 :m 3))
 ;; => 6
 
-;; (measurement-print-name (make-measurement 1 :m))
+;; (object-print-label (class-of (make-measurement 1 :m)))
 ;; => "m"
