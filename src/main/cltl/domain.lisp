@@ -6,9 +6,8 @@
 (defgeneric measurement-domain-symbol (instance))
 
 
-(defclass measurement-domain (standard-class
-			      pretty-printable-object
-			      )
+(defclass measurement-domain (pretty-printable-object
+			      standard-class)
   ;; FIXME: #I18N slot definitions - PRINT-NAME/PRINT-LABEL
   ((base-measure
     :initarg :base-measure
