@@ -31,33 +31,49 @@
              (entity-not-found-name c)))))
 
 
-(let ((%classes% (make-array 7 :fill-pointer 0
-                             :element-type 'measurement-class))
-      (%classes-lock% (make-lock "%CLASSES%")))
-  (defun register-measurement-class (c)
-    (declare (type measurement-class c))
-    (with-lock-held (%classes-lock%)
-      (let* ((s (measurement-symbol c))
-             (n (position s %classes%
-                          :test #'eq
-                          :key #'measurement-symbol)))
-        (cond 
-          ((and n (not (eq (aref %classes% n) c)))
-           (simple-style-warning 
-            "Redfining measurement class for ~S" s)
-           (setf (aref %classes% n) c))
-          (t (vector-push-extend c %classes%)))
-        (values c))))
+;;; % Measurement Class Storage and Access
 
-  (defun find-measurement-class (s)
-    (declare (type symbol s)
-             (values measurement-class &optional))
-    (with-lock-held (%classes-lock%)
-      (or (find s %classes%
-                :test #'eq
-                :key #'measurement-symbol)
-          (error 'measurement-class-not-found :name s))))
-  )
+;;; %% Locking (Thread Safety)
+
+(declaim (type (vector measurement-class) %measurement-classes% ))
+
+(defvar %measurement-classes% (make-array 7 :fill-pointer 0 
+			      :element-type 'measurement-class)
+  "Internal storage for measurement measurement-classes.
+
+This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
+
+
+(defvar %measurement-classes-lock% (make-lock "%MEASUREMENT-CLASSES%")
+  "Mutex lock for accessing `%DOMAINS%'")
+
+
+;;; %% Access Functions
+
+(defun register-measurement-class (c)
+  (declare (type measurement-class c))
+  (with-lock-held (%measurement-classes-lock%)
+    (let* ((s (measurement-symbol c))
+	   (n (position s %measurement-classes%
+			:test #'eq
+			:key #'measurement-symbol)))
+      (cond 
+	((and n (not (eq (aref %measurement-classes% n) c)))
+	 (simple-style-warning 
+	  "Redfining measurement class for ~S" s)
+	 (setf (aref %measurement-classes% n) c))
+	(t (vector-push-extend c %measurement-classes%)))
+      (values c))))
+
+(defun find-measurement-class (s)
+  (declare (type symbol s)
+	   (values measurement-class &optional))
+  (with-lock-held (%measurement-classes-lock%)
+    (or (find s %measurement-classes%
+	      :test #'eq
+	      :key #'measurement-symbol)
+	(error 'measurement-class-not-found :name s))))
+
   
 
 ;;; % MEASUREMENT
