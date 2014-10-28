@@ -362,6 +362,9 @@ PREFIX-NOT-FOUND is singaled"
   (print-unreadable-object (object stream :type t :identity t)
     (print-label object stream)))
 
+(defmethod object-print-label ((object measurement))
+  (with-output-to-string (s)
+    (print-label object s)))
 
 (defun prefix-of (m &optional (ee-p t))
   ;; FIXME: Rename to SCALAR-PREFIX
