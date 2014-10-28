@@ -320,7 +320,7 @@ PREFIX-NOT-FOUND is singaled"
 ;; (object-print-label (find-prefix= 9))
 ;; => "G"
 
-(defmethod print-label ((object measurement) stream)
+(defmethod print-label ((object measurement) (stream stream))
   (multiple-value-bind (mag boundp)
       (slot-value* object 'magnitude)
     (cond 
@@ -339,7 +339,7 @@ PREFIX-NOT-FOUND is singaled"
   (princ (object-print-label (class-of object))
 	 stream))
 
-(defmethod print-label ((object kilogram) stream)
+(defmethod print-label ((object kilogram) (stream stream))
   "Print a KILOGRAM measurement in units of grams"
   (multiple-value-bind (mag boundp)
       (slot-value* object 'magnitude)
@@ -391,22 +391,22 @@ See also:
 
 
 
-;; (prefix-of (make-measurement 1 :m 24))
+;; (prefix-of (make-measurement 1 :|m| 24))
 ;; => #<PREFIX yotta (Y)>, 1
 ;;
-;; (prefix-of (make-measurement 1 :m 23))
+;; (prefix-of (make-measurement 1 :|m| 23))
 ;; => #<PREFIX zetta (Z)>, 100
 ;;
-;; (prefix-of (make-measurement 1 :m 22))
+;; (prefix-of (make-measurement 1 :|m| 22))
 ;; => #<PREFIX zetta (Z)>, 10
 ;;
-;; (prefix-of (make-measurement 1 :m 21))
+;; (prefix-of (make-measurement 1 :|m| 21))
 ;; => #<PREFIX zetta (Z)>, 1
 ;;
-;; (prefix-of (make-measurement 1 :m 3))
+;; (prefix-of (make-measurement 1 :|m| 3))
 ;; => #<PREFIX kilo (k)>, 1
 ;;
-;; (prefix-of (make-measurement 1 :m -16))
+;; (prefix-of (make-measurement 1 :|m| -16))
 ;; => #<PREFIX atto (a)>, 100
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
