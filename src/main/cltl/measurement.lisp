@@ -182,32 +182,33 @@ for the measurement"
 
 
 ;;; define base unit classes
-(labels ((do-def (c quantity print-label print-name name)
-           (let ((c (c2mop:ensure-class 
-                     c
-                     :direct-superclasses (list (find-class 'measurement))
-                     :symbol name
-                     :print-name print-name
-                     :print-label print-label
-                     :quantity-name quantity
-                     :metaclass (find-class 'measurement-class)
-                     #+SBCL :definition-source 
-                     #+SBCL (sb-c:source-location) 
-                     )))
-             (register-measurement-class c))))
-  (mapcar (lambda (spec)
-            (destructuring-bind 
-                  (c quantity print-label print-name name) spec
-              (do-def c quantity print-label print-name name)))
-          '((meter "length" "metre" "m" :m)
-            (kilogram "mass" "kilogram" "kg" :kg)
-            ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
-            (second "time, duration" "second" "s" :s)
-            (ampere "electric current" "ampere" "A" :a)
-            (kelvin "thermodyamic temperature" "kelvin" "K" :k)
-            (mole "amount of substance" "mole" "mol" :mol)
-            (candela "luminous intensity" "candela" "cd" :cd)))
-  )
+(let (#+SBCL (src (sb-c:source-location)))
+  (labels ((do-def (c quantity print-label print-name name)
+	     (let ((c (c2mop:ensure-class 
+		       c
+		       :direct-superclasses (list (find-class 'measurement))
+		       :symbol name
+		       :print-name print-name
+		       :print-label print-label
+		       :quantity-name quantity
+		       :metaclass (find-class 'measurement-class)
+		       #+SBCL :definition-source 
+		       #+SBCL src 
+		       )))
+	       (register-measurement-class c))))
+    (mapcar (lambda (spec)
+	      (destructuring-bind 
+		    (c quantity print-label print-name name) spec
+		(do-def c quantity print-label print-name name)))
+	    '((meter "length" "metre" "m" :m)
+	      (kilogram "mass" "kilogram" "kg" :kg)
+	      ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
+	      (second "time, duration" "second" "s" :s)
+	      (ampere "electric current" "ampere" "A" :a)
+	      (kelvin "thermodyamic temperature" "kelvin" "K" :k)
+	      (mole "amount of substance" "mole" "mol" :mol)
+	      (candela "luminous intensity" "candela" "cd" :cd)))
+    ))
 
 ;; (find-measurement-class :m)
 ;; (find-measurement-class :kg)
@@ -236,7 +237,7 @@ for the measurement"
 The measurement unit, ohm, as a standard unit for measurement of
 electrial resistance, is defined as a derived unit with formulas
 
-  1 ohm = 1 m^2 kg s^-3 A^-2	[1] p. 111
+  1 ohm = 1 m^2 kg s^-3 A^-2	[1] p. 111	i.e. ((:|m| 2) :|kg| (:|s| -3) (:A -2))
   1 ohm = 1 V / 1 A		[1] p. 118
 
 Similarly, the measurement unit, volt, as a standard unit for
