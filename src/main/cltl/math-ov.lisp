@@ -328,10 +328,6 @@ For each class C in CLASSES, then define methods:
 ;; (= (/ (rational pi) 4) (rational (@atan 2d0 2d0)))
 ;; => T
 ;;
-;; furthermore
-;; (= (rationalize (/ pi 4d0)) (rationalize (@atan 2d0 2d0)))
-;; => T
-;;
 ;; thus illustrating some of the contrasting qualities of CL:RATIONAL 
 ;; and CL:RATIONALIZE - onto that simple wrapper for diadic ATAN
 
