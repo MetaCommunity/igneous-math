@@ -58,6 +58,64 @@ in development of this program system.
   current and direct current 
 * Integration with formal reference texts, eBook and print editions
 
+## Reference (Partial)
+
+### Measurement Dictionary (Partial)
+
+#### `Measurement-Domain` [Standard Class]
+
+#### `Measurement-Class` [Standard Class]
+
+#### `Measurement` [Standard Class]
+
+#### `Prefix` [Standard Class]
+
+#### `Rescale` [Standard Generic Function]
+
+#### `Nrescale` [Standard Generic Function]
+
+#### `Scale-SI` [Standard Generic Function]
+
+#### `Find-Prefix` [Function]
+
+#### `Find-Prefix=` [Function]
+
+#### `Prefix-Of` [Function]
+
+#### `Prefix-Degee` [Accessor]
+
+#### `Prefix-Print-Label` [Accessor]
+
+#### `Prefix-Print-Name` [Accessor]
+
+#### `Prefix-Symbol` [Accessor]
+
+#### `Measurement-Quantity-Name` [Accessor]
+
+#### `Measurement-Print-Label` [Accessor]
+
+#### `Measurement-Print-Name` [Accessor]
+
+#### `Measurement-Symbol` [Accessor]
+
+#### `Measurement-Magnitue` [Accessor]
+
+#### `Measurement-Degree` [Accessor]
+
+#### `Base-Magnitude` [Function]
+
+#### `Scalar-Magnitude` [Generic Function]
+
+### Mathematics Dictionary (Partial)
+
+#### `%+`, `@+`, `@+@`
+
+#### `%-`, `@-`, `@-@`
+
+#### `%*`, `@*`, `@*@`
+
+#### `%/`, `@/`, `@/@`
+
 ## Measurement Units - Old Notes
 
 The following text represents a body of notes developed during initial
