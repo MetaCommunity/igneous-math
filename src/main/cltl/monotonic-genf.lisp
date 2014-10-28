@@ -116,7 +116,7 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 	 ;; however, when the METHOD-LAMBDA itself is compiled.
 	 ;;
 	 ;; FIXME: Capture errors and warnings from the COMPILE call
-	 (apply (compile nil ,lambda)
+	 (apply (compile* nil ,lambda)
 		,method-lambda-args)))))
 
 (defmethod compute-effective-method ((genf monotonic-generic-function)

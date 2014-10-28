@@ -112,7 +112,7 @@ For each class C in CLASSES, then define methods:
 					:function 
 					;; FIXME: Catch errors/warnings
 					;; from COMPILE
-					(compile nil 
+					(compile* nil 
 						 (compute-method-lambda gf lform nil)))))
 
                  (add-method gf m))))
