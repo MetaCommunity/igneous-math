@@ -268,60 +268,59 @@ See also:
                   :magnitude adj-magnitude
                   :degree (+ degree scale))))))))
 
-;; (make-measurement 1 :m 5)
+;; (make-measurement 1 :|m| 5)
 ;; => #<METER 100 km {1003FF93A3}>
-;; (measurement-magnitude (make-measurement 1 :m 5))
+;; (measurement-magnitude (make-measurement 1 :|m| 5))
 ;; => 1
 
 ;; Example: Scaling to significant digits
 ;;
-;; (measurement-magnitude (make-measurement 103 :m 10))
+;; (measurement-magnitude (make-measurement 103 :|m| 10))
 ;; => 103
-;; (measurement-degree (make-measurement 103 :m 10))
+;; (measurement-degree (make-measurement 103 :|m| 10))
 ;; => 10
 ;;
-;; (measurement-magnitude (make-measurement 1030 :m 9))
+;; (measurement-magnitude (make-measurement 1030 :|m| 9))
 ;; => 103
-;; (measurement-degree (make-measurement 1030 :m 9))
+;; (measurement-degree (make-measurement 1030 :|m| 9))
 ;; => 10
 
 ;;- Ratio magnitude (unscaled)
-;; (make-measurement 1/5 :m)
+;; (make-measurement 1/5 :|m|)
 ;; => #<METER 100 km {1003FF93A3}>
-;; (measurement-magnitude (make-measurement 1/5 :m))
+;; (measurement-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5
 ;;
-;; (make-measurement 1/5 :m 3)
+;; (make-measurement 1/5 :|m| 3)
 ;; => #<METER 1/5 km {1007B81023}>
-;; (measurement-magnitude (make-measurement 1/5 :m 3))
+;; (measurement-magnitude (make-measurement 1/5 :|m| 3))
 ;; => 1/5
 ;;
-;; (scalar-magnitude (make-measurement 1/5 :m 3))
+;; (scalar-magnitude (make-measurement 1/5 :|m| 3))
 ;; => 200 ;; i.e. 200 m
 ;;
-;; (scalar-magnitude (make-measurement 1/5 :m))
+;; (scalar-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5 ;; i.e. 1/5 m
 
 
-;; (make-measurement 1 :kg)
-;; => #<KILOGRAM 1 kg {1006260FC3}>
+;; (make-measurement 1 :|kg|)
+;; => #<KILOGRAM 1000 g {10065C1043}>
 
-;; (make-measurement 1 :kg 6)
-;; => #<KILOGRAM 1 Mkg {1006260FC3}> ;; INCORRECT
-;; ^ see SCALE-SI
+;; (make-measurement 1 :|kg| 6)
+;; => #<KILOGRAM 1000 Mg {10066090B3}>
 
-;; (make-measurement 1 :m 3)
+;; (make-measurement 1 :|m| 3)
 ;; => #<METER 1 km {1003FF93A3}>
 
-;; (measurement-magnitude (make-measurement 1 :m 3))
+;; (measurement-magnitude (make-measurement 1 :|m| 3))
 ;; => 1
-;; (measurement-degree (make-measurement 1 :m 3))
+;; (measurement-degree (make-measurement 1 :|m| 3))
 ;; => 3
 
-;; (measurement-magnitude (make-measurement 1000 :m 3))
+;; (measurement-magnitude (make-measurement 1000 :|m| 3))
 ;; => 1
-;; (measurement-degree (make-measurement 1000 :m 3))
+;; (measurement-degree (make-measurement 1000 :|m| 3))
 ;; => 6
 
-;; (object-print-label (class-of (make-measurement 1 :m)))
+;; (object-print-label (class-of (make-measurement 1 :|m|)))
 ;; => "m"
