@@ -4,6 +4,12 @@
 
 ;; FIXME: Move code to mci-cltl-utils system
 
+;; FIXME: This does not work in CCL
+;;
+;; Tested with (DEFGENERIC @GEOMETRIC-SUM ...)
+;; followed by (geometric-sum 3 4)
+;; using native MOP forms (C2MOP)
+
 ;;; % MOP Util
 
 (defgeneric compute-method-lambda (genf lambda enviornment)
@@ -80,6 +86,7 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 
 (defmethod compute-applicable-methods ((gf monotonic-generic-function)
 				       args)
+  (declare (ignore args))
   (let ((std-set (call-next-method)))
     (when std-set
       (list (car std-set)))))
@@ -109,7 +116,7 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 	 ;; however, when the METHOD-LAMBDA itself is compiled.
 	 ;;
 	 ;; FIXME: Capture errors and warnings from the COMPILE call
-	 (apply (compile nil ,lambda)
+	 (apply (compile* nil ,lambda)
 		,method-lambda-args)))))
 
 (defmethod compute-effective-method ((genf monotonic-generic-function)

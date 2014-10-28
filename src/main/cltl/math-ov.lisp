@@ -15,7 +15,7 @@
 
 (defconstant* %integer-instance-classes%
   (let ((c (compute-end-classes (find-class 'integer))))
-    #+CCL (cons '(find-clas fixnum) c)
+    #+CCL (cons (find-class 'fixnum) c)
     #-CCL c))
 
 (defconstant* %float-instance-classes%
@@ -112,7 +112,7 @@ For each class C in CLASSES, then define methods:
 					:function 
 					;; FIXME: Catch errors/warnings
 					;; from COMPILE
-					(compile nil 
+					(compile* nil 
 						 (compute-method-lambda gf lform nil)))))
 
                  (add-method gf m))))
@@ -317,8 +317,16 @@ For each class C in CLASSES, then define methods:
 ;; (= (/ pi 4) (@atan 2d0 2d0))
 ;; => T
 
+;; (= (/ pi 4) (@atan 2 2))
+;; => NIL
+
 ;; also
 ;; (= (rationalize (/ pi 4d0)) (rationalize (@atan 2d0 2d0)))
+;; = T
+;;
+;; as well:
+;; (= (rationalize (/ pi 4)) (rationalize (@atan 2d0 2d0)))
+;; => T ;; noting, pi is already a doulbe-float value
 ;;
 ;; although
 ;; (= (/ (rationalize pi) 4) (rationalize (@atan 2d0 2d0)))
@@ -327,6 +335,8 @@ For each class C in CLASSES, then define methods:
 ;; however
 ;; (= (/ (rational pi) 4) (rational (@atan 2d0 2d0)))
 ;; => T
+;;
+
 ;;
 ;; thus illustrating some of the contrasting qualities of CL:RATIONAL 
 ;; and CL:RATIONALIZE - onto that simple wrapper for diadic ATAN
@@ -445,8 +455,8 @@ For each class C in CLASSES, then define methods:
 
 ;; %%% EVENP, ODDP
 
-  (defop-monadic 'evenp)
-  (defop-monadic 'oddp)
+  (defop-monadic 'evenp %integer-instance-classes%)
+  (defop-monadic 'oddp %integer-instance-classes%)
 
 
 ;;; %% Overloading for Monadic Increment Functions
@@ -480,7 +490,7 @@ For each class C in CLASSES, then define methods:
 
 ;;; % New Functions
 
-(defgeneric geometric-sum (a b)
+(defgeneric @geometric-sum (a b)
   (:generic-function-class monotonic-generic-function)
   (:method ((a number) (b number))
     ;; FIXME: This completely looses optimizations,
@@ -490,10 +500,10 @@ For each class C in CLASSES, then define methods:
 	       (@expt (coerce b 'double-float)
 		      2d0)))))
 
-;; (geometric-sum 3 4)
+;; (@geometric-sum 3 4)
 ;; => 5.0d0
 
-;; (geometric-sum 3d0 4d0)
+;; (@geometric-sum 3d0 4d0)
 ;; => 5.0d0
 
 ;; Host library integration in [SBCL]

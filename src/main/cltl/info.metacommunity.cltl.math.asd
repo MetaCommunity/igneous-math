@@ -37,11 +37,42 @@ Effective version history:
   :serial t
   :components 
   ((:file "math-package")
-   (:file "defclass-star") ;; FIXME: move into .utils system
-   (:file "monotonic-genf") ;; FIXME: move into .utils system
-   (:file "math-ov")
-   (:file "measurement")
-   (:file "decimal-scale")
-   (:file "prefix")
-   (:file "geometry")
+   (:file "math-system-utils"
+	  :depends-on ("math-package"))
+
+   (:file "defclass-star"  ;; FIXME: move into .utils system
+	  :depends-on ("math-package"))
+   (:file "monotonic-genf"  ;; FIXME: move into .utils system
+	  :depends-on ("math-package"))
+
+   (:file "math-ov"
+	  ;; NB: This file is essentially orthogonal to the
+	  ;; measurements subsystem
+	  :depends-on ("monotonic-genf"
+		       "math-package"))
+
+   (:file "domain"
+	  ;; :subsystem measure
+	  :depends-on ("math-system-utils"
+		       "defclass-star"))
+   (:file "measurement"
+	  ;; :subsystem measure
+	  :depends-on ("domain"
+		       "math-system-utils"
+		       "defclass-star"))
+
+   (:file "decimal-scale"
+	  ;; :subsystem measure
+	  :depends-on ("measurement"))
+
+   (:file "prefix"
+	  ;; :subsystem measure
+	  ;; nb. The prefix system is essentially orthogonal to MAKE-MEASUREMENT
+	  :depends-on ("measurement"
+		       "math-system-utils"
+		       "defclass-star"))
+
+   (:file "geometry"
+	  :depends-on ("measurement"))
+
    ))

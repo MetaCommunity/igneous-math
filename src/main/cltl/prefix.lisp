@@ -42,14 +42,6 @@ See also: `rescale'"))
   (:method ((instance measurement))
     (measurement-degree instance)))
 
-(defgeneric prefix-print-label (instance)
-  (:method ((instance measurement))
-    (prefix-print-label (prefix-of instance))))
-
-(defgeneric prefix-print-name (instance)
-  (:method ((instance measurement))
-    (prefix-print-name (prefix-of instance))))
-
 (defgeneric prefix-symbol (instance)
   (:method ((instance measurement))
     (prefix-symbol (prefix-of instance))))
@@ -159,7 +151,7 @@ See also: `rescale'"))
 (defgeneric scale-si (measurement &optional engineering-notation-p))
 
 
-(defclass* prefix ()
+(defclass* prefix (pretty-printable-object)
   ;; NOTE: This class is applied effectively as a DECIMAL-PREFIX 
   ;; FIXME: Rename PREFIX class to DECIMAL-PREFIX,
   ;; FIXME: Implement class PREFIX-CLASS with accessor PREFIX-BASE
@@ -169,9 +161,7 @@ See also: `rescale'"))
   ;;        supporting an OCTAL-PREFIX-CLASS for prefixes thereof.
   ;; FIXME: Seperately, impelement a measurement-domain for 
   ;;         virtual (e.g. display screen, cf HyTime) measurements  
-  ((degree prefix-degree :read-only t)
-   (print-label simple-string :read-only t)
-   (print-name simple-string :read-only t)
+  ((degree prefix-degree :read-only t) 
    (symbol symbol :read-only t)))
 
 
@@ -193,10 +183,15 @@ See also: `rescale'"))
 ;; systems with a big, red, blinking HTML label for safety analysis.)
 
 (defmethod print-object ((instance prefix) stream)
-  (print-unreadable-object (instance stream :type t :identity t)
-    (princ (slot-value* instance 'print-label "{no label}") 
-           stream)))
+  (print-unreadable-object (instance stream :type t :identity nil)
+    (princ (object-print-name instance) stream)
+    (write-char #\Space stream)
+    (write-char #\( stream)
+    (princ (object-print-label instance) stream)
+    (write-char #\) stream)))
 
+;; (make-instance 'prefix :symbol :|frob| :degree -15 :print-name "frob" :print-label "f")
+;; => #<PREFIX frob (f)>
 
 (define-condition prefix-not-found (entity-not-found)
   ()
@@ -213,101 +208,163 @@ See also: `rescale'"))
              (entity-not-found-name c)))))
 
 
-(declaim (type simple-vector %prefixes%))
-(defvar %prefixes% (make-array 20))
+
+(declaim (type (vector prefix) %prefixes% ))
+
+(defvar %prefixes% (make-array 20 :fill-pointer 0 
+			       :element-type 'prefix)
+  "Internal storage for measurement prefixes.
+
+This variable should be accessed with `%PREFIXES-LOCK%' held
+
+See also:
+* `find-prefix'
+* `find-prefix='
+* `prefix-of'")
+
+
+(defvar %prefixes-lock% (make-lock "%PREFIXES%")
+  "Mutex lock for accessing `%PREFIXES%'")
 
 
 (defun find-prefix (s)
+  "Locate a measurement prefix with symbolic name S.
+
+If no prefix is defined with symbolic name S, an error of type
+PREFIX-NOT-FOUND is singaled"
   (declare (type symbol s)
-           (values prefix))
-  (or (find s %prefixes%
-            :test #'eq
-            :key #'prefix-symbol)
-      (error 'prefix-not-found :name s)))
+	   (values prefix))
+  (with-lock-held (%prefixes-lock%)
+    (or (find s %prefixes%
+	      :test #'eq
+	      :key #'prefix-symbol)
+	(error 'prefix-not-found :name s))))
 
 ;; (find-prefix :|m|)
 
-
-
 (defun find-prefix= (d)
+  "Locate a measurement prefix with prefix degree D.
+
+If no prefix is defined with prefix degree D, an error of type
+PREFIX-NOT-FOUND is singaled"
   (declare (type prefix-degree d)
-           (values prefix))
-  (or (find d %prefixes%
-            :test #'=
-            :key #'prefix-degree)
-      (error 'prefix-degree-not-found
-             :name d)))
+	   (values prefix))
+  (with-lock-held (%prefixes-lock%)
+    (or (find d %prefixes%
+	      :test #'(lambda (a b)
+			(declare (type fixnum a b))
+			(= a b))
+	      :key #'prefix-degree)
+	(error 'prefix-degree-not-found
+	       :name d))))
 
 ;; (find-prefix= -9)
-;;  <<nano>>
+;; => #<PREFIX nano (n)>
 
-;; (map 'list #'find-prefix= %si-degrees%)
+(defun register-prefix (p)
+  (declare (type prefix p)
+	   (values prefix))
+  (with-lock-held (%prefixes-lock%)
+    (let* ((s (prefix-symbol p))
+	   (n (position s %prefixes%
+			:test #'eq
+			:key #'prefix-symbol)))
+      (cond
+	(n (setf (aref %prefixes% n) p))
+	(t (vector-push-extend p %prefixes%)))
+      (values p))))
 
+;; (map 'list #'find-prefix= (remove 0 %si-degrees%))
 
 ;; define prefix classes
-(let ((n -1))
-  (labels ((do-def (p degree print-name name)
-             (let ((p (make-instance 'prefix
-                                     :symbol name
-                                     :degree degree
-                                     :print-name print-name
-                                     :print-label (string-downcase (symbol-name p))
-                                     )))
-               (setf (svref %prefixes% (incf n)) p)
-               (values p))))
-    (mapcar (lambda (spec)
-              (destructuring-bind 
-                    (c  degree print-name name) spec
-                (do-def c degree print-name name)))
-            ;; FIXME: Update the documentation (README.md namely) as
-            ;; to denote the syntax for measurement symbols, applied
-            ;; here - with a sidebar note as with regards to readtable
-            ;; case within a Common Lisp programming system
-          '((yotta 24 "Y" :|Y|)
-            (zetta 21 "Z" :|Z|)
-            (exa 18 "E" :|e|)
-            (peta  15 "P" :|p|)
-            (tera  12 "T" :|t|)
-            (giga  9 "G" :|g|)
-            (mega  6 "M" :|M|)
-            (kilo  3 "k" :|k|)
-            (hecto  2 "h" :|h|)
-            (deca  1 "da" :|da|)
-            (deci  -1 "d" :|d|)
-            (centi  -2 "c" :|c|)
-            (milli  -3 "m" :|m|)
-            (micro  -6 #.(string (code-char #x3BC)) :|u|)
-            (nano  -9 "n" :|n|)
-            (pico  -12 "p" :|p|)
-            (femto  -15 "f" :|f|)
-            (atto  -18 "a" :|a|)
-            (zepto  -21 "z" :|z|)
-            (yocto  -24 "y" :|y|)))))
+(labels ((do-def (p degree label name)
+	   (let ((p (make-instance 'prefix
+				   :symbol name
+				   :degree degree
+				   :print-name (string-downcase (symbol-name p))
+				   :print-label label
+				   )))
+	     (register-prefix p)
+	     (values p))))
+  (mapcar (lambda (spec)
+	    (destructuring-bind 
+		  (c  degree label name) spec
+	      (do-def c degree label name)))
+	  ;; FIXME: Update the documentation (README.md namely) as
+	  ;; to denote the syntax for measurement symbols, applied
+	  ;; here - with a sidebar note as with regards to readtable
+	  ;; case and prefix-symbol
+	  '((yotta 24 "Y" :|Y|)
+	    (zetta 21 "Z" :|Z|)
+	    (exa 18 "E" :|E|)
+	    (peta  15 "P" :|P|)
+	    (tera  12 "T" :|T|)
+	    (giga  9 "G" :|G|)
+	    (mega  6 "M" :|M|)
+	    (kilo  3 "k" :|k|)
+	    (hecto  2 "h" :|h|)
+	    (deca  1 "da" :|da|)
+	    (deci  -1 "d" :|d|)
+	    (centi  -2 "c" :|c|)
+	    (milli  -3 "m" :|m|)
+	    (micro  -6 #.(string (code-char #x3BC)) :|u|)
+	    (nano  -9 "n" :|n|)
+	    (pico  -12 "p" :|p|)
+	    (femto  -15 "f" :|f|)
+	    (atto  -18 "a" :|a|)
+	    (zepto  -21 "z" :|z|)
+	    (yocto  -24 "y" :|y|))))
 
+;; (map 'list #'(lambda (p) (cons (prefix-symbol p) (prefix-degree p))) %prefixes%)
+
+;; (object-print-label (find-prefix= 9))
+;; => "G"
+
+(defmethod print-label ((object measurement) (stream stream))
+  (multiple-value-bind (mag boundp)
+      (slot-value* object 'magnitude)
+    (cond 
+      ((and boundp (slot-boundp object 'degree))
+       (multiple-value-bind (adj-mag deg-si)                  
+	   (scale-si object t)
+	 (declare (type real adj-mag) (type fixnum deg-si))
+	 (princ adj-mag stream)
+	 (write-char #\Space stream)
+	 (unless (zerop deg-si)
+	   (let ((prefix (find-prefix= deg-si))) 
+	     (princ (object-print-label prefix) stream)))))
+      (boundp (princ mag stream))
+      (t
+       (princ "{no magnitude} " stream))))  
+  (princ (object-print-label (class-of object))
+	 stream))
+
+(defmethod print-label ((object kilogram) (stream stream))
+  "Print a KILOGRAM measurement in units of grams"
+  (multiple-value-bind (mag boundp)
+      (slot-value* object 'magnitude)
+    (cond 
+      ((and boundp (slot-boundp object 'degree))
+       (multiple-value-bind (adj-mag deg-si)                  
+	   (scale-si object t)
+	 (declare (type real adj-mag) (type fixnum deg-si))
+	 (princ (* adj-mag 1000) stream)
+	 (write-char #\Space stream)
+	 (unless (zerop deg-si)
+	   (let ((prefix (find-prefix= deg-si))) 
+	     (princ (object-print-label prefix) stream)))))
+      (boundp (princ mag stream))
+      (t
+       (princ "{no magnitude} " stream))))  
+  (write-char #\g stream))
 
 (defmethod print-object ((object measurement) stream)
   (print-unreadable-object (object stream :type t :identity t)
+    (print-label object stream)))
 
-    (multiple-value-bind (mag boundp)
-        (slot-value* object 'magnitude)
-      (cond 
-        ((and boundp (slot-boundp object 'degree))
-         (multiple-value-bind (adj-mag deg)                  
-             (scale-si object t)
-           (declare (type real adj-mag) (type fixnum deg))
-           (princ adj-mag stream)
-           (write-char #\Space stream)
-           (unless (zerop deg)
-             (let ((prefix (find-prefix= deg))) 
-               (princ (prefix-print-name prefix) stream)))))
-        (boundp (princ mag stream))
-        (t
-         (princ "{no magnitude}" stream))))
-    
-    (princ (measurement-print-name (class-of object))
-           stream)))
-
-
+(defmethod object-print-label ((object measurement))
+  (with-output-to-string (s)
+    (print-label object s)))
 
 (defun prefix-of (m &optional (ee-p t))
   ;; FIXME: Rename to SCALAR-PREFIX
@@ -332,34 +389,28 @@ See also:
            (values prefix fixnum))
   (multiple-value-bind (magnitude deg-si)
       (scale-si m ee-p)
-    (let ((prefix
-           (find deg-si %prefixes%
-                 :key #'prefix-degree
-                 :test #'(lambda (a b)
-                           (declare (type prefix-degree a b))
-                           (= a b)))))
+    (let ((prefix (find-prefix= deg-si)))
       (values prefix magnitude))))
 
-;; (prefix-of (make-measurement 1 :m 24))
-;; => <<yotta>>, 1
 
-;; (prefix-of (make-measurement 1 :m 23))
-;; => <<zetta>>, 100
 
-;; (prefix-of (make-measurement 1 :m 22))
-;; => <<zetta>>, 10
-
-;; (prefix-of (make-measurement 1 :m 21))
-;; => <<zetta>>, 1
-
-;; (untrace scale-si)
-;; (untrace shift-magnitude)
-;; (untrace find-nearest-degree)
-
-;; (prefix-of (make-measurement 1 :m 3))
-
-;; (prefix-of (make-measurement 1 :m 16))
-;; => <<peta>>, 10
+;; (prefix-of (make-measurement 1 :|m| 24))
+;; => #<PREFIX yotta (Y)>, 1
+;;
+;; (prefix-of (make-measurement 1 :|m| 23))
+;; => #<PREFIX zetta (Z)>, 100
+;;
+;; (prefix-of (make-measurement 1 :|m| 22))
+;; => #<PREFIX zetta (Z)>, 10
+;;
+;; (prefix-of (make-measurement 1 :|m| 21))
+;; => #<PREFIX zetta (Z)>, 1
+;;
+;; (prefix-of (make-measurement 1 :|m| 3))
+;; => #<PREFIX kilo (k)>, 1
+;;
+;; (prefix-of (make-measurement 1 :|m| -16))
+;; => #<PREFIX atto (a)>, 100
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
 ;;

@@ -6,12 +6,21 @@
   (:nicknames #:math)
   (:shadowing-import-from 
    ;; prefer the implementation's own forms to those defined in c2mop
+   ;; towards debugging, etc.
    #:cl
    #:defgeneric
    #:defmethod
    #:standard-generic-function
    #:standard-method
-   #:standard-class)
+   #:standard-class
+   )
+  #+CCL ;; FIXME
+  (:shadowing-import-from
+   #:ccl
+   #:compute-effective-method
+   ;; #:make-method-lambda ;; not defined in CCL (?)
+   ;; #:compute-applicable-methods
+   )
   #+(or SBCL CMU CCL)
   (:shadowing-import-from
    #+SBCL #:SB-MOP
