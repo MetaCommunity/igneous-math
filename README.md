@@ -11,6 +11,14 @@ Igneous-Math - A Mathematical Object System in Common Lisp
 * [closer-mop][c2mop]
 * [bordeaux-threads][bordeaux-threads]
 
+**Supported Implementations**
+
+This program system is being developed primiarily with
+[Steel Bank Common Lisp (SBCL)](http://www.sbcl.org). Though some
+effort is made to ensure portability with other Common Lisp
+implementations, however SBCL is effectively the _reference platform_
+in development of this program system.
+
 **License:** [Eclipse Public License 1.0][license]
 
 ### Features (Current Edition)
