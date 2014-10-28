@@ -62,62 +62,9 @@ in development of this program system.
 
 ### Measurement Concepts
 
-#### Object Naming
-
-See also: `utils:object-print-name`, `utils:object-print-label`
-
-### Measurement Dictionary (Partial)
-
-#### `Measurement-Domain` [Standard Class]
-
-#### `Measurement-Class` [Standard Class]
-
-#### `Measurement` [Standard Class]
-
-#### `Prefix` [Standard Class]
-
-#### `Rescale` [Standard Generic Function]
-
-#### `Nrescale` [Standard Generic Function]
-
-#### `Scale-SI` [Standard Generic Function]
-
-#### `Find-Prefix` [Function]
-
-#### `Find-Prefix=` [Function]
-
-#### `Prefix-Of` [Function]
-
-#### `Prefix-Degee` [Accessor]
-
-#### `Prefix-Symbol` [Accessor]
-
-#### `Measurement-Symbol` [Accessor]
-
-#### `Measurement-Magnitue` [Accessor]
-
-#### `Measurement-Degree` [Accessor]
-
-#### `Base-Magnitude` [Function]
-
-#### `Scalar-Magnitude` [Generic Function]
-
-### Mathematics Dictionary (Partial)
-
-#### `%+`, `@+`, `@+@`
-
-#### `%-`, `@-`, `@-@`
-
-#### `%*`, `@*`, `@*@`
-
-#### `%/`, `@/`, `@/@`
-
-## Measurement Units - Old Notes
-
-The following text represents a body of notes developed during initial
-prototyping of the Igneous Math system.
-
 ### Measurement Domains
+
+#### Base Measurement Domains
 
 The Systeme International (SI), published by the _Bureau International
 des Poids et Mesures_ (BIPM), defines seven base measurement units,
@@ -143,115 +90,103 @@ corresponding _measurement base unit_.
 * **Amount of Substance**: mole
 * **Luminous Intensity**: candela
 
-This program system represents those respective measurement units,
-each, as corresponding to a _measurement domain_, each represented
-with a single _measurement class_ named according to the respective
-_measurement base unit_ 
+This program system represents those respective measurement domains
+and their respective base measure units as follows:
 
-* `math:meter`
-* `math:kilogram`
-* `math:second`
-* `math:ampere`
-* `math:kelvin`
-* `math:mole`
-* `math:candela`
+* Domain `math:length`, base `math:meter`
+* Domain `math:mass`, base `math:kilogram`
+* Domain `math:time`, base `math:second`
+* Domain `math:electrical-current`, base `math:ampere`
+* Domain `math:temperature`, base `math:kelvin`
+* Domain `math:amount-substance`, base `math:mole`
+* Domain `math:luminous-intensity`, base `math:candela`
 
+
+In the object system defined of the
+[Igneous-Math source tree][[igneous-math], effectively a
+_`math:measurement` class_ is an instance of a
+_`math:measurement-class`_, which in turn is an instance of a
+_`math:measurement-domain` class_.
+
+>  (use-package '#:math)
+>  => T
+>
+>  (defparameter *m*  (make-measurement 1 :|m|))
+>  => *M*
+>
+> *M*
+> => #<METER 1 m {10083AF7A3}>
+>
+>  (class-of *m*)
+>  => #<LENGTH METER>
+>
+>  (class-of (class-of *M*))
+> => #<MEASUREMENT-DOMAIN LENGTH>
+
+
+### Derived Units
 
 In standards published by the BIPM and in standards published by the
-NIST, those base units are subsequently extended with formulas
-describing the mathematical natures of conventional _derived
-units_. [BIPM][#BIPM][NIST][#NIST]
+NIST, the standards base units defined of the Systeme International
+are subsequently extended with formulas describing the mathematical 
+natures of conventional _derived units_. [BIPM][#BIPM][NIST][#NIST]
 
+_To do: Still developing the architecture for derived units_
 
-#### Conventional Prefixes for Decimal Multiples of Measurements
-
-The Systeme International defines a standard set of symbolic names
-for decimal exponents of measurement values, in a range from
--24 to 24 degrees. Those decimal prefixes allow for succinct
-representation of _magnitudes_ of _measurement values_, within
-limits of _significant digits_.
-
-#### Measurement Accuracy and Significant Digits
-
-(To Do: Computation of significant digits within input values, with
-corresponding limits onto significant digits for printed values)
-
-See Also: Garcia-Santamarina, Sareta, et. al. _[Significant decimals and rounding](http://www.degruyter.com/view/j/cclm.2004.42.issue-9/cclm.2004.216/cclm.2004.216.xml)_
-
-#### Structure of Virtual Measurement Units
-
-In addition to the SI base units, this system may endeavor to define a
-set of additional measurement domains, such as inspired by the
-HyTime  standard[HyTime][#HyTime] -- specifically, such an abstract _virtual 
-measurement_ domain -- as well as a measurement domain for quantities
-of digital information.
-
-The _virtual measurement_ domain is extended with base units, namely,
-_virtual time_ and _virtual space_ -- applicable as for purpose of a
-representation of measurable quantities within a software system
-respectively, such as _PAL frame rate_ and _pixel coordinates_[MBryan][#MBryan]
-
-
-
-### Measurement Syntax
-
-This program system will endeavor to adopt a consistent syntax for
-measurement names, within the context of this program system.
-
-### Structure of Measurement Units
-
-Each type of _base quantity_ is assigned with one or more conventional
-symbols, such as for variables denoting measurements of such a
-quantity. Certainly, applications may vary, for those conventional
-symbols for quantities of the base unit -- for example, "l" being
-applied commonly for measure of linear dimension, and "r" applied
-commonly for radial magnitude, each of the previous being denoted as a 
-conventional symbol for a variable denoting of a measure of
-length. 
+### Object Naming
 
 Each type of measurement _base quantity_ corresponds to exactly one
-_measurement base unit_. 
+_measurement base unit_. Each _base unit_ is denoted with a _unit
+name_ -- for instance, "second" -- and one or more _symbols_ denoting
+of the measurement unit -- for instance "s".
 
-Each _base unit_ is denoted with a _unit name_ -- for instance,
-"second" -- and one or more _symbols_ denoting of the measurement unit
--- for instance "s". 
+This program system defines the following values for each type of
+measurement unit:
 
-For purpose of reference within software applications, this program
-system will endeavor to define a normative syntax for measurement
-units, consistent with common practice. As well as to implement the
-syntaxes of printable names for measurement units, it is a requirement
-of this system that all measurement units defined by this system may
-be referenced, each with a symbolic name suitable for input into a
-Lisp reader, a name comprised of _printing characters_ within the
-ASCII _character set_, and representing a Common Lisp symbol interned
-within the package, _keyword_.
+* name of base quantity, e.g "time, duration"
+    * for a measurement *M*, `(object-print-name (class-of (class-of *M*)))`
 
-In common practice, some measurement units are denoted with non-ASCII
-characters, including of qualities of typesetting -- such as of Greek
-letter characters and alphanumeric subscript characters -- some of
-which are available however, within the Unicode code set. 
+* a singular, verbose, printable name for the measurement
+  unit, without symbolic characters e.g. "second", "kilogram"
+    * for a measurement *M*, `(object-print-name (class-of *M*))`
 
+* a singular, printable label for symbolic representation of the
+  measurement unit in conventional syntax -- in which instance, this
+  system assumes that the lisp implementation implements the Unicode
+  code set -- e.g. "m", "°", "ω", or "lᵥ".
+    * for a measurement *M*, `(object-print-label (class-of *M*))`
 
-This program system will endeavor to define the following values for
-each type of measurement unit (slots of class, measurement-unit)
-
-* `quantity-name` - name of base quantity, e.g "time, duration"
-
-* `print-label` - a singular, verbose, printable name for the measurement
-  unit, without symbolic characters e.g. "meter", "newton
-  meter". Accessed with UTILS:OBJECT-PRINT-LABEL
-
-* `print-name` - a singular, printable name for symbolic
-  representation of the measurement unit in conventional syntax -- in 
-  which instance, this system assumes that the lisp implementation
-  implements the Unicode code set -- e.g. "m", "°", "ω", or "lᵥ".
-  Accessed with UTILS:OBJECT-PRINT-NAME
-
-* `symbol` - A Lisp symbolic name, interned within the keyword package, for
+* A Lisp symbolic name, interned within the keyword package, for
   application within the source code of Lisp programs -- e.g. `:m`,
-  `:deg`, (angular), `:ohm`, and `:lux`. For purpose of this
-  definition, a number of standard practices will be defined of this 
-  system:
+  `:deg`, (angular), `:ohm`, and `:lux`.
+    * for a measurement *M*, `(measurement-symbol (class-of *M*))`
+
+Example:
+
+>  (use-package '#:math)
+>  => T
+>
+>  (defparameter *m*  (make-measurement 1 :|m|))
+>  => *M*
+>
+> *M*
+> => #<METER 1 m {10083AF7A3}>
+>
+>  (object-print-name (class-of (class-of *m*)))
+>  => "length"
+>
+>  (object-print-name (class-of *m*))
+> => "meter"
+>
+>  (object-print-label (class-of *m*))
+> => "m"
+>
+>  (measurement-symbol (class-of *m*))
+> => :|m|
+
+
+Regarding selection of measurement symbols, a number of standard
+practices will be defined of this system: 
 
    * ASCII characters shall be represented as ASCII characters to be
      interpreted in "readtable case"
@@ -331,7 +266,7 @@ sections 5.3.1 and 5.3.2
 For printed names utilizing special typographic characters in
 superscript or subscript notations, this system will apply the Unicode
 character equivalent of the respective superscript or subscript, when
-available.  
+available.
 
 It should be noted that an alternate syntax may be developed in
 extending of  MathML syntax, such that may be integrated with
@@ -342,6 +277,121 @@ publishing system, this system shall instead apply a typographic
 shorthand of those letters' special typographic forms, so far as
 available within the Unicode code set.
 
+
+A short illustration:
+
+>  (use-package '#:math)
+>  => T
+>
+>  (use-package #:utils)
+>  => T
+>
+>  (defparameter *m*  (make-measurement 1 :|m|))
+>  => *M*
+>
+> *M*
+> => #<METER 1 m {10083AF7A3}>
+>
+>  (object-print-label *m*)
+>  => "1 m"
+>
+
+
+See also: `utils:object-print-name`, `utils:object-print-label`
+
+### Measurement Dictionary (Partial)
+
+#### `Measurement-Domain` [Standard Class]
+
+#### `Measurement-Class` [Standard Class]
+
+#### `Measurement` [Standard Class]
+
+#### `Prefix` [Standard Class]
+
+#### `Rescale` [Standard Generic Function]
+
+#### `Nrescale` [Standard Generic Function]
+
+#### `Scale-SI` [Standard Generic Function]
+
+#### `Find-Prefix` [Function]
+
+#### `Find-Prefix=` [Function]
+
+#### `Prefix-Of` [Function]
+
+#### `Prefix-Degree` [Accessor]
+
+#### `Prefix-Symbol` [Accessor]
+
+#### `Measurement-Symbol` [Accessor]
+
+#### `Measurement-Magnitude` [Accessor]
+
+#### `Measurement-Degree` [Accessor]
+
+#### `Base-Magnitude` [Function]
+
+#### `Scalar-Magnitude` [Generic Function]
+
+### Mathematics Dictionary (Partial)
+
+#### `%+`, `@+`, `@+@`
+
+#### `%-`, `@-`, `@-@`
+
+#### `%*`, `@*`, `@*@`
+
+#### `%/`, `@/`, `@/@`
+
+## Measurement Units - Old Notes
+
+The following text represents a body of notes developed during initial
+prototyping of the Igneous Math system.
+
+### Measurement Domains
+
+_Section subsequently moved into reference documentation, previous_
+
+#### Conventional Prefixes for Decimal Multiples of Measurements
+
+The Systeme International defines a standard set of symbolic names
+for decimal exponents of measurement values, in a range from
+-24 to 24 degrees. Those decimal prefixes allow for succinct
+representation of _magnitudes_ of _measurement values_, within
+limits of _significant digits_.
+
+#### Measurement Accuracy and Significant Digits
+
+(To Do: Computation of significant digits within input values, with
+corresponding limits onto significant digits for printed values)
+
+See Also: Garcia-Santamarina, Sareta, et. al. _[Significant decimals and rounding](http://www.degruyter.com/view/j/cclm.2004.42.issue-9/cclm.2004.216/cclm.2004.216.xml)_
+
+#### Structure of Virtual Measurement Units
+
+In addition to the SI base units, this system may endeavor to define a
+set of additional measurement domains, such as inspired by the
+HyTime  standard[HyTime][#HyTime] -- specifically, such an abstract _virtual 
+measurement_ domain -- as well as a measurement domain for quantities
+of digital information.
+
+The _virtual measurement_ domain is extended with base units, namely,
+_virtual time_ and _virtual space_ -- applicable as for purpose of a
+representation of measurable quantities within a software system
+respectively, such as _PAL frame rate_ and _pixel coordinates_[MBryan][#MBryan]
+
+
+
+### Measurement Syntax
+
+This program system will endeavor to adopt a consistent syntax for
+measurement names, within the context of this program system.
+
+### Structure of Measurement Units
+
+_Section subsequently moved into reference documentation, previous_
 
 ### Geometric Object Model
 
@@ -456,7 +506,7 @@ see also:
  -->
 <!--  LocalWords:  MathML ASDF Jakub Higersberger's accessor YouTrack
  -->
-<!--  LocalWords:  TeamCity Nr DEFCLASS FIXME hygrand JESD
+<!--  LocalWords:  TeamCity Nr DEFCLASS FIXME hygrand JESD Rescale
  -->
-<!--  LocalWords:  EToolbox
+<!--  LocalWords:  EToolbox defparameter Nrescale
  -->
