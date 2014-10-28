@@ -1,7 +1,7 @@
 
 (in-package #:math)
 
-;; referencing http://www.bipm.org/en/publications/si-brochure/
+;; see also http://www.bipm.org/en/publications/si-brochure/
 ;; and http://physics.nist.gov/pubs/sp811/contents.html
     
 
@@ -12,9 +12,10 @@
 (defgeneric measurement-symbol (instance))
 
 
+;;; % Measurement Class
+
 (defclass* (measurement-class 
 	    :conc-name #:measurement-)
-    ;; FIXME: Remove?
     (standard-class pretty-printable-object)
   ((symbol symbol  :read-only t)))
 
@@ -31,9 +32,9 @@
              (entity-not-found-name c)))))
 
 
-;;; % Measurement Class Storage and Access
+;;; %% Measurement Class Storage and Access
 
-;;; %% Locking (Thread Safety)
+;;; %%% Locking (Thread Safety)
 
 (declaim (type (vector measurement-class) %measurement-classes% ))
 
@@ -48,7 +49,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
   "Mutex lock for accessing `%DOMAINS%'")
 
 
-;;; %% Access Functions
+;;; %%% Access Functions
 
 (defun register-measurement-class (c)
   (declare (type measurement-class c))
@@ -186,7 +187,8 @@ for the measurement"
   (measurement-symbol (class-of instance)))
 
 
-;;; define core measurement domains and base unit classes
+;;; %% Initialize core measurement domains and base unit classes
+
 (let ((kwd (find-package '#:keyword))
       (md-c (find-class 'measurement-domain))
       (mc-c (find-class 'measurement-class))
