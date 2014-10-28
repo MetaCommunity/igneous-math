@@ -216,7 +216,6 @@ for the measurement"
 		  (cons d c))))
 	    '((length "length" meter "metre" "m" :|m|)
 	      (mass "mass" kilogram "kilogram" "kg" :|kg|)
-	      ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
 	      (time "time, duration" second "second" "s" :|s|)
 	      (electrical-current "electric current" ampere "ampere" "A" :|a|)
 	      (temperature "thermodyamic temperature" kelvin "kelvin" "K" :|k|)
@@ -241,21 +240,30 @@ for the measurement"
 ;; (find-measurement-class :|mol|)
 ;; (find-measurement-class :|cd|)
 
-;; (measurement-symbol (find-class 'meter))
-;; => :|m|
-
-;; (measurement-symbol  (make-measurement 1 :|m|)))
 
 
-
-
-#+TO-DO
+#+TO-DO?
 (defclass gram (kilogram)
+  ;; Kilogram is the base unit of measurement for mass, under the
+  ;; Systeme International.
+  ;;
+  ;; The method PRINT-LABEL (KILOGRAM T) will ensure that an
+  ;; appropriate magnitude and unit will be printed for KILOGRAM
+  ;; measurements.
+  ;;
+  ;; Though it may be more semantically consistent, if to ensure that
+  ;; a class, GRAM, is defined in parallel to KILOGRAM, however
+  ;; insofar as that such application presently lacks a necessary
+  ;; usage case, the class GRAM will remain effectively undefined.
   ()
   (:metaclass mass)
-  (:print-label . "gram") ;; FIXME: #I18N (EN_UK => gramme)
-  (:print-name . "g")
-  (:name :|g|))
+  (:print-name . "gram") ;; FIXME: #I18N (EN_UK => gramme)
+  (:print-label . "g")
+  (:symbol :|g|))
+
+;; (make-measurement 1 :|kg|)
+;; => #<KILOGRAM 1000 g {10082A9083}>
+
 
 ;;; % DERIVED MEASUREMENT UNITS
 

@@ -320,28 +320,47 @@ PREFIX-NOT-FOUND is singaled"
 ;; (object-print-label (find-prefix= 9))
 ;; => "G"
 
+(defmethod print-label ((object measurement) stream)
+  (multiple-value-bind (mag boundp)
+      (slot-value* object 'magnitude)
+    (cond 
+      ((and boundp (slot-boundp object 'degree))
+       (multiple-value-bind (adj-mag deg-si)                  
+	   (scale-si object t)
+	 (declare (type real adj-mag) (type fixnum deg-si))
+	 (princ adj-mag stream)
+	 (write-char #\Space stream)
+	 (unless (zerop deg-si)
+	   (let ((prefix (find-prefix= deg-si))) 
+	     (princ (object-print-label prefix) stream)))))
+      (boundp (princ mag stream))
+      (t
+       (princ "{no magnitude} " stream))))  
+  (princ (object-print-label (class-of object))
+	 stream))
+
+(defmethod print-label ((object kilogram) stream)
+  "Print a KILOGRAM measurement in units of grams"
+  (multiple-value-bind (mag boundp)
+      (slot-value* object 'magnitude)
+    (cond 
+      ((and boundp (slot-boundp object 'degree))
+       (multiple-value-bind (adj-mag deg-si)                  
+	   (scale-si object t)
+	 (declare (type real adj-mag) (type fixnum deg-si))
+	 (princ (* adj-mag 1000) stream)
+	 (write-char #\Space stream)
+	 (unless (zerop deg-si)
+	   (let ((prefix (find-prefix= deg-si))) 
+	     (princ (object-print-label prefix) stream)))))
+      (boundp (princ mag stream))
+      (t
+       (princ "{no magnitude} " stream))))  
+  (write-char #\g stream))
 
 (defmethod print-object ((object measurement) stream)
   (print-unreadable-object (object stream :type t :identity t)
-
-    (multiple-value-bind (mag boundp)
-        (slot-value* object 'magnitude)
-      (cond 
-        ((and boundp (slot-boundp object 'degree))
-         (multiple-value-bind (adj-mag deg-si)                  
-             (scale-si object t)
-           (declare (type real adj-mag) (type fixnum deg-si))
-           (princ adj-mag stream)
-           (write-char #\Space stream)
-           (unless (zerop deg-si)
-             (let ((prefix (find-prefix= deg-si))) 
-               (princ (object-print-label prefix) stream)))))
-        (boundp (princ mag stream))
-        (t
-         (princ "{no magnitude}" stream))))
-    
-    (princ (object-print-label (class-of object))
-           stream)))
+    (print-label object stream)))
 
 
 (defun prefix-of (m &optional (ee-p t))
