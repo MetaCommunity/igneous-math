@@ -254,7 +254,8 @@ for the measurement"
   ;; Though it may be more semantically consistent, if to ensure that
   ;; a class, GRAM, is defined in parallel to KILOGRAM, however
   ;; insofar as that such application presently lacks a necessary
-  ;; usage case, the class GRAM will remain effectively undefined.
+  ;; usage case, the class GRAM will remain directly undefined of this
+  ;; system. 
   ()
   (:metaclass mass)
   (:print-name . "gram") ;; FIXME: #I18N (EN_UK => gramme)
