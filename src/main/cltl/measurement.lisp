@@ -8,12 +8,25 @@
 (defgeneric measurement-symbol (instance))
 
 
+(defgeneric measurement-base-factor (measurement)) ;; NEW
+(defgeneric measurement-base-factor-exponent (measurement)) ;; NEW
+
+
 ;;; % Measurement Class
 
 (defclass* (measurement-class 
 	    :conc-name #:measurement-)
     (pretty-printable-object standard-class)
-  ((symbol symbol  :read-only t)))
+  ((symbol symbol  :read-only t)
+   (base-factor 
+    real 
+    :read-only t
+    :initform 1)
+   (base-factor-exponent 
+    fixnum 
+    :read-only t
+    :initform 0)
+   ))
 
 (validate-class measurement-class)
 
@@ -131,8 +144,10 @@ See also:
 See also: 
 * `measurement-degree'
 * `measurement-magnitude'")
+  (:method ((instance measurement-class))
+    (values 10))
   (:method ((instance measurement))
-    (values 10)))
+    (measurement-factor-base (class-of instance))))
 
 
 (defun base-magnitude (m)  
@@ -142,25 +157,36 @@ measurement unit of M"
   ;; NB. This function implements a numeric conversion on
   ;; a basis of of prefix magnitude. Conversions per ratios of derived
   ;; units must be implemneted seperately.
+  
+  ;; FIXME: This was designed specifically around base units, and as
+  ;; such, assumes that M is already factored to a base unit
   (declare (type measurement m)
            (values real))
-  (let ((deg (measurement-degree m)))
+  (let* ((deg (measurement-degree m))
+	 (unit (class-of m))
+	 (expt-base (measurement-factor-base unit))
+	 (base-factor (measurement-base-factor unit))
+	 (base-factor-degree (measurement-base-factor-exponent unit))
+	 (base-mag (* (measurement-magnitude m)
+		      base-factor
+		      (expt expt-base base-factor-degree))))
+    
     (cond 
-      ((zerop deg) (values (measurement-magnitude m)))
-      (t (values (* (measurement-magnitude m)
-                    (expt (measurement-factor-base m) 
-                          deg)))))))
+      ((zerop deg) (values base-mag))
+      (t (values (* base-mag
+                    (expt expt-base deg)))))))
 
-;; (base-magnitude (make-measurement 1 :m 3))
+
+;; (base-magnitude (make-measurement 1 :|m| 3))
 ;; => 1000
 
-;; (base-magnitude (make-measurement 1 :m -3))
+;; (base-magnitude (make-measurement 1 :|m| -3))
 ;; => 1/1000
 
-;; (base-magnitude (make-measurement 1/5 :m))
+;; (base-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5
 
-;; (base-magnitude (make-measurement 1/5 :m -3))
+;; (base-magnitude (make-measurement 1/5 :|m| -3))
 ;; => 1/5000
 
 
@@ -268,10 +294,44 @@ for the measurement"
 
 ;;; % DERIVED MEASUREMENT UNITS
 
-#+NIL
-(defclass derived-measurement (measurement)
-  ;; ???
-  ())
+;; (defclass derived-measurement-class (measurement-class)
+;;   ((base-scale
+;;     :initarg :base-scale
+
+
+;; referencing [NIST SP811]
+
+(defclass foot (measurement)
+  ;; prototypical, derived measurement unit
+  ()
+  (:metaclass length)
+  (:print-name . "foot")
+  (:print-label . "ft")
+  (:base-factor . 1200/3937)
+  (:symbol . :|ft|)
+  #+OBJECT-ANNOTATION
+  ;; ^ towards a concept similar to OWL annotation properites
+  ;; in an application for annotation of Common Lisp objects,
+  ;; ...towards something perhaps somewhat more specialized than
+  ;; symbol plists, and onto "The Semantic Web" etc
+  ;;
+  ;; Here, just a small usage example, for denoting an exact "source 
+  ;; resource" from which a measurement conversion ratio has been
+  ;; derived, manually, by the author:
+  (:annotation
+   ;; #i<IRI> reader macro (TBD)
+   (:defined_by #i<http://physics.nist.gov/pubs/sp811/> B.6 42)
+   ;; ^ specifically SP811 section B.6 (p. 42)
+   ))
+
+(register-measurement-class (find-class 'foot))
+
+;; (base-magnitude (make-measurement 1 :|ft|))
+;; => 1200/3937 i.e meters
+;;
+;; (float 1200/3937 pi)
+;; => 0.3048006096012192d0
+;; ^ approximately 0.30408 as per SP811
 
 
 
