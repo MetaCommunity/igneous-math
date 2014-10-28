@@ -78,11 +78,23 @@
 
 
 
-(defgeneric measurement-magnitude (instance))
+(defgeneric measurement-magnitude (instance)
+  (:documentaiton
+   "Return the scalar magnitude of the INSTANCE
+
+See also:
+* `scalar-magnitude'
+* `measurement-degree'
+* `measurement-factor-base'"))
 (defgeneric (setf measurement-magnitude) (new-value instance))
 
-;; FIXME: rename to measurement-scale
-(defgeneric measurement-degree (instance))
+(defgeneric measurement-degree (instance)
+  (;documentatino 
+   "Return the degree of the scale factor of the INSTANCE.
+
+See also:
+* `measurement-factor-base'
+* `measurement-magnitude'"))
 (defgeneric (setf measurement-degree) (new-value instance))
 
 
@@ -103,8 +115,15 @@
    ;; rather than 10
    (degree fixnum :initform 0)))
 
-(defgeneric measurement-factor-base (measurement)
-  (:method ((measurement measurement))
+(defgeneric measurement-factor-base (instance)
+  ;; FIXME: Rename to scalar-factor-base
+  (:documentation
+   "Return the base of the degree scale factor of the INSTANCE
+
+See also: 
+* `measurement-degree'
+* `measurement-magnitude'")
+  (:method ((instance measurement))
     (values 10)))
 
 
