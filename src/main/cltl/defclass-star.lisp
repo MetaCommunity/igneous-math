@@ -2,6 +2,14 @@
 (in-package #:math)
 ;: ^ FIXME: move into #:utils
 
+(defmacro validate-class (class &optional (superclass 'standard-class))
+  #+(or SBCL CMU CCL)
+  `(defmethod validate-superclass ((a ,class) (b ,superclass))
+     (values t))
+  #-(or SBCL CMU CCL)
+  `(values))
+
+
 (defun class-subclass-p (c1 c2)
   (declare (type class-designator c1 c2)
            (values boolean))

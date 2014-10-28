@@ -6,7 +6,7 @@
 ;; TO DO
 
 (defclass scalar (measurement) 
-  ;; effectively a monadic coordinate
+  ;; effectively a coordinate onto a number line
   ())
 
 

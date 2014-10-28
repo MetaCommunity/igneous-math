@@ -42,14 +42,6 @@ See also: `rescale'"))
   (:method ((instance measurement))
     (measurement-degree instance)))
 
-(defgeneric prefix-print-label (instance)
-  (:method ((instance measurement))
-    (prefix-print-label (prefix-of instance))))
-
-(defgeneric prefix-print-name (instance)
-  (:method ((instance measurement))
-    (prefix-print-name (prefix-of instance))))
-
 (defgeneric prefix-symbol (instance)
   (:method ((instance measurement))
     (prefix-symbol (prefix-of instance))))
@@ -159,7 +151,7 @@ See also: `rescale'"))
 (defgeneric scale-si (measurement &optional engineering-notation-p))
 
 
-(defclass* prefix ()
+(defclass* prefix (pretty-printable-object)
   ;; NOTE: This class is applied effectively as a DECIMAL-PREFIX 
   ;; FIXME: Rename PREFIX class to DECIMAL-PREFIX,
   ;; FIXME: Implement class PREFIX-CLASS with accessor PREFIX-BASE
@@ -169,9 +161,7 @@ See also: `rescale'"))
   ;;        supporting an OCTAL-PREFIX-CLASS for prefixes thereof.
   ;; FIXME: Seperately, impelement a measurement-domain for 
   ;;         virtual (e.g. display screen, cf HyTime) measurements  
-  ((degree prefix-degree :read-only t)
-   (print-label simple-string :read-only t)
-   (print-name simple-string :read-only t)
+  ((degree prefix-degree :read-only t) 
    (symbol symbol :read-only t)))
 
 
@@ -193,10 +183,15 @@ See also: `rescale'"))
 ;; systems with a big, red, blinking HTML label for safety analysis.)
 
 (defmethod print-object ((instance prefix) stream)
-  (print-unreadable-object (instance stream :type t :identity t)
-    (princ (slot-value* instance 'print-label "{no label}") 
-           stream)))
+  (print-unreadable-object (instance stream :type t :identity nil)
+    (princ (object-print-name instance) stream)
+    (write-char #\Space stream)
+    (write-char #\( stream)
+    (princ (object-print-label instance) stream)
+    (write-char #\) stream)))
 
+;; (make-instance 'prefix :symbol :|frob| :degree -15 :print-name "frob" :print-label "f")
+;; => #<PREFIX frob (f)>
 
 (define-condition prefix-not-found (entity-not-found)
   ()
@@ -217,72 +212,78 @@ See also: `rescale'"))
 (defvar %prefixes% (make-array 20))
 
 
-(defun find-prefix (s)
-  (declare (type symbol s)
-           (values prefix))
-  (or (find s %prefixes%
-            :test #'eq
-            :key #'prefix-symbol)
-      (error 'prefix-not-found :name s)))
+(let ((%prefixes% (make-array 20)))
+  ;; NB: Not locking %PREFIXES%, in this edition of igneous-math.
+  ;; It's expected that the value of %prefixes% will be initialized
+  ;; only from  within this source file
 
-;; (find-prefix :|m|)
+  (declare (type simple-vector %prefixes%))
+  
+  (defun find-prefix (s)
+    (declare (type symbol s)
+	     (values prefix))
+    (or (find s %prefixes%
+	      :test #'eq
+	      :key #'prefix-symbol)
+	(error 'prefix-not-found :name s)))
 
+  ;; (find-prefix :|m|)
 
+  (defun find-prefix= (d)
+    (declare (type prefix-degree d)
+	     (values prefix))
+    (or (find d %prefixes%
+	      :test #'(lambda (a b)
+			(declare (type fixnum a b))
+			(= a b))
+	      :key #'prefix-degree)
+	(error 'prefix-degree-not-found
+	       :name d)))
+  
+  ;; (find-prefix= -9)
+  ;; => #<PREFIX nano (n)>
+  
+  ;; (map 'list #'find-prefix= (remove 0 %si-degrees%))
 
-(defun find-prefix= (d)
-  (declare (type prefix-degree d)
-           (values prefix))
-  (or (find d %prefixes%
-            :test #'=
-            :key #'prefix-degree)
-      (error 'prefix-degree-not-found
-             :name d)))
-
-;; (find-prefix= -9)
-;;  <<nano>>
-
-;; (map 'list #'find-prefix= %si-degrees%)
-
-
-;; define prefix classes
-(let ((n -1))
-  (labels ((do-def (p degree print-name name)
-             (let ((p (make-instance 'prefix
-                                     :symbol name
-                                     :degree degree
-                                     :print-name print-name
-                                     :print-label (string-downcase (symbol-name p))
-                                     )))
-               (setf (svref %prefixes% (incf n)) p)
-               (values p))))
-    (mapcar (lambda (spec)
-              (destructuring-bind 
-                    (c  degree print-name name) spec
-                (do-def c degree print-name name)))
-            ;; FIXME: Update the documentation (README.md namely) as
-            ;; to denote the syntax for measurement symbols, applied
-            ;; here - with a sidebar note as with regards to readtable
-            ;; case within a Common Lisp programming system
-          '((yotta 24 "Y" :|Y|)
-            (zetta 21 "Z" :|Z|)
-            (exa 18 "E" :|e|)
-            (peta  15 "P" :|p|)
-            (tera  12 "T" :|t|)
-            (giga  9 "G" :|g|)
-            (mega  6 "M" :|M|)
-            (kilo  3 "k" :|k|)
-            (hecto  2 "h" :|h|)
-            (deca  1 "da" :|da|)
-            (deci  -1 "d" :|d|)
-            (centi  -2 "c" :|c|)
-            (milli  -3 "m" :|m|)
-            (micro  -6 #.(string (code-char #x3BC)) :|u|)
-            (nano  -9 "n" :|n|)
-            (pico  -12 "p" :|p|)
-            (femto  -15 "f" :|f|)
-            (atto  -18 "a" :|a|)
-            (zepto  -21 "z" :|z|)
-            (yocto  -24 "y" :|y|)))))
+  ;; define prefix classes
+  (let ((n -1))
+    (labels ((do-def (p degree print-name name)
+	       (let ((p (make-instance 'prefix
+				       :symbol name
+				       :degree degree
+				       :print-name (string-downcase (symbol-name p))
+				       :print-label print-name
+				       )))
+		 (setf (svref %prefixes% (incf n)) p)
+		 (values p))))
+      (mapcar (lambda (spec)
+		(destructuring-bind 
+		      (c  degree print-name name) spec
+		  (do-def c degree print-name name)))
+	      ;; FIXME: Update the documentation (README.md namely) as
+	      ;; to denote the syntax for measurement symbols, applied
+	      ;; here - with a sidebar note as with regards to readtable
+	      ;; case and prefix-symbol
+	      '((yotta 24 "Y" :|Y|)
+		(zetta 21 "Z" :|Z|)
+		(exa 18 "E" :|e|)
+		(peta  15 "P" :|p|)
+		(tera  12 "T" :|t|)
+		(giga  9 "G" :|g|)
+		(mega  6 "M" :|M|)
+		(kilo  3 "k" :|k|)
+		(hecto  2 "h" :|h|)
+		(deca  1 "da" :|da|)
+		(deci  -1 "d" :|d|)
+		(centi  -2 "c" :|c|)
+		(milli  -3 "m" :|m|)
+		(micro  -6 #.(string (code-char #x3BC)) :|u|)
+		(nano  -9 "n" :|n|)
+		(pico  -12 "p" :|p|)
+		(femto  -15 "f" :|f|)
+		(atto  -18 "a" :|a|)
+		(zepto  -21 "z" :|z|)
+		(yocto  -24 "y" :|y|))))))
 
 
 (defmethod print-object ((object measurement) stream)
@@ -299,12 +300,12 @@ See also: `rescale'"))
            (write-char #\Space stream)
            (unless (zerop deg)
              (let ((prefix (find-prefix= deg))) 
-               (princ (prefix-print-name prefix) stream)))))
+               (princ (object-print-name prefix) stream)))))
         (boundp (princ mag stream))
         (t
          (princ "{no magnitude}" stream))))
     
-    (princ (measurement-print-name (class-of object))
+    (princ (object-print-label (class-of object))
            stream)))
 
 
@@ -332,34 +333,28 @@ See also:
            (values prefix fixnum))
   (multiple-value-bind (magnitude deg-si)
       (scale-si m ee-p)
-    (let ((prefix
-           (find deg-si %prefixes%
-                 :key #'prefix-degree
-                 :test #'(lambda (a b)
-                           (declare (type prefix-degree a b))
-                           (= a b)))))
+    (let ((prefix (find-prefix= deg-si)))
       (values prefix magnitude))))
 
+
+
 ;; (prefix-of (make-measurement 1 :m 24))
-;; => <<yotta>>, 1
-
+;; => #<PREFIX yotta (Y)>, 1
+;;
 ;; (prefix-of (make-measurement 1 :m 23))
-;; => <<zetta>>, 100
-
+;; => #<PREFIX zetta (Z)>, 100
+;;
 ;; (prefix-of (make-measurement 1 :m 22))
-;; => <<zetta>>, 10
-
+;; => #<PREFIX zetta (Z)>, 10
+;;
 ;; (prefix-of (make-measurement 1 :m 21))
-;; => <<zetta>>, 1
-
-;; (untrace scale-si)
-;; (untrace shift-magnitude)
-;; (untrace find-nearest-degree)
-
+;; => #<PREFIX zetta (Z)>, 1
+;;
 ;; (prefix-of (make-measurement 1 :m 3))
-
-;; (prefix-of (make-measurement 1 :m 16))
-;; => <<peta>>, 10
+;; => #<PREFIX kilo (k)>, 1
+;;
+;; (prefix-of (make-measurement 1 :m -16))
+;; => #<PREFIX atto (a)>, 100
 
 ;; Trivial decimal exponential mathematics, ad hoc syntax:
 ;;

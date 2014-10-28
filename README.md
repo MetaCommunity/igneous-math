@@ -60,6 +60,12 @@ in development of this program system.
 
 ## Reference (Partial)
 
+### Measurement Concepts
+
+#### Object Naming
+
+See also: `utils:object-print-name`, `utils:object-print-label`
+
 ### Measurement Dictionary (Partial)
 
 #### `Measurement-Domain` [Standard Class]
@@ -84,17 +90,7 @@ in development of this program system.
 
 #### `Prefix-Degee` [Accessor]
 
-#### `Prefix-Print-Label` [Accessor]
-
-#### `Prefix-Print-Name` [Accessor]
-
 #### `Prefix-Symbol` [Accessor]
-
-#### `Measurement-Quantity-Name` [Accessor]
-
-#### `Measurement-Print-Label` [Accessor]
-
-#### `Measurement-Print-Name` [Accessor]
 
 #### `Measurement-Symbol` [Accessor]
 
@@ -242,12 +238,14 @@ each type of measurement unit (slots of class, measurement-unit)
 * `quantity-name` - name of base quantity, e.g "time, duration"
 
 * `print-label` - a singular, verbose, printable name for the measurement
-  unit, without symbolic characters e.g. "meter", "newton meter"
+  unit, without symbolic characters e.g. "meter", "newton
+  meter". Accessed with UTILS:OBJECT-PRINT-LABEL
 
 * `print-name` - a singular, printable name for symbolic
   representation of the measurement unit in conventional syntax -- in 
   which instance, this system assumes that the lisp implementation
-  implements the Unicode code set -- e.g. "m", "°", "ω", or "lᵥ"
+  implements the Unicode code set -- e.g. "m", "°", "ω", or "lᵥ".
+  Accessed with UTILS:OBJECT-PRINT-NAME
 
 * `symbol` - A Lisp symbolic name, interned within the keyword package, for
   application within the source code of Lisp programs -- e.g. `:m`,

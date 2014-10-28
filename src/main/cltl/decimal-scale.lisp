@@ -308,7 +308,7 @@ See also:
 
 ;; (make-measurement 1 :kg 6)
 ;; => #<KILOGRAM 1 Mkg {1006260FC3}> ;; INCORRECT
-
+;; ^ see SCALE-SI
 
 ;; (make-measurement 1 :m 3)
 ;; => #<METER 1 km {1003FF93A3}>

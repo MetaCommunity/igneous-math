@@ -5,46 +5,30 @@
 ;; and http://physics.nist.gov/pubs/sp811/contents.html
     
 
-(defgeneric measurement-quantity-name (instance))
 (defgeneric measurement-print-label (instance))
+;; ^ FIXME: Remove; Rename methods to OBJECT-PRINT-LABEL (Application object naming model)
 (defgeneric measurement-print-name (instance))
+;; ^ FIXME: Remove; Rename methods to OBJECT-PRINT-NAME (Application object naming model)
 (defgeneric measurement-symbol (instance))
 
-(defclass* (measurement-domain
-            :conc-name #:measurement-)
-    ()
-  ((quantity-name simple-string :read-only t)
-   (print-label simple-string :read-only t)
-   (print-name simple-string :read-only t)
-   (symbol symbol :read-only t)))
 
+(defclass* (measurement-class 
+	    :conc-name #:measurement-)
+    ;; FIXME: Remove?
+    (standard-class pretty-printable-object)
+  ((symbol symbol  :read-only t)))
 
-(defclass measurement-class (measurement-domain standard-class)
-  ())
-
+(validate-class measurement-class)
 
 (deftype measurement-class-designator ()
   '(or symbol measurement-class))
 
-
-(define-condition entity-not-found (error)
-  ((name
-    :initarg :name
-    :reader entity-not-found-name)))
-
-(define-condition class-not-found (entity-not-found)
+(define-condition measurement-class-not-found (entity-not-found)
   ()
   (:report
    (lambda (c s)
      (format s "No measurement class registered for name ~S"
              (entity-not-found-name c)))))
-
-   
-
-#+(or SBCL CMU CCL) ;; FIXME: Wrap this in a portability layer
-(defmethod validate-superclass ((class measurement-class)
-                                       (superclass standard-class))
-  (values t))
 
 
 (let ((%classes% (make-array 7 :fill-pointer 0
@@ -72,14 +56,14 @@
       (or (find s %classes%
                 :test #'eq
                 :key #'measurement-symbol)
-          (error 'class-not-found :name s))))
+          (error 'measurement-class-not-found :name s))))
   )
   
 
-
+;;; % MEASUREMENT
 
 (defgeneric measurement-magnitude (instance)
-  (:documentaiton
+  (:documentation
    "Return the scalar magnitude of the INSTANCE
 
 See also:
@@ -89,7 +73,7 @@ See also:
 (defgeneric (setf measurement-magnitude) (new-value instance))
 
 (defgeneric measurement-degree (instance)
-  (;documentatino 
+  (:documentation 
    "Return the degree of the scale factor of the INSTANCE.
 
 See also:
@@ -114,6 +98,17 @@ See also:
    ;; (expt 10 DEGREE) -- respectively, an effective FACTOR-BASE of 8
    ;; rather than 10
    (degree fixnum :initform 0)))
+
+
+(defgeneric measurement-domain (instance)
+  (:method ((instance measurement))
+    (class-of (class-of instance))))
+
+(defgeneric measurement-base-measure (instance)
+  (:method ((instance measurement))
+    (measurement-domain-base-measure
+     (measurement-domain instance))))
+
 
 (defgeneric measurement-factor-base (instance)
   ;; FIXME: Rename to scalar-factor-base
@@ -165,12 +160,6 @@ for the measurement"
 ;; (scalar-magnitude (make-measurement 1 :m -3))
 ;; => 1/1000
 
-
-;;; % MEASUREMENT
-
-(defmethod measurement-quantity-name ((instance measurement))
-  (measurement-quantity-name (class-of instance)))
-
 (defmethod measurement-print-label ((instance measurement))
   (measurement-print-label (class-of instance)))
 
@@ -181,34 +170,62 @@ for the measurement"
   (measurement-symbol (class-of instance)))
 
 
-;;; define base unit classes
-(let (#+SBCL (src (sb-c:source-location)))
-  (labels ((do-def (c quantity print-label print-name name)
-	     (let ((c (c2mop:ensure-class 
-		       c
-		       :direct-superclasses (list (find-class 'measurement))
-		       :symbol name
-		       :print-name print-name
-		       :print-label print-label
-		       :quantity-name quantity
-		       :metaclass (find-class 'measurement-class)
-		       #+SBCL :definition-source 
-		       #+SBCL src 
-		       )))
-	       (register-measurement-class c))))
+;;; define core measurement domains and base unit classes
+(let ((kwd (find-package '#:keyword))
+      (md-c (find-class 'measurement-domain))
+      (mc-c (find-class 'measurement-class))
+      (m-c (find-class 'measurement))
+      #+SBCL (src (sb-c:source-location)))
+  (labels ((do-def (domain domain-name class print-label print-name name)
+	     (let* ((d 
+		     (ensure-class 
+			domain
+			:symbol (intern* (read-from-string domain-name)
+					 kwd)
+			:print-name domain-name
+			:print-label domain-name
+			:direct-superclasses (list mc-c)
+			:metaclass md-c
+			#+SBCL :definition-source #+SBCL src))
+		    (c 
+		     (ensure-class 
+		      class
+		      :direct-superclasses (list m-c)
+		      :symbol name
+		      :print-name print-name
+		      :print-label print-label
+		      :metaclass d
+		      #+SBCL :definition-source #+SBCL src 
+		      )))
+	       (setf (slot-value d 'base-measure) c)
+	       (register-measurement-domain d)
+	       (register-measurement-class c)
+	       (values d c))))
+
     (mapcar (lambda (spec)
 	      (destructuring-bind 
-		    (c quantity print-label print-name name) spec
-		(do-def c quantity print-label print-name name)))
-	    '((length "length" "metre" "m" :m)
-	      (mass "mass" "kilogram" "kg" :kg)
+		    (domain domain-name class print-label print-name name) spec
+		(multiple-value-bind (d c)
+		    (do-def domain domain-name class print-label print-name name)
+		  (cons d c))))
+	    '((length "length" meter "metre" "m" :m)
+	      (mass "mass" kilogram "kilogram" "kg" :kg)
 	      ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
-	      (time "time, duration" "second" "s" :s)
-	      (electrical-current "electric current" "ampere" "A" :a)
-	      (temperature "thermodyamic temperature" "kelvin" "K" :k)
-	      (amount-substance "amount of substance" "mole" "mol" :mol)
-	      (luminous-intensity "luminous intensity" "candela" "cd" :cd)))
+	      (time "time, duration" second "second" "s" :s)
+	      (electrical-current "electric current" ampere "ampere" "A" :a)
+	      (temperature "thermodyamic temperature" kelvin "kelvin" "K" :k)
+	      (amount-substance "amount of substance" mole "mole" "mol" :mol)
+	      (luminous-intensity "luminous intensity" candela "candela" "cd" :cd)))
     ))
+
+;; (find-class 'length)
+;; (class-of (find-class 'meter))
+;;
+;; (typep (find-class 'meter) 'measurement-class)
+;; => T
+;;
+;; (measurement-domain (make-instance 'meteqr))
+;; => #<MEASUREMENT-DOMAIN LENGTH>
 
 ;; (find-measurement-class :m)
 ;; (find-measurement-class :kg)
@@ -218,17 +235,20 @@ for the measurement"
 ;; (find-measurement-class :mol)
 ;; (find-measurement-class :cd)
 
-
+#+TO-DO
+(defclass gram (kilogram)
+  ()
+  (:metaclass mass)
+  (:print-label . "gram") ;; FIXME: #I18N (EN_UK => gramme)
+  (:print-name . "g")
+  (:name :|g|))
 
 ;;; % DERIVED MEASUREMENT UNITS
 
-
-(defclass derived-measurement-class (measurement-class)
+#+NIL
+(defclass derived-measurement (measurement)
+  ;; ???
   ())
-
-(defclass* unit-factor ()
-  ((unit measurement-class :read-only t)
-   (factor real :read-only t)))
 
 
 
