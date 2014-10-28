@@ -79,9 +79,11 @@
 
 
 (defgeneric measurement-magnitude (instance))
+(defgeneric (setf measurement-magnitude) (new-value instance))
 
 ;; FIXME: rename to measurement-scale
 (defgeneric measurement-degree (instance))
+(defgeneric (setf measurement-degree) (new-value instance))
 
 
 (defclass* measurement ()
@@ -99,15 +101,7 @@
    ;; alternate regards, then -- as in (expt 8 DEGREE) rather than 
    ;; (expt 10 DEGREE) -- respectively, an effective FACTOR-BASE of 8
    ;; rather than 10
-   (degree fixnum :initform 0)
-   ;; FIXME: For purpose of memoization, consider developing a
-   ;; MEMOIZED-SLOT protocol such that a slot
-   ;; MEMOIZED-FACTORED-MAGNITUDE would store an effective 
-   ;; cached value of (* magnitude (expt factor-base degree)) 
-   ;; Referencing Garnet KR, the same slot may be defined effetively
-   ;; with a formula onto other slots in the class and other formulas
-   ;; iin the Lisp environment
-   ))
+   (degree fixnum :initform 0)))
 
 (defgeneric measurement-factor-base (measurement)
   (:method ((measurement measurement))
