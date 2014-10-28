@@ -200,14 +200,14 @@ for the measurement"
 	      (destructuring-bind 
 		    (c quantity print-label print-name name) spec
 		(do-def c quantity print-label print-name name)))
-	    '((meter "length" "metre" "m" :m)
-	      (kilogram "mass" "kilogram" "kg" :kg)
+	    '((length "length" "metre" "m" :m)
+	      (mass "mass" "kilogram" "kg" :kg)
 	      ;; FIXME: base unit conversions onto KILOGRAM => "incorrect"
-	      (second "time, duration" "second" "s" :s)
-	      (ampere "electric current" "ampere" "A" :a)
-	      (kelvin "thermodyamic temperature" "kelvin" "K" :k)
-	      (mole "amount of substance" "mole" "mol" :mol)
-	      (candela "luminous intensity" "candela" "cd" :cd)))
+	      (time "time, duration" "second" "s" :s)
+	      (electrical-current "electric current" "ampere" "A" :a)
+	      (temperature "thermodyamic temperature" "kelvin" "K" :k)
+	      (amount-substance "amount of substance" "mole" "mol" :mol)
+	      (luminous-intensity "luminous intensity" "candela" "cd" :cd)))
     ))
 
 ;; (find-measurement-class :m)
