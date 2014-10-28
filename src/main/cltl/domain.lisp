@@ -21,7 +21,7 @@
 
 (validate-class measurement-domain)
 
-(define-condition measurement-domain-not-fond (entity-not-found)
+(define-condition measurement-domain-not-found (entity-not-found)
   ()
   (:report
    (lambda (c s)
@@ -52,7 +52,7 @@
     (let ((s (etypecase name
 	       (symbol name)
 	       (string (intern* (read-from-string name)
-				(find-package #:keyword))))))
+				(find-package '#:keyword))))))
       (with-lock-held (%domains-lock%)
 	(or (find s %domains%
 		  :test #'eq
@@ -81,5 +81,7 @@
   );; LET
 
 
-;; (enumerate-measurement-domains)
+;; (find-measurement-domain :electrical-current)
+
+;; (mapcar #'measurement-domain-symbol (enumerate-measurement-domains))
 
