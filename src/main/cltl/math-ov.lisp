@@ -455,8 +455,8 @@ For each class C in CLASSES, then define methods:
 
 ;; %%% EVENP, ODDP
 
-  (defop-monadic 'evenp)
-  (defop-monadic 'oddp)
+  (defop-monadic 'evenp %integer-instance-classes%)
+  (defop-monadic 'oddp %integer-instance-classes%)
 
 
 ;;; %% Overloading for Monadic Increment Functions
