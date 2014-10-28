@@ -180,8 +180,7 @@ for the measurement"
 	     (let* ((d 
 		     (ensure-class 
 			domain
-			:symbol (intern* (read-from-string domain-name)
-					 kwd)
+			:symbol (intern* domain kwd)
 			:print-name domain-name
 			:print-label domain-name
 			:direct-superclasses (list mc-c)
@@ -218,13 +217,13 @@ for the measurement"
 	      (luminous-intensity "luminous intensity" candela "candela" "cd" :cd)))
     ))
 
-;; (find-class 'length)
-;; (class-of (find-class 'meter))
+;; (eq (find-class 'length) (class-of (find-class 'meter)))
+;; => T
 ;;
 ;; (typep (find-class 'meter) 'measurement-class)
 ;; => T
 ;;
-;; (measurement-domain (make-instance 'meteqr))
+;; (measurement-domain (make-instance 'meter))
 ;; => #<MEASUREMENT-DOMAIN LENGTH>
 
 ;; (find-measurement-class :m)
