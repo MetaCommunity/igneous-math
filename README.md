@@ -400,7 +400,7 @@ see also:
  -->
 <!--  LocalWords:  MathML ASDF Jakub Higersberger's accessor YouTrack
  -->
-<!--  LocalWords:  TeamCity Nr DEFCLASS FIXME hygrand JESD th
+<!--  LocalWords:  TeamCity Nr DEFCLASS FIXME hygrand JESD
  -->
 <!--  LocalWords:  EToolbox
  -->
