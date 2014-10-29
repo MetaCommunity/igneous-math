@@ -7,12 +7,12 @@
 (defgeneric compute-measurement-class (operation a b)
   ;; avoiding EQL specializers, "as a matter of principle"
   
-  ;; @+ => base measurement unit of domain of A, B + converstion
-  ;; @- => base measurement unit of domain of A, B + converstion
+  ;; @+ => base measurement unit of domain of A, B + conversion
+  ;; @- => base measurement unit of domain of A, B + conversion
   ;; @* => exponent (!) of base measurement unit of domain of A, B
   ;;       ...as per the sum of the "unit degree" of each of A, B
   ;;      + conversion
-  ;; @/ => "Unity" unit + converstion
+  ;; @/ => "Unity" unit + conversion
 
   ;; In such unit conversions as must be performed within a
   ;; mathematical operation OP onto measurement objects (A,B), the

@@ -330,10 +330,15 @@ for the measurement"
 ;; => 1200/3937 i.e meters
 ;;
 ;; (float 1200/3937 pi)
-;; => 0.3048006096012192d0
-;; ^ approximately 0.30408 as per SP811
+;; => 0.3048006096012192d0 
+;;  ^ 1 foot => "this many" meters (double float precision)
+;;  ^ approximately 0.30408 as per SP811 (less than single-float precision)
 
 
+;; (make-measurement 1 :|ft| 3)
+;; ^ the illustrious kft
+;; (make-measurement 1 :|ft| -3)
+;; ^ correspondingly, the larch millifoot
 
 #| Topic: Measurement Formulas
 

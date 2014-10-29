@@ -133,6 +133,80 @@ natures of conventional _derived units_. [BIPM][#BIPM][NIST][#NIST]
 
 _To do: Still developing the architecture for derived units_
 
+Referring to [BIPM][#BIPM], p. 118 (English Edition PDF p. 26) a
+number of additional _measurement domains_ are defined within a single
+table, each denotedper an essential type of _quantity_. Within a
+domain of applications of electrical systems, the folloiwng units are
+denoted of that table:
+
+* Volt (V)
+    * Domain: _Electrical power difference, electromotive force_
+	* Relation in terms of SI derived units: `W/A`
+	* Relation in terms of SI base units: `m^2 kg s^-3 A^-1`
+	* Common Applications include _Ohm's Law_ -- in a classic form,
+	  `I=V/R`
+	* ....
+	
+
+The measurement unit, _ohm_, as a standard unit for measurement of
+quantity of _electrial resistance_, is defined as a derived unit with
+formulas:
+
+    1 ohm = 1 m^2 kg s^-3 A^-2	[1] p. 111	
+    1 ohm = 1 V / 1 A		[1] p. 118
+
+Sidebar: Ideally, a mathematical system should be able to determine
+what units of measurement have resulted from a single formula. For
+instance, if a unit of _length_ is multiplied by a unit of _length_,
+then intuitively, the unit of the resulting multiple is a unit of
+_area_.  If the resultimg unit of _area_ would be multiplied, then, by
+another unit of _length_, then the resulting unit would be a unit of
+_cubic volume_, intuitively. Alternatley, if a unit of _area_ would be
+divided by a unit of _length_, then the resulting unit would be a unit
+of _length_.
+
+Essentially, this describes a manner of _unit algebra_,  specifically
+as with regards to _measurement units_ as _objects_ having some
+qualities like real numbers.
+
+In a prototypical regards, assuming a symbolic representation of unit
+names in Common Lisp:
+
+    (unit :|ohm|) = (unit (:|m| 2) :|kg| (:|s| -3) (:A -2))
+	              = (unit :V (:A -1))
+
+
+Similarly, the measurement unit, _volt_, as a standard unit for
+measurement of quantity of _electromotive force_ or _difference in
+electrical potential_, is defined with formulas
+
+    1 volt = 1 m^2 kg s^-3 A^-1	[1] p. 118
+    1 volt = 1 W / 1 A		[1] p. 118
+
+The measurement unit, _watt_, as a standard unit for measurement of
+quantity of _power_ or _radiant flux_:
+
+    1 watt = 1 m^2 kg s^-3		[1] p. 118
+    1 watt = 1 J / 1 S		[1] p. 118
+
+The measurement unit, _joule_, as a standard unit for measurement of
+quantity of _work_, _energy_, or _amount of heat_:
+
+    1 joule = 1 m^2 kg s^-2	[1] p. 118
+    1 joule = 1 N * 1 M		[1] p. 118
+
+The measurement unit, _newton_, as a standard unit for measurement of
+quantity of _force_: 
+
+    1 newton = 1 m kg s^-2		[1] p. 118
+
+
+    [1] http://www.bipm.org/en/publications/si-brochure/
+
+
+
+
+
 ### Object Naming
 
 Each type of measurement _base quantity_ corresponds to exactly one
