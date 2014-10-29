@@ -451,6 +451,7 @@ See also:
 
 (register-measurement-class (find-class 'foot))
 
+
 ;; (base-magnitude (make-measurement 1 :|ft|))
 ;; => 1200/3937 i.e meters
 ;;
@@ -462,11 +463,37 @@ See also:
 ;; (find-conversion-factor :|ft| :|m| (find-class 'length))
 ;; (find-conversion-factor :|m| :|ft| (find-class 'length))
 
-
 ;; (make-measurement 1 :|ft| 3)
 ;; ^ the illustrious kft
 ;; (make-measurement 1 :|ft| -3)
 ;; ^ correspondingly, the larch millifoot
+
+
+(defclass mile (measurement)
+  ;; prototypical, derived measurement unit
+  ()
+  (:metaclass length)
+  (:print-name . "mile")
+  (:print-label . "mi")
+  (:base-factor . #.(* 5280 1200/3937))
+  (:symbol . :|mi|)
+  #+OBJECT-ANNOTATION
+  ;; ^ towards a concept similar to OWL annotation properites
+  ;; in an application for annotation of Common Lisp objects,
+  ;; ...towards something perhaps somewhat more specialized than
+  ;; symbol plists, and onto "The Semantic Web" etc
+  ;;
+  ;; Here, just a small usage example, for denoting an exact "source 
+  ;; resource" from which a measurement conversion ratio has been
+  ;; derived, manually, by the author:
+  (:annotation
+   ;; #i<IRI> reader macro (TBD)
+   (:defined_by #i<http://physics.nist.gov/pubs/sp811/> B.6 42)
+   ;; ^ specifically SP811 section B.6 (p. 42)
+   ))
+
+(register-measurement-class (find-class 'mile))
+
 
 #| Topic: Measurement Formulas
 

@@ -25,14 +25,10 @@
 			     (factor-exponent cf )))))))
 
 ;; (scalar-magnitude (convert-measurement (make-measurement 1 :|ft|) :|m|))
-;; => 1200/3937
+;; => 1200/3937 (m)
 ;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m|) :|ft|))
-;; => 3937/1200
+;; => 3937/1200 (ft)
 
+;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m| 3) :|mi|))
+;; => 3937/6336 (mi)
 
-;; (describe (convert-measurement (make-measurement 1 :|m|) :|ft|))
-
-;; (measurement-base-factor (class-of (convert-measurement (make-measurement 1 :|m|) :|ft|)))
-
-;; (find-conversion-factor :|ft| :|m| (find-class 'length))
-;; (find-conversion-factor :|m| :|ft| (find-class 'length))
