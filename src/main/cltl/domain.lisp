@@ -150,10 +150,13 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 (defgeneric find-conversion-factor (source-unit dest-unit domain)
   (:method ((source-unit symbol) (dest-unit symbol)
 	    (domain measurement-domain))
+    (find-conversion-factor (find-measurement-class source-unit)
+			    (find-measurement-class dest-unit)
+			    domain))
+  (:method ((source-unit measurement-class) (dest-unit measurement-class)
+	    (domain measurement-domain))
     (with-lock-held ((measurement-domain-cf-lock domain))
-      (let ((factors (measurement-domain-conversion-factors domain))
-	    (src (find-measurement-class source-unit))
-	    (dst (find-measurement-class dest-unit)))
+      (let ((factors (measurement-domain-conversion-factors domain)))
 	;; This does not completely walk the measurement-domains table,
 	;; performing only a cursory, one-off search towards DST.
 	;;
@@ -163,10 +166,10 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 	;; registered, then it would be possible to convert  
 	;; between any registered units within a measurement domain,
 	;; using only a table of factors
-	(or (find src factors
+	(or (find source-unit factors
 		  :test #'(lambda (u cf)
-			    (and (eq src (factor-source-unit cf))
-				 (eq dst (factor-destination-unit cf)))))
+			    (and (eq source-unit (factor-source-unit cf))
+				 (eq dest-unit (factor-destination-unit cf)))))
 	    (simple-program-error
 	     "No conversion factor available for converting ~S to ~S within ~S"
 	     src dst domain))))))
