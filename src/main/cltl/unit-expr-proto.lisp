@@ -1,4 +1,4 @@
-;; uxpr.lisp -- prototyeps for expression of measurement units
+;; unit-expr-proto.lisp -- prototyeps for expression of measurement units
 
 
 
@@ -45,21 +45,40 @@
 
 ;; ---------
 
-#+PROTOTYPE-2
-(defun compute-measurement (op u1 u2)
-  ;; frob - prototype
+(defun query-measurement-type (op u1 u2)
+  (declare (type measurement-class u1 u2))
+  "Find a unit of meaurement expressive of the linear relation: u1 op u2"
+  (cond
+    ((eq u1 u2)
+     ;; use unit-EQ optimizations in COMPUTE-MEASUREMENT
+     (compute-measurement op u1 u2))
+    (t (let ((d-1 (class-of u1))
+	     (d-2 (class-of u2)))
+	 (cond
+	   ((eq d-1 d-2)
+	    ;; return values for shifting each of u1 and u2 onto the
+	    ;; base mesurement unit of the domain, similar to
+	    ;; domain-analyze
+	    )
+	   )))))
+
+(defun compute-measurement-type (op u1 u2)
+  (declare (type measurement-class u1 u2))
+  ;; values: base-unit, u1-factor, u1-factor-exponent,
+  ;;         u2-factor, u2-factor-exponent
+
+  ;; frob - prototype - should dispatch on 'OP'
   (ecase op
     ((+ -) (if (eq u1 u2)
-	       (values u1)
-	       (query-measurement op u1 u2)))
+	       (values u1 1 0 1 0)
+	       (query-measurement-type op u1 u2)))
     (* (if (eq u1 u2)
-	   (query-measurement-squared u1)
-	   (query-measurement op u1 u2)))
+	   (query-measurement-type-dimensionally u1 u2)
+	   (query-measurement-type op u1 u2)))
     (/ (if (eq u1 u2)
-	   (find-the-unit-measurement u1)
-	   (query-measurement op u1 u2)))))
+	   (dimensionless-measurement)
+	   (query-measurement-type op u1 u2)))))
 
-#+PROTOTYPE-2
 (defun domain-analyze (op m1 m2)
   ;; values: base-unit, u1-factor, u1-factor-exponent,
   ;;         u2-factor, u2-factor-exponent
@@ -69,14 +88,14 @@
 	 (domain-2 (class-of unit-2))
 	 (base-1 (measurement-domain-base-measure domain-1))
 	 (base-2 (measurement-domain-base-measure domain-2)))
-    (let ((unit (compute-measurement op base-1 base-2)))
+    (let ((unit (compute-measurement-type op base-1 base-2)))
       (values unit 
 	      (measurement-base-factor unit-1)
 	      (measurement-base-factor-exponent unit-1)
 	      (measurement-base-factor unit-2)
 	      (measurement-base-factor-exponent unit-2)))))
 
-#+PROTOTYPE-2
+
 (labels ((m* (m1 m2)
 	   (multiple-value-bind (base-unit m1-factor m1-factor-exponent
 					   m2-factor m2-factor-exponent)
