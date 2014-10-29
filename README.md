@@ -205,7 +205,7 @@ denoted of that table:
 **Previous Documentation (1) :**
 
 The measurement unit, _ohm_, as a standard unit for measurement of
-quantity of _electrial resistance_, is defined as a derived unit with
+quantity of _electrical resistance_, is defined as a derived unit with
 formulas:
 
     1 ohm = 1 m^2 kg s^-3 A^-2	[1] p. 111	
