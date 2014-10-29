@@ -76,6 +76,10 @@ Effective version history:
 	  :depends-on ("prefix"
 		       "measurement"
 		       "domain"))
+
+   (:file "measurement-ov"
+	  :depends-on ("measurement"
+		       "mconv"))
    
    (:file "geometry"
 	  :depends-on ("measurement"))

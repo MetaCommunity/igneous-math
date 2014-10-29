@@ -1,12 +1,14 @@
 ;; measurement-ov.lisp - math operations for measurement values
-;; [prototype]
+;; [prototype 0]
 ;;
 ;; see also: unit-expr-proto.lisp
 
 (in-package #:math)
 
+#+PROTOTYPE-0
 (defgeneric unit-degree (measurement-unit)) ;; FIXME: Move to other file
 
+#+PROTOTYPE-0
 (defgeneric compute-measurement-class (operation a b)
   ;; avoiding EQL specializers, "as a matter of principle"
   
@@ -43,7 +45,7 @@
     (funcall (the function (measurement-unit-selector-function opreation))
 	     a b)))
 
-
+#+PROTOTYPE-0
 (defmacro with-values ((a-m a-d b-m b-d base class) (op a b) &body body)
   (with-gensym (%a %b)
   `(let ((,%a ,a)
@@ -64,6 +66,7 @@
 (defmethod %+ ((a measurement))
   (values a))
 
+#+PROTOTYPE-0
 (defmethod @+ ((a measurement) (b measurement))
   ;; ISSUE: To ensure that (class-of A) is subtypep (class-of b))
   ;; ISSUE: To determine of which class the resulting measurement
@@ -108,6 +111,13 @@
 		     (class-of a)
 		     (measurement-degree a))))
 
+;; (= (scalar-magnitude (%- (make-measurement 1 :|m|))) -1)
+;; => T
+;; (= (scalar-magnitude (%- (make-measurement -1 :|m|))) 1)
+;; => T
+
+
+#+PROTOTYPE-0
 (defmethod @- ((a measurement) (b measurement))
   ;; ISSUE: To ensure that (class-of A) is subtypep (class-of b))
   ;; ISSUE: To determine of which class the resulting measurement
@@ -161,7 +171,17 @@
   (values
    (make-measurement (/ (measurement-magnitude a))
 		     (class-of a)
-		     (measurement-degree a))))
+		     (- (measurement-degree a)))))
+
+;; (= (scalar-magnitude (%/ (make-measurement 1 :|m|))) 1)
+;; => T
+
+;; (= (scalar-magnitude (%/ (make-measurement 10 :|m|))) 1/10)
+;; => T
+
+;; (= (scalar-magnitude (%/ (make-measurement 1 :|m| 1))) 1/10)
+;; => T
+
 
 ;; FIXME: Must return measurement of a "dimensionless" unit
 #+NIL
