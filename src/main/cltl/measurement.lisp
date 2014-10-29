@@ -141,7 +141,13 @@ See also:
 
 (defgeneric measurement-domain (instance)
   (:method ((instance measurement))
-    (class-of (class-of instance))))
+    (class-of (class-of instance)))
+  (:method ((instance measurement-class))
+    (class-of instance)))
+
+;; (measurement-domain (make-measurement 1 :|m|))
+;; (measurement-domain (find-class 'meter))
+;; ^ EQ => OK
 
 (defgeneric measurement-base-measure (instance)
   (:method ((instance measurement))
