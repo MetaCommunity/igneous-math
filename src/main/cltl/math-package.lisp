@@ -44,6 +44,7 @@
    #:temperature #:kelvin
    #:amount-substance #:mole
    #:luminous-intensity #:candela
+   #:convert-measurement
    ))
 
 
