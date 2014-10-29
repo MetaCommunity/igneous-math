@@ -11,7 +11,7 @@
   ;; FIXME: #I18N slot definitions - PRINT-NAME/PRINT-LABEL
   ((base-measure
     :initarg :base-measure
-    :type measurement-class
+    :type class
     :reader measurement-domain-base-measure)
    (symbol
     :initarg :symbol
@@ -28,6 +28,23 @@
     :reader measurement-domain-conversion-factors)))
 
 (validate-class measurement-domain)
+
+
+(defmethod shared-initialize :around ((instance measurement-domain)
+				      slots &rest initargs
+				      &key base-measure)
+  (let (args-changed-p)
+    (when (and base-measure (symbolp base-measure))
+      (let ((c (or (find-class base-measure nil) 
+		   (ensure-forward-referenced-class base-measure))))
+	(setf (getf initargs :base-measure) c)
+	(setq args-changed-p t)))
+    (cond
+      (args-changed-p
+       (apply #'call-next-method instance slots initargs))
+      (t (call-next-method)))))
+	
+
 
 (define-condition measurement-domain-not-found (entity-not-found)
   ()
@@ -101,94 +118,5 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 ;; (find-measurement-domain :electrical-current)
 
 ;; (mapcar #'measurement-domain-symbol (enumerate-measurement-domains))
-
-
-;;; % CONVERSION-FACTOR
-
-(defclass* (conversion-factor
-	    :conc-name #:factor-)
-    ()
-  ((source-unit
-    measurement-class
-    :read-only t)
-   (magnitude 
-    real
-    :read-only t)
-   (exponent 
-    fixnum
-    :initform 0
-    :read-only t)
-   (destination-unit
-    measurement-class
-    :read-only t)))
-
-(defmethod print-object ((object conversion-factor) stream)
-  (macrolet ((safely (form)
-	       `(ignore-errors ,form)))
-    (print-unreadable-object (object stream :type t)
-      (format stream "(1 ~A) => (~A~@D ~A)"
-	      (safely (object-print-label 
-		       (factor-source-unit object)))
-	      (safely (factor-magnitude object))
-	      (or (safely (factor-exponent object))
-		  0)
-	      (safely (object-print-label
-		       (factor-destination-unit object)))))))
-
-(defun make-conversion-factor (source-unit dest-unit
-			       factor-magnitude 
-			       &optional (factor-exponent 0))
-  (declare (type measurement-class source-unit dest-unit)
-	   (type real factor-magnitude)
-	   (type fixnum factor-exponent))
-  (values (make-instance 'conversion-factor
-			 :source-unit source-unit
-			 :destination-unit dest-unit
-			 :magnitude factor-magnitude
-			 :exponent 0)))
-
-(defgeneric find-conversion-factor (source-unit dest-unit domain)
-  (:method ((source-unit symbol) (dest-unit symbol)
-	    (domain measurement-domain))
-    (find-conversion-factor (find-measurement-class source-unit)
-			    (find-measurement-class dest-unit)
-			    domain))
-  (:method ((source-unit measurement-class) (dest-unit measurement-class)
-	    (domain measurement-domain))
-    (with-lock-held ((measurement-domain-cf-lock domain))
-      (let ((factors (measurement-domain-conversion-factors domain)))
-	;; This does not completely walk the measurement-domains table,
-	;; performing only a cursory, one-off search towards DST.
-	;;
-	;; If each derived unit, within a single measurement domain,
-	;; registers a factor for converting that unit to the domain's
-	;; base measure, and the reciptrocal conversion is also
-	;; registered, then it would be possible to convert  
-	;; between any registered units within a measurement domain,
-	;; using only a table of factors
-	(or (find source-unit factors
-		  :test #'(lambda (u cf)
-			    (and (eq source-unit (factor-source-unit cf))
-				 (eq dest-unit (factor-destination-unit cf)))))
-	    (simple-program-error
-	     "No conversion factor available for converting ~S to ~S within ~S"
-	     src dst domain))))))
-
-(defgeneric register-measurement-conversion-factor (factor domain)
-  (:method ((factor conversion-factor) 
-	    (domain measurement-domain))
-    (with-lock-held ((measurement-domain-cf-lock domain))
-      ;; FIXME: This vector storage model may not be very efficient, 
-      ;; onto a "two part" key, contrasted to an EQUALP hash table.
-      (let* ((table (measurement-domain-conversion-factors domain))
-	     (n  (position factor table
-			   :test (lambda (f-in f-test)
-				   (and (eq (factor-source-unit f-in)
-					    (factor-source-unit f-test))
-					(eq (factor-destination-unit f-in)
-					    (factor-destination-unit f-test)))))))
-	(cond
-	  (n (setf (aref table n) factor))
-	  (t (vector-push-extend factor table)))))))
 
 

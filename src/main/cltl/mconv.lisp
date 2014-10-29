@@ -2,6 +2,8 @@
 
 (in-package #:math)
 
+
+
 (defgeneric convert-measurement (measurement to-type)
   (:method ((measurement measurement) (to-type symbol))
     (convert-measurement measurement (find-measurement-class to-type)))

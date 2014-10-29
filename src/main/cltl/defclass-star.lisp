@@ -9,7 +9,14 @@
   #-(or SBCL CMU CCL)
   `(values))
 
+(defun ensure-forward-referenced-class (name)
+  (declare (type symbol name))
+  (ensure-class name
+		:direct-slots nil
+		:direct-superclasses nil
+		:metaclass (find-class 'forward-referenced-class)))
 
+;; (ensure-forward-referenced-class (gensym))
 
 (defmacro defclass* (name-form (&rest superclasses) 
                              (&rest slot-definitions)
