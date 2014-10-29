@@ -141,7 +141,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 			 :source-unit source-unit
 			 :destination-unit dest-unit
 			 :magnitude factor-magnitude
-			 :exponent facor-exponent)))
+			 :exponent factor-exponent)))
 
 
 (defgeneric find-conversion-factor (source-unit dest-unit domain)
@@ -586,8 +586,10 @@ See also:
   ;; FIXME: #I18N
   (:print-name . "angular measure")
   (:print-label . "angular measure")
+  (:symbol . :angular-measure)
   (:base-measure . radian))
-  
+
+(register-measurement-domain (find-class 'angular-measure))
 
 (defclass radian (measurement)
   ()
@@ -613,6 +615,32 @@ See also:
 
 ;; (scalar-magnitude (convert-measurement (make-measurement (rational pi) :|rad|) :|deg|))
 ;; => 180
+
+;;; %% Dimensionless Measure
+
+(defclass dimensionless-measure (measurement-class)
+  ()
+  (:documentation "Informal domain for dimensionless measures")
+  (:metaclass measurement-domain)
+  ;; FIXME: #I18N
+  (:print-name . "dimensionless measure")
+  (:print-label . "dimensionless measure")
+  (:symbol . :dimensionless-measure)
+  (:base-measure . unity))
+
+(register-measurement-domain (find-class 'dimensionless-measure))
+
+(defclass unity (measurement)
+  ()
+  (:documentation "Informal base measure of dimensionless measures")
+  (:metaclass angular-measure)
+  (:print-name . "unity")
+  (:print-label . "u")
+  (:symbol . :|u|))
+
+(register-measurement-class (find-class 'unity))
+
+
 
 #| Topic: Measurement Formulas
 
