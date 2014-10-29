@@ -184,12 +184,7 @@ measurement unit of M"
   (let* ((deg (measurement-degree m))
 	 (unit (class-of m))
 	 (expt-base (measurement-factor-base unit))
-	 (base-factor (measurement-base-factor unit))
-	 (base-factor-degree (measurement-base-factor-exponent unit))
-	 (base-mag (* (measurement-magnitude m)
-		      base-factor
-		      (expt expt-base base-factor-degree))))
-    
+	 (base-mag  (measurement-magnitude m)))
     (cond 
       ((zerop deg) (values base-mag))
       (t (values (* base-mag
