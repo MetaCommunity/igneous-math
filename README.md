@@ -131,6 +131,18 @@ NIST, the standards base units defined of the Systeme International
 are subsequently extended with formulas describing the mathematical 
 natures of conventional _derived units_. [BIPM][#BIPM][NIST][#NIST]
 
+#### Linear Derived Units
+
+_See, for example, `MATH:FOOT`_
+
+**Implementation:**
+
+* `math::measurement-base-factor`
+* `math::measurement-base-factor-exponent`
+
+
+#### Formulaic Derived Units
+
 _To do: Still developing the architecture for derived units_
 
 Referring to [BIPM][#BIPM], p. 118 (English Edition PDF p. 26) a
