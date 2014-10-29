@@ -105,8 +105,9 @@ and their respective base measure units as follows:
 In the object system defined of the
 [Igneous-Math source tree][[igneous-math], effectively a
 _`math:measurement` class_ is an instance of a
-_`math:measurement-class`_, which in turn is an instance of a
-_`math:measurement-domain` class_.
+_`math:measurement-class`_, such as `math:meter`. Each
+_`math:measurement-class`_, in turn -- such as `math:length` -- is an
+instance of a  _`math:measurement-domain` class_.
 
 >  (use-package '#:math)
 >  => T
@@ -124,26 +125,68 @@ _`math:measurement-domain` class_.
 > => #<MEASUREMENT-DOMAIN LENGTH>
 
 
-### Derived Units
+**Note:** This system develops a concept of a _measurement domain_, in
+some regards independent of the referenced standards for measurement
+systems. Essentially, this system defines a _measurement domain_ as
+an _object_ effectively shared between _measurement units_ having a
+same _base measurement_, though possibly having a differeing
+_dimensionality_ onto the _base measurement_. In many regards, this
+definition is developed towards a sense of _computational
+convenience_.
+
+For example: Units of _length_, of _area_, and of _volume_ all derive
+from the same essential domain of _length_ -- respectively, being
+of dimensionality _1_, _2_, and _3_ onto the base measurement of 
+_length_. In a mathematical operation in which any two values of
+_length_ are _multiplied_, for example, the result is a measure of
+_area_ -- essentially, a measurement of a dimensionality equivalent to
+the sum of the degrees of the dimensionalities of the provided
+values, in the geometrically expansive mathematical operation,
+_multiplication_.
+
+Similarly, dimensions of _duration_ and of _frequency_ may both be
+derived from a base unit measurement of _time and duration_ -- a
+_duration_ measurement being of a dimensionality _1_ onto _time and
+duration_ and a_frequency_ measurement being of a dimensionality
+_-1_. 
+
+### Derived Units of Mesurement
 
 In standards published by the BIPM and in standards published by the
-NIST, the standards base units defined of the Systeme International
-are subsequently extended with formulas describing the mathematical 
-natures of conventional _derived units_. [BIPM][#BIPM][NIST][#NIST]
+NIST, standard base units are defined and subsequently extended with
+exacting formulas, each describing the mathematical nature of a
+conventional _derived unit of mesurement_. [BIPM][#BIPM][NIST][#NIST]
 
-#### Linear Derived Units
+#### Linearly Derived Units of Measurement
 
-_See, for example, `MATH:FOOT`_
+Axiom: _Measurement units_ defined within an equivalent _measurment
+domain_ and of an equivalent _dimensionality_ may be scaled, linearly
+-- each, per a ratio defining how many units of the _base measure_ 
+exist within one unit of the _derived measure_, or reciprocally, how
+many units of the _derived measure_ exist within the _base mesaure_.
 
-**Implementation:**
+_See, for example, `MATH:FOOT` and `MATH:METER`_
+
+**Implementation Notes:**
 
 * `math::measurement-base-factor`
 * `math::measurement-base-factor-exponent`
 
 
-#### Formulaic Derived Units
+#### Formulaiclly Derived Units of Measurement
 
 _To do: Still developing the architecture for derived units_
+
+**Concepts:**
+
+* Algebraic conversions between measurement units in non-linear
+  derivations
+* Caching and quering for known measurement unit conversion formulas
+* Application of measurement unit conversion formulas, within
+  mathematical operations onto measurement values
+
+
+**Previous Documentation (2) :**
 
 Referring to [BIPM][#BIPM], p. 118 (English Edition PDF p. 26) a
 number of additional _measurement domains_ are defined within a single
@@ -158,7 +201,8 @@ denoted of that table:
 	* Common Applications include _Ohm's Law_ -- in a classic form,
 	  `I=V/R`
 	* ....
-	
+
+**Previous Documentation (1) :**
 
 The measurement unit, _ohm_, as a standard unit for measurement of
 quantity of _electrial resistance_, is defined as a derived unit with
@@ -216,7 +260,33 @@ quantity of _force_:
     [1] http://www.bipm.org/en/publications/si-brochure/
 
 
+### Measurement Unit Conversions within Mathematical Operations
 
+The Igenous-Math system defines a set of _overloaded_ mathematical
+operations, such that extend of an implementation's own optmized
+mathematical operations. _(xref: `MATH::DEFOP`)_
+
+For extending so much as the simple, `"+"`, `"-"`, `"*"`, and `"/"`
+operations onto _measurement_ objects, some consideration must be made
+as to how those respective operations would affect units of
+measurement on input measurement values. 
+
+In a diadic mathematical operation, onto two values of the same
+mesaurement domain:
+
+* For _linear_ mathematical operations `"+"` and `"-"`,  then each
+  respective value may be scaled effectively to the _base
+  measurement_ of the _measurment domain_ and the effective magnitudes 
+  resulting of the _scale_ then effectively _summed_ or _differenced_,
+  to a resulting object of the same _base measurement_ as the
+  _measurement domain_, of a scalar degree appropriate to the input
+  values and the mathematical operation
+  
+* For a _geometrically expansive_ mathematical operation, such as
+  `"*"`, then ...
+  
+* For a _geometrically reductive_ mathematical operation, such as
+  `"/"`, then ...
 
 
 ### Object Naming
