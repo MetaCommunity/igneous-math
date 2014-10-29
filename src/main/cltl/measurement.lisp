@@ -195,7 +195,7 @@ measurement unit of M"
 for the measurement"
     (base-magnitude scalar)))
 
-;; (scalar-magnitude (make-measurement 1 :m -3))
+;; (scalar-magnitude (make-measurement 1 :|m| -3))
 ;; => 1/1000
 
 (defmethod measurement-symbol ((instance measurement))
@@ -301,10 +301,10 @@ the measurement unit denoted by UNIT.
 
 Examples:
 
-  (make-measurement 1 :m)
+  (make-measurement 1 :|m|)
   => #<METER 1 m {1006289003}>
 
- (make-measurement 1 :m -3)
+ (make-measurement 1 :|m| -3)
  => #<METER 1 mm {10062E90C3}>
 
 
