@@ -34,3 +34,12 @@
 ;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m| 3) :|mi|))
 ;; => 3937/6336 (mi)
 
+(defun base-convert-measurement (measurement)
+  (declare (type measurement measurement)
+	   (vaues measurement))
+  (convert-measurement measurement
+		       (measurement-domain-base-measure 
+			(measurement-domain measurement))))
+
+;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|ft|)))
+;; => 1200/3937
