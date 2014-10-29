@@ -32,7 +32,19 @@
   (:use #:info.metacommunity.cltl.utils
         #:bordeaux-threads
         #:c2mop
-        #:cl))
+        #:cl)
+
+
+  (:export
+   ;; measurements module
+   #:length #:meter #:foot
+   #:mass #:kilogram
+   #:time #:second
+   #:electrical-current #:ampere
+   #:temperature #:kelvin
+   #:amount-substance #:mole
+   #:luminous-intensity #:candela
+   ))
 
 
 (in-package #:math)
