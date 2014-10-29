@@ -1,4 +1,7 @@
 ;; measurement-ov.lisp - math operations for measurement values
+;; [prototype]
+;;
+;; see also: unit-expr-proto.lisp
 
 (in-package #:math)
 
@@ -84,19 +87,19 @@
 	(make-measurement m class d)))))
 
 ;; 5*10^2 + 5*10^2  = 10^2(5 + 5)) = 1000
-;; (scalar-magnitude (@+ (make-measurement 5 :m 2) (make-measurement 5 :m 2)))
+;; (scalar-magnitude (@+ (make-measurement 5 :|m| 2) (make-measurement 5 :|m| 2)))
 ;; => 1000
 
 ;; 5*10^2 + 5*10^3  = 10^2(5*10^0 + 5*10^1) = 5500
-;; (scalar-magnitude (@+ (make-measurement 5 :m 2) (make-measurement 5 :m 3)))
+;; (scalar-magnitude (@+ (make-measurement 5 :|m| 2) (make-measurement 5 :|m| 3)))
 ;; => 5500
-;; (scalar-magnitude (@+ (make-measurement 5 :m 3) (make-measurement 5 :m 2)))
+;; (scalar-magnitude (@+ (make-measurement 5 :|m| 3) (make-measurement 5 :|m| 2)))
 ;; => 5500
 
 ;; 5*10^-2 + 5*10^3 = 10^-2(5*10^0 + 5*10^5) = 100001/20 = 5000.05
-;; (scalar-magnitude (@+ (make-measurement 5 :m -2) (make-measurement 5 :m 3)))
+;; (scalar-magnitude (@+ (make-measurement 5 :|m| -2) (make-measurement 5 :|m| 3)))
 ;; => 100001/20
-;; (scalar-magnitude (@+ (make-measurement 5 :m 3) (make-measurement 5 :m -2)))
+;; (scalar-magnitude (@+ (make-measurement 5 :|m| 3) (make-measurement 5 :|m| -2)))
 ;; => 100001/20
 
 (defmethod %- ((a measurement))
@@ -128,20 +131,20 @@
 	(make-measurement m class d)))))
 
 ;; 5*10^2 - 5*10^2  = 10^2(5 - 5)) = 0
-;; (scalar-magnitude (@- (make-measurement 5 :m 2) (make-measurement 5 :m 2)))
+;; (scalar-magnitude (@- (make-measurement 5 :|m| 2) (make-measurement 5 :|m| 2)))
 ;; => 0
 
 ;; 5*10^2 - 5*10^3  = 10^2(5*10^0 - 5*10^1) = -4500
-;; (scalar-magnitude (@- (make-measurement 5 :m 2) (make-measurement 5 :m 3)))
+;; (scalar-magnitude (@- (make-measurement 5 :|m| 2) (make-measurement 5 :|m| 3)))
 ;; => -4500
 
 ;; 5*10^-2 - 5*10^3 = 10^-2(5*10^0 - 5*10^5) = -99999/20 = -4999.95
-;; (scalar-magnitude (@- (make-measurement 5 :m -2) (make-measurement 5 :m 3)))
+;; (scalar-magnitude (@- (make-measurement 5 :|m| -2) (make-measurement 5 :|m| 3)))
 ;; => -99999/20
 
 
 (defmethod %* ((a measurement))
-  (values a)))
+  (values a))
 
 #+NIL ;; FIXME: Must return measurement of type unit^2
 (defmethod @* ((a measurement) (b measurement))
@@ -160,7 +163,7 @@
 		     (class-of a)
 		     (measurement-degree a))))
 
-;; FIXME: Must return measurement of type "unity" unit
+;; FIXME: Must return measurement of a "dimensionless" unit
 #+NIL
 (defmethod @/ ((a measurement) (b measurement))
   (ERROR "Frob"))
