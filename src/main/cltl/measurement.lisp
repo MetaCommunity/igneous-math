@@ -516,6 +516,8 @@ See also:
 ;;     :initarg :base-scale
 
 
+;;; %% Derived Measures of Length
+
 ;; referencing [NIST SP811]
 
 (defclass foot (measurement)
@@ -576,6 +578,8 @@ See also:
 (register-measurement-class (find-class 'mile))
 
 
+;;; %% Angular Measure
+
 (defclass angular-measure (measurement-class)
   ()
   (:metaclass measurement-domain)
@@ -591,7 +595,6 @@ See also:
   (:print-name . "radian")
   (:print-label . "rad")
   (:symbol . :|rad|))
-
 
 (register-measurement-class (find-class 'radian))
 
