@@ -37,9 +37,15 @@
 (defun base-convert-measurement (measurement)
   (declare (type measurement measurement)
 	   (vaues measurement))
-  (convert-measurement measurement
-		       (measurement-domain-base-measure 
-			(measurement-domain measurement))))
+  (let ((base-mc (measurement-domain-base-measure 
+		  (measurement-domain measurement))))
+    (cond
+      ((eq base-mc (class-of measurement))
+       (values measurement))
+      (t (convert-measurement measurement base-mc)))))
 
 ;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|ft|)))
 ;; => 1200/3937
+
+;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|m|)))
+;; => 1
