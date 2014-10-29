@@ -84,7 +84,8 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 (defun find-measurement-domain (name)
   ;; FIXME: #I18N query
   (declare (type (or symbol string) name)
-	   (values measurement-domain))
+	   ;; unable to check return type
+	   #+NIL (values measurement-domain))
   (let ((s (etypecase name
 	     (symbol name)
 	     (string (intern* (read-from-string name)
@@ -98,7 +99,8 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 
 (defun register-measurement-domain (domain)
   (declare (type measurement-domain domain)
-	   (values measurement-domain))
+	   ;; unable to check return type
+	   #+NIL (values measurement-domain))
   (with-lock-held (%domains-lock%)
     (let* ((s (measurement-domain-symbol domain))
 	   (n (position s %domains%
