@@ -41,9 +41,10 @@
              (entity-not-found-name c)))))
 
 
-;;; %% Measurement Class Storage and Access
 
-;;; %%% Locking (Thread Safety)
+;;; %%% Global Measurement Class Storage (Symbol Key)
+
+;;; %%%% Storage
 
 (declaim (type (vector measurement-class) %measurement-classes% ))
 
@@ -53,12 +54,12 @@
 
 This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 
+;;; %%%% Locking (Thread Safety)
 
 (defvar %measurement-classes-lock% (make-lock "%MEASUREMENT-CLASSES%")
   "Mutex lock for accessing `%DOMAINS%'")
 
-
-;;; %%% Access Functions
+;;; %%%% Access Functions
 
 (defun register-measurement-class (c)
   (declare (type measurement-class c))
@@ -73,7 +74,20 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 	  "Redfining measurement class for ~S" s)
 	 (setf (aref %measurement-classes% n) c))
 	(t (vector-push-extend c %measurement-classes%)))
-      (values c))))
+      (let ((base-f (measurement-base-factor c))
+	    (base-f-e (measurement-base-factor-exponent c)))
+	(unless (and (zerop base-f-e)
+		     (eql base-f 1))
+	  (let* ((domain (class-of c))
+		 (base-m (measurement-domain-base-measure domain))
+		 (cf-to (make-conversion-factor  c  base-m
+						 base-f base-f-e))
+		 (cf-from (make-conversion-factor base-m c
+						  (/ base-f) 
+						  (- base-f-e))))
+	    (register-measurement-conversion-factor cf-to domain)
+	    (register-measurement-conversion-factor cf-from domain)))))
+    (values c)))
 
 (defun find-measurement-class (s)
   (declare (type symbol s)
@@ -443,6 +457,9 @@ See also:
 ;; => 0.3048006096012192d0 
 ;;  ^ 1 foot => "this many" meters (double float precision)
 ;;  ^ approximately 0.30408 as per SP811 (less than single-float precision)
+
+;; (find-conversion-factor :|ft| :|m| (find-class 'length))
+;; (find-conversion-factor :|m| :|ft| (find-class 'length))
 
 
 ;; (make-measurement 1 :|ft| 3)
