@@ -84,7 +84,6 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 	      :key #'measurement-symbol)
 	(error 'measurement-class-not-found :name s))))
 
-  
 
 ;;; % MEASUREMENT
 
@@ -292,7 +291,118 @@ for the measurement"
 ;; => #<KILOGRAM 1000 g {10082A9083}>
 
 
-;;; % DERIVED MEASUREMENT UNITS
+;;; % Measurement Initialization
+
+
+(defun make-measurement (magnitude unit &optional (degree 0))
+  "Crate a MEAUREMENT object of the specified MAGNITUDE of a decimal
+scale denoted by DEGREE, representing a scalar measurement of
+the measurement unit denoted by UNIT. 
+
+Examples:
+
+  (make-measurement 1 :m)
+  => #<METER 1 m {1006289003}>
+
+ (make-measurement 1 :m -3)
+ => #<METER 1 mm {10062E90C3}>
+
+
+See also: 
+* `scalar-magnitude'
+* `prefix-of'
+* `rescale', `nrescale'"
+  (declare (type real magnitude)
+           (type fixnum degree)
+           (type measurement-class-designator unit)
+           (values measurement))
+  (let ((class (etypecase unit
+                   (symbol (find-measurement-class unit))
+                   (measurement-class unit))))
+    ;; FIXME: This does not explicitly scale the {MAGNITUDE, DEGREE}
+    ;; down to the base measurement unit. 
+
+    ;; In an optimized implementation, all measurement values may be
+    ;; scaled to integer/magnitude+exponent values onto the base
+    ;; measurement unit -- thus, allowing for direct application of
+    ;; formulas likewise defined onto the base measurement unit,
+    ;; without further magnitude+exponent scaling -- essentially,
+    ;; leaving any conversion from/to non-base measurement units to the
+    ;; input/display components of the implementation.
+    ;;
+    ;; Presently, this system applies a mehtodology essentialy of
+    ;; "Scaling to significant digits".
+    (etypecase magnitude
+      (ratio 
+       (values (make-instance class :magnitude magnitude 
+                              :degree degree)))
+      (real 
+       (multiple-value-bind (adj-magnitude scale)
+           (float-shift-digits magnitude)
+         (values (make-instance 
+                  class
+                  :magnitude adj-magnitude
+                  :degree (+ degree scale))))))))
+
+;; (make-measurement 1 :|m| 5)
+;; => #<METER 100 km {1003FF93A3}>
+;; (measurement-magnitude (make-measurement 1 :|m| 5))
+;; => 1
+
+;; Example: Scaling to significant digits
+;;
+;; (measurement-magnitude (make-measurement 103 :|m| 10))
+;; => 103
+;; (measurement-degree (make-measurement 103 :|m| 10))
+;; => 10
+;;
+;; (measurement-magnitude (make-measurement 1030 :|m| 9))
+;; => 103
+;; (measurement-degree (make-measurement 1030 :|m| 9))
+;; => 10
+
+;;- Ratio magnitude (unscaled)
+;; (make-measurement 1/5 :|m|)
+;; => #<METER 100 km {1003FF93A3}>
+;; (measurement-magnitude (make-measurement 1/5 :|m|))
+;; => 1/5
+;;
+;; (make-measurement 1/5 :|m| 3)
+;; => #<METER 1/5 km {1007B81023}>
+;; (measurement-magnitude (make-measurement 1/5 :|m| 3))
+;; => 1/5
+;;
+;; (scalar-magnitude (make-measurement 1/5 :|m| 3))
+;; => 200 ;; i.e. 200 m
+;;
+;; (scalar-magnitude (make-measurement 1/5 :|m|))
+;; => 1/5 ;; i.e. 1/5 m
+
+
+;; (make-measurement 1 :|kg|)
+;; => #<KILOGRAM 1000 g {10065C1043}>
+
+;; (make-measurement 1 :|kg| 6)
+;; => #<KILOGRAM 1000 Mg {10066090B3}>
+
+;; (make-measurement 1 :|m| 3)
+;; => #<METER 1 km {1003FF93A3}>
+
+;; (measurement-magnitude (make-measurement 1 :|m| 3))
+;; => 1
+;; (measurement-degree (make-measurement 1 :|m| 3))
+;; => 3
+
+;; (measurement-magnitude (make-measurement 1000 :|m| 3))
+;; => 1
+;; (measurement-degree (make-measurement 1000 :|m| 3))
+;; => 6
+
+;; (object-print-label (class-of (make-measurement 1 :|m|)))
+;; => "m"
+
+
+;;; % Derived Measurement Units
 
 ;; (defclass derived-measurement-class (measurement-class)
 ;;   ((base-scale

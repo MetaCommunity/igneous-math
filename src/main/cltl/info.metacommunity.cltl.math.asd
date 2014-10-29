@@ -34,7 +34,7 @@ Effective version history:
   (#:info.metacommunity.cltl.utils
    #:closer-mop
    #:bordeaux-threads)
-  :serial t
+  ;; :serial t
   :components 
   ((:file "math-package")
    (:file "math-system-utils"
@@ -58,12 +58,13 @@ Effective version history:
    (:file "measurement"
 	  ;; :subsystem measure
 	  :depends-on ("domain"
+		       "decimal-scale"
 		       "math-system-utils"
 		       "defclass-star"))
 
    (:file "decimal-scale"
 	  ;; :subsystem measure
-	  :depends-on ("measurement"))
+	  :depends-on ("math-package"))
 
    (:file "prefix"
 	  ;; :subsystem measure
