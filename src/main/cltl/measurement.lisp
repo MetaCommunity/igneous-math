@@ -634,8 +634,12 @@ See also:
   ()
   (:documentation "Informal base measure of dimensionless measures")
   (:metaclass angular-measure)
+  ;; FIXME: Specialize print-object so as to not print the measurement
+  ;; label for any instance of a DIMENSIONLESS-MEASURE class,
+  ;; excepting those defined with conventional masurement labels
   (:print-name . "unity")
   (:print-label . "u")
+  #+PROTOTYPE-M (:disable-print-label t)
   (:symbol . :|u|))
 
 (register-measurement-class (find-class 'unity))
