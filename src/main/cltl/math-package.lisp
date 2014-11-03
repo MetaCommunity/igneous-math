@@ -14,14 +14,19 @@
    #:standard-method
    #:standard-class
    )
-  #+CCL ;; FIXME
+  #+CCL ;; FIXME MOP-PORT
   (:shadowing-import-from
    #:ccl
    #:compute-effective-method
    ;; #:make-method-lambda ;; not defined in CCL (?)
    ;; #:compute-applicable-methods
    )
-  #+(or SBCL CMU CCL)
+  #+SBCL ;; FIXME: MOP-PORT
+  (:shadowing-import-from
+   #:SB-PCL
+   #:method-combination-type-name
+   )
+  #+(or SBCL CMU CCL) ;; FIXME: MOP-PORT
   (:shadowing-import-from
    #+SBCL #:SB-MOP
    #+CMU #:PCL

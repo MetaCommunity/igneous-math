@@ -65,6 +65,10 @@ generic function method class of GENF, LAMBDA, and ENVIRONMENT"
 (defclass monotonic-method-combination (method-combination)
   ())
 
+#+SBCL ;; FIXME: portability
+(defmethod method-combination-type-name  ((cmbn monotonic-method-combination))
+  ;; e.g. for (DESCRIBE #'@+)
+  (class-name (class-of cmbn)))
 
 (defgeneric method-lambda-body (method))
 (defgeneric (setf method-lambda-body) (new-value method))
