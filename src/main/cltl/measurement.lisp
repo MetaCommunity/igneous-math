@@ -644,7 +644,7 @@ See also:
 (defclass unity (measurement)
   ()
   (:documentation "Informal base measure of dimensionless measures")
-  (:metaclass angular-measure)
+  (:metaclass dimensionless-measure)
   ;; FIXME: Specialize print-object so as to not print the measurement
   ;; label for any instance of a DIMENSIONLESS-MEASURE class,
   ;; excepting those defined with conventional masurement labels
