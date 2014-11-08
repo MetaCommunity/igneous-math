@@ -1,6 +1,54 @@
 Igneous-Math - A Mathematical Object System in Common Lisp
 ==========================================================
 
+## TO DO
+
+### New properties of 'measurement'
+
+* "Derived Measurement"
+    * specifier: sequence of Measurement
+* Measurement as object with 'degree' property
+    * accessed via generic function MEASUREMENT-DEGREE
+    * may be stored in a slot of a mesurement object, as with DERIVED-MEASUREMENT instances
+
+### Existing properties of 'measurement'
+
+* Measurement domain
+
+### Other class in measurement system: Measurement Domain
+
+e.g: LENGTH
+
+* Base measurement domains: Refer to [SI]
+    * "The SI Seven"
+* Derived measurement domains: Refer to [SI], [NIST], other resources
+    * e.g. towards units of amps, watts, ohms, newtons, radians, herz, wave number, ... 
+
+### Integration with measurement technologies
+
+#### Measurement Platforms (TO DO)
+
+##### Tektronix TBS-... Oscilloscopes
+
+##### ??? DMM
+
+#### Measurement Workflows
+
+(TO DO - look for NASA best practice guidelines, regarding? i.e. "Lab work")
+
+#### Display Procedures
+
+#### Oscilloscope Data
+
+* Graph
+    * Bezier curves ?
+    * Sample data ?
+
+TO DO: Review TBS-1XXX oscilloscope readout files, e.g. with prototype voltage converter construted in ECT-246 week 1
+
+#### ...
+
+
 ## Overview
 
 **Availability:** [git@github.com:MetaCommunity/igneous-math.git][igneous-math]
