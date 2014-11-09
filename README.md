@@ -32,9 +32,19 @@ e.g: LENGTH
 
 ##### ??? DMM
 
-#### Measurement Workflows
+#### Measurement Systems
+
+* A primary concern: "Rigorous metadata recording," i.e insofar as to record the source of a calculation or a measurement, as "measurement metadata," for purpose of reference - cf. [LoC MODS RDF](http://www.loc.gov/standards/mods/modsrdf/), [LoC PREMIS](http://www.loc.gov/standards/premis/)
+    * If a numeric value is a result of a calculation, it should be annotated as a calculation, and annotated for the methodology in which the calculation was derived
+    * If a numeric value is a result of a measurement, it should be annoted with the identity of the device by which the measurement was obtained, as well as the configuration of the measurement system in which the device was applied.
+    * In effect, this requires a development of an object model for measurement devices. See also: [EDIF], [ISO-10303], [STEP]
+    * For interactive/manual calculations and measurements, an applicaiton may request user input for establishing the respective source of calculation or measurement
+    * For automated calculations or measurements with multiple heterogenous data sources, a data model may be developed such that would effectively "tag" each measured value with the identity of the measurement system from which the value was "read"
+
+##### Measurement Workflows
 
 (TO DO - look for NASA best practice guidelines, regarding? i.e. "Lab work")
+
 
 #### Display Procedures
 
