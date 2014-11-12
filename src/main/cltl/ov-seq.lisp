@@ -150,12 +150,13 @@
                 #+TO-DO retv)
         (let ((ref-row (aref vector-form 0)))
           (dotimes (offset (- n-rows nr))
+            ;; reduce rows following REF-ROW
             (let ((nr* (+ nr offset)))
               (let ((this-row (aref vector-form nr*)))
                 (declare (type (simple-array t (*)) this-row ref-row))
 
-                (dotimes (col n-cols)
-                  ;; reduce across columns
+                (dotimes (col (1- n-cols))
+                  ;; reduce across columns, excluding last
                   (unless (= col nr) 
                     (let ((col-value  (aref this-row col)))
                       (dotimes (n n-cols)
@@ -165,9 +166,10 @@
                             (setf (aref this-row n)
                                   (aref reslt n))
                             ))))))
-                
 
-                ))))))))
+                
+                )))
+          )))))
 
 ;; (gaussian-reduction #2A((1 1 1 5) (2 3 5 8) (4 0 5 2)))
 
