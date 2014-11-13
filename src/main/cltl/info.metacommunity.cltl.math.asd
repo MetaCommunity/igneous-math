@@ -84,4 +84,7 @@ Effective version history:
    (:file "geometry"
 	  :depends-on ("measurement"))
 
+   (:file "linear"
+          :depends-on ("math-package"))
+
    ))
