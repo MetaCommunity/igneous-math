@@ -68,7 +68,7 @@
   (declare (type array m)
            (values (simple-array * (*))))
   (let ((dims (array-dimensions m)))
-    (labels ((frob (m dims &optional upper-offsets)
+    (labels ((frob (m dims &optional (upper-offset 1))
                (let ((this-dim (car dims))
                      (rest-dim (cdr dims)))
                  (cond 
@@ -78,9 +78,7 @@
                       (dotimes (n this-dim retv)
                         (setf (aref retv n)
                               (frob m rest-dim 
-                                    ;; FIXME: much consing
-                                    (append upper-offsets
-                                            (list n)))))))
+                                    (* upper-offset n))))))
                    (t 
                     (let ((retv
                            (make-array this-dim
@@ -89,11 +87,7 @@
                         (setf (aref retv n)
                               (row-major-aref 
                                m  
-                               (apply #'array-row-major-index
-                                      m 
-                                      ;; FIXME: much consing
-                                      (append upper-offsets
-                                              (list n))))))))))))
+                               (* upper-offset n))))))))))
       (frob m dims))))
 
 ;; (compute-array-vector* #2A((1 2 3 4) (4 3 2 1)))
@@ -101,6 +95,9 @@
 
 ;; (compute-array-vector* #3A(((1 2 3 4) (4 3 2 1)) ((4 3 2 1) (1 2 3 4))))
 ;; => #(#(#(1 2 3 4) #(4 3 2 1)) #(#(4 3 2 1) #(1 2 3 4)))
+
+;; (compute-array-vector* #2A())
+;; => #()
 
 (defun row (m i)
   (declare (type array-dimension-designator i)
