@@ -63,7 +63,7 @@
 ;; (compute-array-vector #3A(((1 2 3 4) (4 3 2 1)) ((4 3 2 1) (1 2 3 4))))
 ;; => #(1 2 3 4 4 3 2 1 4 3 2 1 1 2 3 4)
 
-;; (compute-array-vector (make-array (values)))
+;; (compute-array-vector (make-array nil))
 ;; --> error
 
 (defun compute-array-vector* (m)
