@@ -5,15 +5,14 @@
 ;;; % Matrix class
 
 #+NIL
-(defstruct (matrix
-             (:constructor %make-matrix (i j vector matrix)))
-  (i 0 :type array-dimension-designator)
-  (j 0 :type array-dimension-designator)
+(defstruct (matrix-2d
+             (:constructor %make-matrix-2d (vector matrix)))
+  ;; a two-dimensional matrix displaced to a row-major vector
   (vector #() :type (simple-array * (*)))
   (matrix #() :type (array * (* *))))
 
 #+NIL
-(defun make-matrix (i j &optional (element-type 'real))
+(defun make-matrix-2d (i j &optional (element-type 'real))
   (declare (type array-dimension-designator i j)
            (type type-designator element-type))
   (let* ((v (make-array (* i j) :element-type element-type))
@@ -21,16 +20,17 @@
                         :element-type element-type
                         :displaced-to v
                         :displaced-index-offset 0)))
-    (%make-matrix i j v m)))
+    (%make-matrix-2d v m)))
 
 ;; (make-matrix 2 4)
 
 #+NIL
-(defmethod print-object ((object matrix) stream)
+(defmethod print-object ((object matrix-2d) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "(~D ~D)" 
-            (matrix-i object)
-            (matrix-j object))))
+    (let ((m (matrix-matrix object)))
+      (format stream "(~D ~D)" 
+              (array-dimension m 0)
+              (array-dimension m 1)))))
 
 
   
