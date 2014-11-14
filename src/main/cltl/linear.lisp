@@ -22,12 +22,12 @@
                         :displaced-index-offset 0)))
     (%make-matrix-2d v m)))
 
-;; (make-matrix 2 4)
+;; (make-matrix-2d 2 4)
 
 #+NIL
 (defmethod print-object ((object matrix-2d) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (let ((m (matrix-matrix object)))
+    (let ((m (matrix-2d-matrix object)))
       (format stream "(~D ~D)" 
               (array-dimension m 0)
               (array-dimension m 1)))))
