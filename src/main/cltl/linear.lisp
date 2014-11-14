@@ -68,26 +68,30 @@
   (declare (type array m)
            (values (simple-array * (*))))
   (let ((dims (array-dimensions m)))
-    (labels ((frob (m dims &optional (upper-offset 1))
-               (let ((this-dim (car dims))
-                     (rest-dim (cdr dims)))
+    (labels ((frob (m dims &optional (upper-offset 0))
+               (let* ((this-dim (car dims))
+                      (rest-dim (cdr dims))
+                      (this-offset (* this-dim upper-offset)))
+                 (declare (type array-dimension-designator this-offset))
                  (cond 
                    (rest-dim
                     (let ((retv 
                            (make-array this-dim :element-type 'vector)))
                       (dotimes (n this-dim retv)
+                        (declare (type array-dimension-designator n))
                         (setf (aref retv n)
                               (frob m rest-dim 
-                                    (* upper-offset n))))))
+                                    (+ n this-offset))))))
                    (t 
                     (let ((retv
                            (make-array this-dim
                                        :element-type (array-element-type m))))
                       (dotimes (n this-dim retv)
+                        (declare (type array-dimension-designator n))
                         (setf (aref retv n)
                               (row-major-aref 
                                m  
-                               (* upper-offset n))))))))))
+                               (+ n this-offset))))))))))
       (frob m dims))))
 
 ;; (compute-array-vector* #2A((1 2 3 4) (4 3 2 1)))
