@@ -2,6 +2,39 @@
 
 (in-package #:math)
 
+;;; % Matrix class
+
+#+NIL
+(defstruct (matrix
+             (:constructor %make-matrix (i j vector matrix)))
+  (i 0 :type array-dimension-designator)
+  (j 0 :type array-dimension-designator)
+  (vector #() :type (simple-array * (*)))
+  (matrix #() :type (array * (* *))))
+
+#+NIL
+(defun make-matrix (i j &optional (element-type 'real))
+  (declare (type array-dimension-designator i j)
+           (type type-designator element-type))
+  (let* ((v (make-array (* i j) :element-type element-type))
+         (m (make-array (list i j)
+                        :element-type element-type
+                        :displaced-to v
+                        :displaced-index-offset 0)))
+    (%make-matrix i j v m)))
+
+;; (make-matrix 2 4)
+
+#+NIL
+(defmethod print-object ((object matrix) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "(~D ~D)" 
+            (matrix-i object)
+            (matrix-j object))))
+
+
+  
+;;; % Array utilities
 
 (defun copy-array (m)
   (declare (type array m)
@@ -16,7 +49,6 @@
             (row-major-aref m n)))))
 
 (defun compute-array-vector (m)
-  ;; FIXME: Move this DEFUN to the MCi CLtL 'utils' system
   (declare (type array m)
            (values (simple-array t (*))))
   (let* ((len (apply #'* (the cons (array-dimensions m))))
@@ -33,7 +65,6 @@
 
 
 (defun compute-array-vector* (m)
-  ;; FIXME: Move this DEFUN to the MCi CLtL 'utils' system
   (declare (type array m)
            (values (simple-array t (*))))
   (let ((dims (array-dimensions m)))
@@ -74,10 +105,12 @@
 (defun row (m i)
   (declare (type array-dimension-designator i)
            (type (array t (* *)) m)
-           (values (array t (1 *)) m))
+           (values (array t (1 *))))
   (let* ((n-cols (array-dimension m 1))
          (reslt (make-array (list 1 n-cols)
                             :element-type (array-element-type m))))
+    (declare (type array-dimension-designator n-cols)
+             (type (array t (1 *)) reslt))
     (dotimes (n n-cols reslt)
       (setf (aref reslt 0 n) 
             (aref m i n))
@@ -90,14 +123,16 @@
 (defun column (m j)
   (declare (type array-dimension-designator j)
            (type (array t (* *)) m)
-           (values (array t (1 *)) m))
+           (values (array t (* 1))))
   (let* ((n-rows (array-dimension m 0))
          (reslt (make-array (list n-rows 1)
                             :element-type (array-element-type m))))
+    (declare (type array-dimension-designator n-rows)
+             (type (array t (* 1)) reslt))
     (dotimes (n n-rows reslt)
       (setf (aref reslt n 0) 
             (aref m n j))
-    )))
+      )))
 
 ;; (column #2A((1 2 3 4) (4 3 2 1)) 0)
 ;; => #2A((1) (4))
@@ -154,5 +189,3 @@
 
 ;; (gaussian-reduction #2A((1 1 2 0 1) (2 -1 0 1 -2) (2 -1 -1 -2 4) (2 -2 2 -1 0)))
 
-
-;; displaced-index-offset
