@@ -85,6 +85,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 		 (cf-from (make-conversion-factor base-m c
 						  (/ base-f) 
 						  (- base-f-e))))
+            (finalize-inheritance domain)
 	    (register-measurement-conversion-factor cf-to domain)
 	    (register-measurement-conversion-factor cf-from domain)))))
     (values c)))
