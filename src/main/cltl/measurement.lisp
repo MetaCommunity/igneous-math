@@ -38,7 +38,7 @@
   (:report
    (lambda (c s)
      (format s "No measurement class registered for name ~S"
-             (entity-not-found-name c)))))
+             (entity-condition-name c)))))
 
 
 
