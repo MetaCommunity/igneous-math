@@ -2,10 +2,14 @@
 
 (in-package #:math)
 
-(define-condition entity-not-found (error)
+(define-condition entity-condition ()
   ((name
     :initarg :name
-    :reader entity-not-found-name)))
+    :reader entity-condition-name)))
+
+
+(define-condition entity-not-found (error entity-condition)
+  ())
 
 (define-condition redefinition-condition (style-warning)
   ((previous-object

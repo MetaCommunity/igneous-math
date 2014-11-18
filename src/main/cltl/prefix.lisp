@@ -198,18 +198,19 @@ See also: `rescale'"))
   (:report
    (lambda (c s)
      (format s "No measurement prefix registered for name ~S"
-             (entity-not-found-name c)))))
+             (entity-condition-name c)))))
 
 (define-condition prefix-degree-not-found (entity-not-found)
   ()
   (:report
    (lambda (c s)
      (format s "No measurement prefix registered for degree ~S"
-             (entity-not-found-name c)))))
+             (entity-condition-name c)))))
 
 
 
-(declaim (type (vector prefix) %prefixes% ))
+(declaim (type (vector prefix) %prefixes% )
+	 (type array-dimension-designator %prefix-length-limit%))
 
 (defvar %prefixes% (make-array 20 :fill-pointer 0 
 			       :element-type 'prefix)
@@ -225,6 +226,8 @@ See also:
 
 (defvar %prefixes-lock% (make-lock "%PREFIXES%")
   "Mutex lock for accessing `%PREFIXES%'")
+
+(defvar %prefix-length-limit% 0)
 
 
 (defun find-prefix (s)
@@ -265,13 +268,16 @@ PREFIX-NOT-FOUND is singaled"
   (declare (type prefix p)
 	   (values prefix))
   (with-lock-held (%prefixes-lock%)
-    (let* ((s (prefix-symbol p))
+    (let* ((len (length (object-print-label p)))
+	   (s (prefix-symbol p))
 	   (n (position s %prefixes%
 			:test #'eq
 			:key #'prefix-symbol)))
       (cond
 	(n (setf (aref %prefixes% n) p))
 	(t (vector-push-extend p %prefixes%)))
+      (when (> len %prefix-length-limit%)
+	(setq %prefix-length-limit% len))
       (values p))))
 
 ;; (map 'list #'find-prefix= (remove 0 %si-degrees%))
