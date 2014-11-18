@@ -18,3 +18,9 @@
    (new-object
     :initarg :new
     :accessor redefinition-condition-new-object)))
+
+
+(define-condition container-condition ()
+  ((container
+    :intarg :container
+    :reader container-condition-container)))
