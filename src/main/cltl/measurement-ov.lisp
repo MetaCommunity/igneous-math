@@ -105,6 +105,15 @@
 ;; (scalar-magnitude (@+ (make-measurement 5 :|m| 3) (make-measurement 5 :|m| -2)))
 ;; => 100001/20
 
+#+NIL
+(defmethod @+ ((a measurement) (b measurement))
+  (let ((base-measure (verify-same-domain-and-degree a b)))
+    (make-measurement  (+ (scalar-magnitude a)
+			  (scalar-magnitude b))
+		       base-measure)))
+    
+
+
 (defmethod %- ((a measurement))
   (values 
    (make-measurement (- (measurement-magnitude a))
@@ -186,4 +195,17 @@
 ;; FIXME: Must return measurement of a "dimensionless" unit
 #+NIL
 (defmethod @/ ((a measurement) (b measurement))
-  (ERROR "Frob"))
+  (let ((a-d (measurement-domain a))
+	(b-d (measurement-domain b)))
+    (cond
+      ((and (eq a-d b-d)
+	    (= (measurement-unit-degree (class-of a))
+	       (measurement-unit-degree (class-of b))))
+       (make-measurement (/ (measurement-magnitude a)
+			    (measurement-magnitude b))
+			 (find-class 'unity)
+			 (- (measurement-degree a)
+			    (measurement-degree b))))
+      ((eq a-d b-d)
+       (error "UNIMPLEMENTED: Cross-degree division"))
+      (t (error "UNIMPLEMENTED: Cross-domain division")))))
