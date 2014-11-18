@@ -45,41 +45,78 @@
 
 ;; ---------
 
-(defun query-measurement-type (op u1 u2)
+(defun diadic-measurement-type-query (op u1 u2)
+  ;; values: base-unit, u1-adjust-factor, u1-adjust-factor-exponent,
+  ;;         u2-adjust-factor, u2-adjust-factor-exponent
+
+  ;; FIXME: Applicable only for diadic operations
   (declare (type measurement-class u1 u2))
-  "Find a unit of meaurement expressive of the linear relation: u1 op u2"
+  "Find a unit of meaurement expressive of the diadic relation: u1 op u2"
   (cond
     ((eq u1 u2)
-     ;; use unit-EQ optimizations in COMPUTE-MEASUREMENT
-     (compute-measurement op u1 u2))
+     ;; use unit-EQ optimizations
+     (ecase op ;; FROB (PROTOTYPE)
+       ((+ -) (values u1 1 0 1 0))
+       (* (values (find-geometric-measurement-type
+		   (measurement-domain-base-measure  (class-of u1))
+		   (+ (mesurement-domain-degree u1)
+		      (mesurement-domain-degree u2)))
+		  ;;  e.g for (@* #m<1 m> #m<1 m>)
+		  ?? ??
+		  ?? ??
+		  ))
+       (/ (values 
+	   ;; may => #<UNITY ...>
+	   (find-geometric-measurement-type
+	    (measurement-domain-base-measure (class-of u1))
+	    (-1 (mesurement-domain-degree u1)
+		(mesurement-domain-degree u2)))
+	   ;;  e.g for (@/ #m<1 m> #m<1 m>)
+	   ?? ??
+	   ?? ??))))
     (t (let ((d-1 (class-of u1))
 	     (d-2 (class-of u2)))
 	 (cond
+	   ((eq d-2 (find-class 'dimensionless-measure))
+	    ;; OP: EXPT, LOG
+	    )
 	   ((eq d-1 d-2)
+	    ;; OP : +, -, =, /=, <, >, <=, >=, MAX, MIN,
+	    ;;      GCD, LCM, 
 	    ;; return values for shifting each of u1 and u2 onto the
 	    ;; base mesurement unit of the domain, similar to
-	    ;; domain-analyze
+	    ;; diadic-domain-analyze
 	    )
-	   )))))
+	   ((eq (measurement-domain-base-domain d-1)
+		(measurement-domain-base-domain d-2))
+	    ;; OP must be a geometric operation, e.g. *, /, MOD, REM, FLOOR &family, diadic ATAN
+	    ;; Return the degree of the subsequent measurement unit
+	    ;; resulting from D-1 OP D-1
+	    (let ((deg-1 (measurement-domain-degree d-1))
+		  (deg-2 (measurement-domain-degree d-2)))
+	    ;;; prototype:
+	    (ecase op
+	      (* (values the-unit-fu (+ deg-1 deg-2)))
+	      (/ (values the-unit-fu (- deg-1 deg-2))))))
+	   
+	    )
+	 ))))
 
+
+#+NIL
 (defun compute-measurement-type (op u1 u2)
+  ;; FIXME: Functionally redundant onto DIADIC-MEASUREMENT-TYPE-QUERY
+
+  ;; FIXME: Applicable only for diadic operations
   (declare (type measurement-class u1 u2))
-  ;; values: base-unit, u1-factor, u1-factor-exponent,
-  ;;         u2-factor, u2-factor-exponent
-
   ;; frob - prototype - should dispatch on 'OP'
-  (ecase op
-    ((+ -) (if (eq u1 u2)
-	       (values u1 1 0 1 0)
-	       (query-measurement-type op u1 u2)))
-    (* (if (eq u1 u2)
-	   (query-measurement-type-dimensionally u1 u2)
-	   (query-measurement-type op u1 u2)))
-    (/ (if (eq u1 u2)
-	   (dimensionless-measurement)
-	   (query-measurement-type op u1 u2)))))
+  )
 
-(defun domain-analyze (op m1 m2)
+(defun diadic-domain-analyze (op m1 m2)
+  ;; FIXME: Functionally redundant onto DIADIC-MEASUREMENT-TYPE-QUERY
+
+  ;; FIXME: Applicable only for diadic operations
+
   ;; values: base-unit, u1-factor, u1-factor-exponent,
   ;;         u2-factor, u2-factor-exponent
   (let* ((unit-1 (class-of m1))
@@ -88,7 +125,7 @@
 	 (domain-2 (class-of unit-2))
 	 (base-1 (measurement-domain-base-measure domain-1))
 	 (base-2 (measurement-domain-base-measure domain-2)))
-    (let ((unit (compute-measurement-type op base-1 base-2)))
+    (let ((unit (diadic-measurement-type-query op base-1 base-2)))
       (values unit 
 	      (measurement-base-factor unit-1)
 	      (measurement-base-factor-exponent unit-1)
@@ -99,7 +136,7 @@
 (labels ((m* (m1 m2)
 	   (multiple-value-bind (base-unit m1-factor m1-factor-exponent
 					   m2-factor m2-factor-exponent)
-	       (domain-analyze '* m1 m2)
+	       (diadic-domain-analyze '* m1 m2)
 	     (make-expr base-unit
 			:factor
 			(* (expr-factor m1) m1-factor
@@ -107,7 +144,7 @@
 	 (m+ (m1 m2)
 	   (multiple-value-bind (base-unit m1-factor m1-factor-exponent
 					   m2-factor m2-factor-exponent)
-	       (domain-analyze '+ m1 m2)
+	       (diadic-domain-analyze '+ m1 m2)
 	       (let ((m1-m (measurement-magnitude m1))
 		     (m1-d (measurement-degree m1))
 		     (m2-m (measurement-magnitude m2))
@@ -122,6 +159,8 @@
 			(expt 10 m2-factor-exponent) 
 			(expt 10 m2-d)))
 		  base-unit)))))
+
+  ;; FIXME: Testing only for diadic operations
   (let ((m1 (make-measurement 1 :|m|))
 	(m2 (make-measurement 1 :|ft|)))
 
@@ -137,4 +176,8 @@
     ;; "CHECK" on the PLUS-TEST
     )))
 
+
+
+
+;; FIXME: Also develop tests onto monadic operaitons
 
