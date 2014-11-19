@@ -9,14 +9,12 @@
   ()
   (:panes
    (matrix (let ((m #((1 2 3 4) (4 3 2 1))))
-             (formatting-table 
-              ()
-              (dotimes (i (array-dimension m 0))
-                (formatting-row 
-                 ()
-                 (dotimes (j (array-dimension m 1))
-                   (formatting-cell ()
-                     (with-output-as-gadget (t)
-                       (princ (the number (aref m i j))
-                              t)))))))))))
+             (formatting-table ()
+               (dotimes (i (array-dimension m 0))
+                 (formatting-row ()
+                   (dotimes (j (array-dimension m 1))
+                     (formatting-cell ()
+                       (with-output-as-gadget (t)
+                         (princ (the number (aref m i j))
+                                t)))))))))))
 
