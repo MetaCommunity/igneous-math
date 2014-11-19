@@ -14,7 +14,7 @@
                  (formatting-row ()
                    (dotimes (j (array-dimension m 1))
                      (formatting-cell ()
-                       (with-output-as-gadget (t)
+                       (with-output-as-presentation (t)
                          (princ (the number (aref m i j))
                                 t)))))))))))
 
