@@ -264,17 +264,33 @@ presentational model for measurements. See also:
 * Class: `LINEAR-UNIT-EXPRESSION`
     * Concept: A syntactic container for a single measurement unit
       expression, e.g `m`
+    * Concern: The definition of this class would serve to ensure that
+      the subclasses specified of `UNIT-EXPRESSION` would   represent
+      an _exhaustive set_ of types of _unit expression_. However,
+      this class -- in its application -- might seem redundant onto 
+      `SYMBOL`, insofar as that a _symbol_ may be applied as being
+      syntactically representative of a _measurement unit_. Insofar as
+      that -- conversely -- a _symbol_ would be interpreted as being
+      representative of a _measurement unit_, the classes `SYMBOL` and
+      `LINEAR-UNIT-EXPRESSION` are therefore _functionally
+      orthogonal_. Effectively, a `LINEAR-UNIT-EXPRESSION` would
+      represent an encapsulation of a `MEASUREMENT-CLASS`, insofar as
+      input and presentation of _unit expressions_. Transitively, a
+      `MEASUREMENT-CLASS` may be denoted with a _symbol_, as in the
+      context of the _measurement classes namespace_
 * Class: `GEOMETRIC-UNIT-EXPRESSION`
     * Concept: A syntactic container for both of a single measuremnt
-      unit expression and a numeric (fixnum) degree
-    * Implementation notes
-        * Question: Is it necessary to define a _geometric unit
-          expression_ class? May it be redundant to the existing
-          `MEASUREMENT-CLASS` impelementation?
+      unit expression and a numeric (fixnum) degree of the measurement
+      unit
 * Class: `COMPOUND-UNIT-EXPRESSION`
 * Function: `SIMPLIFY-UNIT`
     * Syntax and arguments: `SIMPLIFY-UNIT EXPR => EXPR`
        * `EXPR`: A _unit expression_
+    * Description (design): Provided a _partially normalized unit
+      expression_, this function must produce a _partially normalized
+      unit expression_ in which -- insofar as possible -- any
+      combinations of _base units_ representative of a _derived unit_
+      would be expressed as the corresponding _derived unit_
     * Implementation Notes
         * Indexing of measurement units
            * Given a _compound unit expression_ -- whether expressed
@@ -288,8 +304,13 @@ presentational model for measurements. See also:
              _compound unit expressions index_. An interface must be
              defined onto the _compound unit expressions index_, such
              that a _compound unit expression_ can be stored within
-             the index and later retrieved.
-
+             the index and later retrieved
+* Function: `NORMALIZE-UNIT`
+    * Syntax and arguments: `SIMPLIFY-UNIT EXPR => EXPR`
+       * `EXPR`: A _unit expression_
+    * Description (design) : Recriprocal to `SIMPLIFY-UNIT`,
+      essentially this function must produce a _fully normalized unit
+      expression_ for the provided `EXPR`
 
 ## TO DO (Ig<sup>1</sup><sub>m</sub>)
 
