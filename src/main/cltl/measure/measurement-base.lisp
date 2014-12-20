@@ -70,33 +70,35 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 ;;; %%%% Access Functions
 
 (defun register-measurement-class (c)
-  (declare (type measurement-class c))
+  (declare (type class-designator c)
+           (values classs))
   (with-lock-held (%measurement-classes-lock%)
-    (let* ((s (measurement-symbol c))
+    (let* ((%c (compute-class c))
+           (s (measurement-symbol %c))
 	   (n (position s %measurement-classes%
 			:test #'eq
 			:key #'measurement-symbol)))
       (cond 
-	((and n (not (eq (aref %measurement-classes% n) c)))
+	((and n (not (eq (aref %measurement-classes% n) %c)))
 	 (simple-style-warning 
 	  "Redfining measurement class for ~S" s)
-	 (setf (aref %measurement-classes% n) c))
-	(t (vector-push-extend c %measurement-classes%)))
-      (let ((base-f (measurement-base-factor c))
-	    (base-f-e (measurement-base-factor-exponent c)))
+	 (setf (aref %measurement-classes% n) %c))
+	(t (vector-push-extend %c %measurement-classes%)))
+      (let ((base-f (measurement-base-factor %c))
+	    (base-f-e (measurement-base-factor-exponent %c)))
 	(unless (and (zerop base-f-e)
 		     (eql base-f 1))
-	  (let* ((domain (class-of c))
+	  (let* ((domain (class-of %c))
 		 (base-m (measurement-domain-base-measure domain))
-		 (cf-to (make-conversion-factor  c  base-m
+		 (cf-to (make-conversion-factor  %c  base-m
 						 base-f base-f-e))
-		 (cf-from (make-conversion-factor base-m c
+		 (cf-from (make-conversion-factor base-m %c
 						  (/ base-f) 
 						  (- base-f-e))))
             (finalize-inheritance domain)
 	    (register-measurement-conversion-factor cf-to domain)
 	    (register-measurement-conversion-factor cf-from domain)))))
-    (values c)))
+    (values %c)))
 
 (defun find-measurement-class (s)
   (declare (type symbol s)
