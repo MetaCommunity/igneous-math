@@ -1,4 +1,6 @@
+;; dimensionless.lisp - standard dimensionless measurements
 
+(in-package #:math)
 
 ;;; %% Angular Measure
 
