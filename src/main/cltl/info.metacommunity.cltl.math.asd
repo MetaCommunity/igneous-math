@@ -61,6 +61,10 @@ Effective version history:
 		       "decimal-scale"
 		       "math-system-utils"
 		       "defclass-star"))
+   (:file "expr"
+          :depends-on ("measurement"
+                       ))
+
 
    (:file "decimal-scale"
 	  ;; :subsystem measure
