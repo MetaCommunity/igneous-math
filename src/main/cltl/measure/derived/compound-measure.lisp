@@ -2,21 +2,6 @@
 
 (in-package #:math)
 
-#+NIL
-(defconstant* +si-base-measurement-metaclasses+ ;; (?)
-    ;; This constant value is defined here, in order to ensure that
-    ;; all of the base measurement unit classes are defined at the
-    ;; time when this form is evaluated
-    (make-array 7
-                :initial-contents
-                (mapcar #'find-class
-                        '(base-length 
-                          base-mass 
-                          base-time 
-                          base-electrical-current
-                          base-temperature 
-                          base-amount-substance
-                          base-luminous-intensity))))
 
 (defgeneric measurement-unit-sequence (class))
 
