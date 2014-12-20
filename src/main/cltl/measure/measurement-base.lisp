@@ -70,9 +70,9 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 ;;; %%%% Access Functions
 
 (defun register-measurement-class (c)
-  (declare (type class-designator c)
+  (declare (type measurement-class-designator c)
            ;; "Type assertion too complex to check" (SBCL)
-           #+NIL (values class))
+           #+NIL (values measurement-class))
   (with-lock-held (%measurement-classes-lock%)
     (let* ((%c (compute-class c))
            (s (measurement-symbol %c))
