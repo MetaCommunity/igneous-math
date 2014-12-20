@@ -67,9 +67,14 @@ Effective version history:
              (:module "derived"
                       :depends-on ("measurement-base")
                       :components
-                      ((:file "compound-measure")
-                       (:file "dimensionless")
+                      ((:file "linear-mesure")
                        (:file "geom-measure")
+                       (:file "compound-measure"
+                              :depends-on 
+                              ("linear-measure" 
+                               "geom-measure"
+                               ))
+                       (:file "dimensionless")
                        (:file "derived-length")))
              
              (:file "prefix"

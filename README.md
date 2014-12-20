@@ -179,13 +179,16 @@ presentational model for measurements. See also:
     * Analous to existing `MEASUREMENT-CLASS` for (linear) derived
       units
     * See also: `CONVERSION-FACTOR`; `FIND-CONVERSION-FACTOR`;
-      `MEASUREMENT-DOMAIN` 
+      `MEASUREMENT-DOMAIN`
+* Class: `LINEAR-MEASUREMENT-CLASS`
+    * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
+    * Semantically correlated with `LINEAR-UNIT-EXPR`
 * Class: `GEOMETRIC-MEASUREMENT-CLASS`
     * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
-    * Semantically correlatd with `GEOMETRIC-UNIT-EXPR`
+    * Semantically correlated with `GEOMETRIC-UNIT-EXPR`
 * Class: `COMPOUND-MEASUREMENT-CLASS`
     * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
-    * Semantically correlatd with `COMPOUND-UNIT-EXPR`
+    * Semantically correlated with `COMPOUND-UNIT-EXPR`
 
 
 
