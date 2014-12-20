@@ -1,39 +1,309 @@
 Igneous-Math - A Mathematical Object System in Common Lisp
 ==========================================================
 
-## TO DO
+## Overview: Igneous-Math
 
-### New properties of 'measurement'
+**Availability:** [git@github.com:MetaCommunity/igneous-math.git][igneous-math]
 
-* "Derived Measurement"
-    * specifier: sequence of Measurement
-* Measurement as object with 'degree' property
-    * accessed via generic function MEASUREMENT-DEGREE
-    * may be stored in a slot of a mesurement object, as with DERIVED-MEASUREMENT instances
+**Dependencies:**
 
-### Existing properties of 'measurement'
+* [mci-cltl-utils][mci-cltl-utils]
+* [closer-mop][c2mop]
+* [bordeaux-threads][bordeaux-threads]
 
-* Measurement domain
+**Supported Implementations**
 
-### Other class in measurement system: Measurement Domain
+This program system is being developed primarily with
+[Steel Bank Common Lisp (SBCL)](http://www.sbcl.org). Though some
+effort is made to ensure portability with other Common Lisp
+implementations, however SBCL is effectively the _reference platform_
+in development of this program system.
 
-e.g: LENGTH
+Although this sytem endeavors to implement ANSI Common Lisp, as for
+purpose of portability, however in regards to extensions of the
+Metobject Protocol, some implemetation-specific features might
+vary.
 
-* Base measurement domains: Refer to [SI]
-    * "The SI Seven"
-* Derived measurement domains: Refer to [SI], [NIST], other resources
-    * e.g. towards units of amps, watts, ohms, newtons, radians, herz, wave number, ... 
+Pending further development of Igneous-Math onto the specified
+_reference platform_, the Igneous-Math codebase may be revised for 
+portability onto other Common Lisp implementations.
 
-### Integration with measurement technologies
+**License:** [Eclipse Public License 1.0][license]
 
-#### Measurement Platforms (TO DO)
+### Design, Context, and Application
 
-##### Tektronix TBS-... Oscilloscopes
+This system has been designed initially as an academic
+exercise. It is hoped that this system may be developed
+towards a level of application quality, such that this system may be
+considered for commercial applications. To this time, the Igneous-Math
+software system has been designed towards a concept of a manner of 
+_semantic normalcy_, although not as if to make a sacrifice of
+_mathematical accuracy,_ in defining the semantics of the
+implementation.
 
-##### ??? DMM
+### Features (Ig<sup>1</sup><sub>m</sub>)
+
+* _**Object model for measurements**_. Extending of the Common Lisp 
+  Object System (CLOS), Igneous-Math defines a model for measurement
+  domains, measurement classes, and expressions of measurement units.
+* _**Mathematical operations**_. Igneous-Math defines a set of generic
+  functions and methods as interfaces onto the set of numeric 
+  functions defined in CLtL2. These generic functions and methods are
+  specialized for _monadic_, _diadic_, and _variadic_ application --
+  in extension of the Common Lisp metaobject system -- moreover
+  specialized onto individual classes of _numeric field_ as defined in
+  CLtL2.
+* _**Rational coercion for floating-point values**. On input, a
+  _floating point value_ may be converted into a rational value,
+  comprised of an integer and an exponent, such that would represent a
+  value _scaled_ of the original input value. Subsequent mathematical
+  operations may then be applied as onto the rational equivalent of
+  the input value, namely as to minimize inaccuracies attendant with
+  point numeric implementations, in individual floating point 
+  errors and in _feedback errors_ (see also: Hamming, Richard
+  W. _Numerical Methods for   Scientists and Engineers_. 2
+  ed. Dover. 1973)
+
+The implementation of _rational coercion_ is effectively integrated
+with the _measurements model_ in Ig<sup>1</sup><sub>m</sub>
+
+### Features (Planned)
+
+* Implementation of forms for vector methamtics and linear analysis
+    * _Scalar_ value type, corresponding with the measurements module
+    * _Vector_ value type, with corresponding numerical operations
+    * _Matrix_ values and corresponding mathematical operations
+* Implementation of an object model for coordinate systems and
+  coordinate syntaxes, independent of the Common Lisp Interface
+  Manager (CLIM) 
+    * Euclidean Coordinate Plane
+        * Extensionally, an implementation of a complex coordinate
+          plane, graphically analogous to the Euclidean coordinate
+          plane
+	* Polar Coordinate Plane
+* Presentation of _phasor diagrams_, in applying the modules for
+  vector mathematics and for polar coordinate planes
+* Implementation of spatial object systems
+	* 3 Space (Euclidean)
+	* Spherical Space
+* Object model for vector mathematics in spatial object systems
+* Graph model for visual coordinate system presentation, integrating
+  with CLIM (see also: McCLIM _Scigraph_ application)
+* Comprehensive integration with standard systems of measurement,
+  referencing the Systeme Inernationale (BIPM) and NIST guidelines
+* Automatic adjustment of measurement values onto the decimal prefix
+  system, for standard measurement units 
+* Automatic adjustment of measurement values onto the binary+decimal
+  (2^10) prefix system, for quantities of digital information
+  [][#jedec:jesd-100b.01][][#wikipedia:byte] preferring the JEDEC
+  convention for prefixes "K", "M", and "G" for units of bits, "b",
+  and bytes, "B"  with user option for selection of a consistent IEC
+  prefix system [][#wikipedia:byte]
+
+### Features (Planned) (Tentative)
+
+* Implementation of an object model for formulas in CLOS --
+  referencing the KR system in the [Garnet][garnet] codebase
+* Integration with machine-specific numeric operations (e.g SSE2)
+* Applications towards modeling and analysis of principles developed
+  in the electrical sciences, separately onto domains of alternating
+  current and direct current, and onto a frequency domain for analysis
+  of signal-processing applications -- ideally, to be integrated wth a
+  system for schematic capture and block-level circuit modeling, onto
+  McCLIM.
+* Integration with formal reference texts, in eBook and print editions
+
+
+## Overview: Ig<sup>2</sup><sub>m</sub>
+
+Ig<sup>2</sup><sub>m</sub> is the _second major version_ of
+[[igneous-math][igneous-math]]. Essentially,
+Ig<sup>2</sup><sub>m</sub> represents a restructuring of the 
+Ig<sup>1</sup><sub>m</sub> _source tree_, with corresponding
+development of individual _modules_ begun originally in development of
+Ig<sup>1</sup><sub>m</sub>.
+
+Development in Ig<sup>2</sup><sub>m</sub> will be focused about the
+following concepts:
+
+* Extension of the base measurements module, for _geometric units of
+  measurement_ and _compound units of measurement_
+* _Normalization_ and _conversion_ of measurement units, within
+  _overloaded_ mathematical operations
+* Definition of seperate _reader macros_ for each of _unit expresions_
+  and _measurement_ values containing _unit expressions_, e.g.
+  `#{3.0E+08 <m <s -1>>}`
+
+The sections of this outline, immediately following, are developed
+for application about the design of the first of those three modules.
+
+## Measurements Implementation in Ig<sup>1</sup><sub>m</sub>
+
+In a synopsis of the semantics of the design of the 
+Ig<sup>1</sup><sub>m</sub> _measurements_ module: A _measurement
+domain_, in viewed in terms of SI, represents a type of _quantity_ 
+(e.g. _temperature_ or _inductance_), whereas a
+_measurement class_ represents an SI _measurement_ type (e.g. _degrees 
+kelvin_ or _henries_) for quantities of a specific type.
+
+In Ig<sup>1</sup><sub>m</sub>, a _measurement_ is essentially a scalar
+object that is an instance of a _measurement class_. Corrspondingly, a
+_measurement class_ is an instance of a _measurment domain_. In
+Ig<sup>1</sup><sub>m</sub>, _measurement domains_ are implemented as
+_metaclasses_.
+
+Correspnding with the _semantic model_ for _measurement domains_, 
+_measurement classes_, and _measurement_ objects,
+Ig<sup>1</sup><sub>m</sub> implements some qualities of a
+presentational model for measurements. See also:
+`pretty-printable-object` [[mci-cltl-utils][mci-cltl-utils]]
+
+
+### Concept: Unit Expressions in Ig<sup>2</sup><sub>m</sub>
+
+* Class: `UNIT-EXPRESSION`
+    * A _unit expresion_ represents an expression of a _measurement
+      unit_.
+    * Essentially, this concept pertains to presentation of
+      _measurement units_. See also: McCLIM (MCi fork)
+    * An implementation of the concept _unit expression_ may be
+      implemented as orthogonal to the Ig<sup>1</sup><sub>m</sub>
+      `MEASUREMENT-CLASS` -- each `MEASUREMENT-CLASS`, orthogonally,
+      being an instance of `MEASUREMENT-DOMAIN` (which itself is a
+      class).
+    * In Ig<sup>1</sup><sub>m</sub>, seven primary `MEASUREMENT-CLASS`
+      classes are defined, each corresponding to a single
+      `MEASUREMENT-DOMAIN`.
+    * The class `UNIT-EXPRESSION` may be implemented towards a
+      `UNIT-EXPRESSION` representing a syntactic expression of a
+      _measurement class_
+    * Three essential types of _unit expression_
+        * **Linear unit expression**, e.g. as denoted with `m` or `W`
+            * The corresponding _measurement class_ for each _linear
+              unit expression_ may be _indexed_ according to a symbol 
+              representing the name assigned to the _measurement
+              class_ (e.g `:|m|`) and correspondingly, to the _unit
+              expression_
+        * **Geometric unit expressions**, e.g. as denoted with `m^2`
+            * The corresponding _measurement class_ for each
+              _geometric unit expression_ may be _indexed_ according to
+              the _linear unit expression_ represented of the
+              _geometric unit expression_ and correspondingly, the
+              _degree_ of the _geometric unit expression_
+            * Semantically, a _unit expression_ `m^2` represents a
+              measure of _surface area_, whereas a _unit expression_
+              `m^3` represents a measure of _space_. As in  this
+              trivial example: Although the respective concepts of
+              _surface area_ and _space_,  may not be _numerically
+              relevant_ -- such as for formulas either applying or
+              producing _measurement values_ of those respective
+              _measurement units_ -- but infoar as to represent a
+              semantic significance of the respective _measurement
+              units_, it may be appropriate to define a _measurement
+              domain_ corresponding to each -- respectively, a domain
+              for measures of _surface area_ and a domain for measures
+              of _cubic space_ or _volume_.
+            * **"Special Note**": [[BIPM][#BIPM]] defines the
+              _measurement unit_ for the domain, _frequency_ in terms
+              of _SI base units_ as `s^-1`(e.g table 3, Eng. p. 118,
+              PDF p. 26) 
+        * **Compound unit expressions** e.g. as denoted with `m^2 kg s^-3`
+            * The corresponding _measurement class_ for each _compound
+              unit expression_ may be _indexed_ as a _sequence_ of
+              elements [`simple-vector`] `#(U D)` where `U` represents
+              a _measurement unit_ and `D` represents a _degree_ of
+              that _measurement unit_. For example: `#2A((m 2) (kg 1)
+              (s -3))` as a _normalized compound unit expression_.
+              corresonding to `W` i.e. `watts`
+            * Alternatley, each element of the _measurement elements
+              sequence_ for a _compound unit expression_ may be stored
+              as a _geometric unit expression_.
+            * Orthogonally, towards a presentation model for _compound
+              unit expressions_ -- pending a design for _superscript_
+              and _subscript_ typesetting in McCLIM -- the
+              presentation may be focused mostly about representing
+              the syntactic qualities of a unit expressions, homologous
+              with unit expressions in igneous-math. Where possible,
+              measurement units should be presented in their _derived_
+              forms (contrasted to _normalized form_)
+            * **"Special Note**": [[BIPM][#BIPM]] defines the
+              _measurement unit_ for the domains, _plane angle_ and
+              _solid angle_, when in terms of _SI base units_ as
+              respectively, `m m^-1` and `m^2 m^-2`. These two
+              derivations may represent the only instances in which
+              the _base unit expression_ of an _SI measurement unit_
+              is defined in a form not _reduced_ for its
+              exponents. Orthogonally, those expressions each provide
+              a _base measurement unit_ derivation  for, respectively,
+              _radian_ and _steradian_
+            * **Concept: Normalized compound unit expression**
+                * For a _unit expression_ `A_1`, the _normalized
+                  compound unit expression_ of `A_1` shall be a 
+                  _compound unit expression_ representing the
+                  _measurement unit elements_ of `A_1` all converted
+                  and reduced to SI _base units_
+            * **Concept: Partially normalized compound unit
+              expression**
+                  * Example: The derived unit, _volt_ (`V`) may be
+                    represented of a _compound unit expression_ `W A^-1`
+                  * Internal to the _measurements_ module of
+                    [[igneous-math][igneous-math]], a _prtially
+                    normalized compount unit expression_ may be
+                    converted to a fully _normalized unit expression_
+                    simply by _normalizing_ each _compound unit_ in
+                    the unit expression to any _compound expression_
+                    of SI  _base units_
+            * For purpose of _normal ordering_ within index search and
+              retrieval algorithms, the _order of elements_ in a
+              _normalized compound unit expression_ should not be
+              arbitrary. This system will specify that the _order of
+              elements_ of a _normalized compound unit expression_
+              will be in accord with the sequence of _SI base unit_
+              names denoted in section 2.1.2 of [[BIPM][#BIPM]]
+              (in English language, p. 116, PDF p. 24)
+* Class: `LINEAR-UNIT-EXPRESSION`
+    * Concept: A syntactic container for a single measurement unit
+      expression, e.g `m`
+* Class: `GEOMETRIC-UNIT-EXPRESSION`
+    * Concept: A syntactic container for both of a single measuremnt
+      unit expression and a numeric (fixnum) degree
+    * Implementation notes
+        * Question: Is it necessary to define a _geometric unit
+          expression_ class? May it be redundant to the existing
+          `MEASUREMENT-CLASS` impelementation?
+* Class: `COMPOUND-UNIT-EXPRESSION`
+* Function: `SIMPLIFY-UNIT`
+    * Syntax and arguments: `SIMPLIFY-UNIT EXPR => EXPR`
+       * `EXPR`: A _unit expression_
+    * Implementation Notes
+        * Indexing of measurement units
+           * Given a _compound unit expression_ -- whether expressed
+             in _derived units_ such as `W A^-1`, or expressed in _base
+             units_ such as ``m^2 kg s^-3 A^-1`, or in any combination
+             of _base units_ and _derived units_, and in any exponent
+             prefix of those _unit expression elements_ -- such that
+             the _compound unit expression_ would be  representative
+             of an _SI derived unit_(e.g. _volt_) each _compound
+             unit expression_ must be stored within a central
+             _compound unit expressions index_. An interface must be
+             defined onto the _compound unit expressions index_, such
+             that a _compound unit expression_ can be stored within
+             the index and later retrieved.
+
+
+## TO DO (Ig<sup>1</sup><sub>m</sub>)
+
+* Define measurement domains for derived measurement units
+    * "Normalize" and document those measurement domains already
+      defined within this software system
+    * Refer to [SI], [NIST], other resources 
+    * e.g. towards units of amps, watts, ohms, newtons, radians, herz...
 
 #### Measurement Systems
 
+* Sidebar; Measurement tools (e.g. oscilloscope; digital multimeter;
+  thermometer; barometer; soil moisture sensor  ...)
+* Sidebar: Experimental data (e.g. spectrographs; astrometry data)
 * A primary concern: "Rigorous metadata recording," i.e insofar as to record the source of a calculation or a measurement, as "measurement metadata," for purpose of reference - cf. [LoC MODS RDF](http://www.loc.gov/standards/mods/modsrdf/), [LoC PREMIS](http://www.loc.gov/standards/premis/)
     * If a numeric value is a result of a calculation, it should be annotated as a calculation, and annotated for the methodology in which the calculation was derived
     * If a numeric value is a result of a measurement, it should be annoted with the identity of the device by which the measurement was obtained, as well as the configuration of the measurement system in which the device was applied.
@@ -58,63 +328,6 @@ TO DO: Review TBS-1XXX oscilloscope readout files, e.g. with prototype voltage c
 
 #### ...
 
-
-## Overview
-
-**Availability:** [git@github.com:MetaCommunity/igneous-math.git][igneous-math]
-
-**Dependencies:**
-
-* [mci-cltl-utils][mci-cltl-utils]
-* [closer-mop][c2mop]
-* [bordeaux-threads][bordeaux-threads]
-
-**Supported Implementations**
-
-This program system is being developed primarily with
-[Steel Bank Common Lisp (SBCL)](http://www.sbcl.org). Though some
-effort is made to ensure portability with other Common Lisp
-implementations, however SBCL is effectively the _reference platform_
-in development of this program system.
-
-**License:** [Eclipse Public License 1.0][license]
-
-### Features (Current Edition)
-
-* _**Object model for measurements**_, extending of the Common Lisp Object System (CLOS)
-* _**Mathematical operations overloaded**_ within CLOS methods and optimized method forms, extending of the Common Lisp MetaObject Protocol (MOP)
-* _**Coercion for floating-point values**_, on input, into rational scalar objects, each comprised of an integer magnitude and an integer prefix value
-
-### Features (Planned)
-
-* Implementation of an object model for coordinate systems and coordinate syntaxes, independent of the Common Lisp Interface Manager (CLIM)
-    * Euclidean Coordinate Plane
-	* Polar Coordinate Plane
-* Implementation of spatial object systems
-	* 3 Space (Euclidean)
-	* Spherical Space
-* Graph model for visual coordinate system presentation, integrating with CLIM
-* Object model for vector mathematics in common lisp (planar and
-  spatial object systems) 
-* Comprehensive integration with standard systems of measurement,
-  referencing the Systeme Inernationale (BIPM) and NIST guidelines
-* Automatic adjustment of measurement values onto the decimal prefix
-  system, for standard measurement units 
-* Automatic adjustment of measurement values onto the binary+decimal
-  (2^10) prefix system, for quantities of digital information
-  [][#jedec:jesd-100b.01][][#wikipedia:byte] preferring the JEDEC
-  convention for prefixes "K", "M", and "G" for units of bits, "b",
-  and bytes, "B"  with user option for selection of a consistent IEC
-  prefix system [][#wikipedia:byte]
-
-### Features (Planned) (Tentative)
-
-* Implementation of an object model for formulas in CLOS -- referencing the KR system in the [Garnet][garnet] codebase
-* Integration with machine-specific numeric operations
-* Applications towards modeling and analysis of principles developed
-  in the electrical sciences, separately onto domains of alternating
-  current and direct current 
-* Integration with formal reference texts, eBook and print editions
 
 ## Reference (Partial)
 
@@ -174,13 +387,13 @@ instance of a  _`math:measurement-domain` class_.
 >  => *M*
 >
 > *M*
-> => #<METER 1 m {10083AF7A3}>
+> => #&lt;METER 1 m {10083AF7A3}&gt;
 >
 >  (class-of *m*)
->  => #<LENGTH METER>
+>  => #&lt;LENGTH METER&gt;
 >
 >  (class-of (class-of *M*))
-> => #<MEASUREMENT-DOMAIN LENGTH>
+> => #&lt;MEASUREMENT-DOMAIN LENGTH&gt;
 
 
 **Note:** This system develops a concept of a _measurement domain_, in
@@ -255,7 +468,7 @@ denoted of that table:
 * Volt (V)
     * Domain: _Electrical power difference, electromotive force_
 	* Relation in terms of SI derived units: `W/A`
-	* Relation in terms of SI base units: `m^2 kg s^-3 A^-1`
+	* Relation in terms of SI base units: 
 	* Common Applications include _Ohm's Law_ -- in a classic form,
 	  `I=V/R`
 	* ....
@@ -384,7 +597,7 @@ Example:
 >  => *M*
 >
 > *M*
-> => #<METER 1 m {10083AF7A3}>
+> => #&lt;METER 1 m {10083AF7A3}&gt;
 >
 >  (object-print-name (class-of (class-of *m*)))
 >  => "length"
@@ -504,7 +717,7 @@ A short illustration:
 >  => *M*
 >
 > *M*
-> => #<METER 1 m {10083AF7A3}>
+> => #&lt;METER 1 m {10083AF7A3}&gt;
 >
 >  (object-print-label *m*)
 >  => "1 m"
