@@ -118,10 +118,10 @@ with the _measurements model_ in Ig<sup>1</sup><sub>m</sub>
 
 Ig<sup>2</sup><sub>m</sub> is the _second major version_ of
 [[igneous-math][igneous-math]]. Essentially,
-Ig<sup>2</sup><sub>m</sub> represents a restructuring of the 
-Ig<sup>1</sup><sub>m</sub> _source tree_, with corresponding
-development of individual _modules_ begun originally in development of
-Ig<sup>1</sup><sub>m</sub>.
+Ig<sup>2</sup><sub>m</sub> represents a restructuring and partial
+refactoring of the Ig<sup>1</sup><sub>m</sub> _source tree_, with
+corresponding development of individual _modules_ begun originally in
+development of Ig<sup>1</sup><sub>m</sub>.
 
 Development in Ig<sup>2</sup><sub>m</sub> will be focused about the
 following concepts:
@@ -157,6 +157,37 @@ _measurement classes_, and _measurement_ objects,
 Ig<sup>1</sup><sub>m</sub> implements some qualities of a
 presentational model for measurements. See also:
 `pretty-printable-object` [[mci-cltl-utils][mci-cltl-utils]]
+
+### Concept: Extensions and Revisions onto Ig<sup>1</sup><sub>m</sub> Measurement Classes
+
+* Class: `MEASUREMENT-CLASS`
+    * Essentially a new definition
+    * Protocol class
+    * See also: `REGISTER-MEASUREMENT-CLASS`
+    * See also: `MEASUREMENT-DOMAIN`; `LENGTH`; `MASS`; `TIME`;
+      `ELECTRICAL-CURRENT`; `TEMPERATURE`; `AMOUNT-SUBSTANCE`;
+      `LUMINOUS-INTENSITY`
+* Class: `BASE-MEASUREMENT-CLASS`
+    * Analogous to existing `MEASUREMENT-CLASS` for SI base units
+* Class: `DERIVED-MEASUREMENT-CLASS`
+    * `BASE-MEASUREMENT-CLASS` and `DERIVED-MEASUREMENT-CLASS` form an
+      _exhaustive set_ of types of `MEASUREMENT-CLASS`
+* Class: `LINEAR-DERIVED-MEASUREMENT-CLASS`
+    * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
+    * Essentially for definition of measurement units for which there
+      is a single linear converstion ratio, for conversions to/from a
+      base measurement unit or to/from another derived measurement
+      unit
+    * Analous to existing `MEASUREMENT-CLASS` for (linear) derived
+      units
+    * See also: `CONVERSION-FACTOR`; `FIND-CONVERSION-FACTOR`; 
+* Class: `GEOMETRIC-MEASUREMENT-CLASS`
+    * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
+    * Semantically correlatd with `GEOMETRIC-UNIT-EXPR`
+* Class: `COMPOUND-MEASUREMENT-CLASS`
+    * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
+    * Semantically correlatd with `COMPOUND-UNIT-EXPR`
+
 
 
 ### Concept: Unit Expressions in Ig<sup>2</sup><sub>m</sub>
