@@ -171,15 +171,15 @@ presentational model for measurements. See also:
 * Class: `DERIVED-MEASUREMENT-CLASS`
     * `BASE-MEASUREMENT-CLASS` and `DERIVED-MEASUREMENT-CLASS` form an
       _exhaustive set_ of types of `MEASUREMENT-CLASS`
-* Class: `LINEAR-DERIVED-MEASUREMENT-CLASS`
-    * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
-    * Essentially for definition of measurement units for which there
-      is a single linear converstion ratio, for conversions to/from a
-      base measurement unit or to/from another derived measurement
+    * In application as a metaclass: Essentially, applied for
+      definition of measurement units for which there is a single
+      linear converstion ratio, for conversions to/from a base
+      measurement unit or to/from another derived measurement 
       unit
     * Analous to existing `MEASUREMENT-CLASS` for (linear) derived
       units
-    * See also: `CONVERSION-FACTOR`; `FIND-CONVERSION-FACTOR`; 
+    * See also: `CONVERSION-FACTOR`; `FIND-CONVERSION-FACTOR`;
+      `MEASUREMENT-DOMAIN` 
 * Class: `GEOMETRIC-MEASUREMENT-CLASS`
     * Direct superclasses: `DERIVED-MEASUREMENT-CLASS`
     * Semantically correlatd with `GEOMETRIC-UNIT-EXPR`
