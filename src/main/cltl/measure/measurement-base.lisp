@@ -51,7 +51,7 @@
 
 (defvar %measurement-classes% (make-array 7 :fill-pointer 0 
 			      :element-type 'measurement-class)
-  "Internal storage for measurement measurement-classes.
+  "Internal storage for measurement classes.
 
 This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 
