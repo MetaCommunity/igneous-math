@@ -765,6 +765,9 @@ practices will be defined of this system:
 
      e.g. `"cubic meter" = :m^3`
 
+     _FIXME: This may be effectively outdated together with the
+     definition of reader macros for measurement unit expressions_ 
+
    * For measurement units defined by SI[BIPM][#BIPM] with subscript characters,
      a corresponding symbolic name shall be sought of the NIST
      specification[NIST][#NIST] 
@@ -779,6 +782,8 @@ practices will be defined of this system:
 
      e.g `"kg/m³" => :kg/m^3`
 
+    _FIXME: This is effectively outdated with the addition of compound
+    measurement unit expressions_ 
    
    * For measurement units whose conventional symbolic name includes a
      subscript character, the character shall be prefixed by an
