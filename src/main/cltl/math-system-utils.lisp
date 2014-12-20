@@ -22,5 +22,5 @@
 
 (define-condition container-condition ()
   ((container
-    :intarg :container
+    :initarg :container
     :reader container-condition-container)))
