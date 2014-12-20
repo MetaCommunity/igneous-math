@@ -31,6 +31,7 @@
    #+SBCL #:SB-MOP
    #+CMU #:PCL
    #+CCL #:CCL
+   #+ALLEGRO #:MOP
    #:validate-superclass
    )
 
