@@ -325,6 +325,10 @@ for the measurement"
 			:print-name domain-name
 			:print-label domain-name
 			:direct-superclasses (list mc-c)
+                        :documentation 
+                        ;; FIXME: I18N
+                        (format nil "Measurement domain for quantities of ~A" 
+                                domain-name)
 			:metaclass md-c
 			#+SBCL :definition-source #+SBCL src))
 		    (c 
@@ -334,6 +338,15 @@ for the measurement"
 		      :symbol name
 		      :print-name print-name
 		      :print-label print-label
+                      :documentation
+                      ;; FIXME: I18N
+                      (format nil "Measurement class for quanities ~
+of ~A in base unit ~A (~A)~2%~
+Symbolic representation: ~S"
+                              domain-name
+                              print-name
+                              print-label
+                              name)
 		      :metaclass d
 		      #+SBCL :definition-source #+SBCL src 
 		      )))
@@ -574,20 +587,24 @@ See also:
 (register-measurement-class (find-class 'us-survey-foot))
 
 
-;; (base-magnitude (make-measurement 1 :|ft|))
-;; => 1200/3937 i.e meters
+;; (base-magnitude (make-measurement 1 :|ft_1893|))
+;; => 1200/3937 i.e meters (FIXME: Not returning that value, presently)
+
+;; (base-convert-measurement (make-measurement 1 :|ft_1893|))
+;; => #<METER 1200/3937 m {1012630AC3}>
+
 ;;
 ;; (float 1200/3937 pi)
 ;; => 0.3048006096012192d0 
 ;;  ^ 1 foot => "this many" meters (double float precision)
 ;;  ^ approximately 0.30408 as per SP811 (less than single-float precision)
 
-;; (find-conversion-factor :|ft| :|m| (find-class 'length))
-;; (find-conversion-factor :|m| :|ft| (find-class 'length))
+;; (find-conversion-factor :|ft_1893| :|m| (find-class 'length))
+;; (find-conversion-factor :|m| :|ft_1893| (find-class 'length))
 
-;; (make-measurement 1 :|ft| 3)
+;; (make-measurement 1 :|ft_1893| 3)
 ;; ^ the illustrious kft
-;; (make-measurement 1 :|ft| -3)
+;; (make-measurement 1 :|ft_1893| -3)
 ;; ^ correspondingly, the larch millifoot
 
 

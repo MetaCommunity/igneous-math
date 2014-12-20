@@ -162,7 +162,7 @@
 
   ;; FIXME: Testing only for diadic operations
   (let ((m1 (make-measurement 1 :|m|))
-	(m2 (make-measurement 1 :|ft|)))
+	(m2 (make-measurement 1 :|ft_1893|)))
 
     (let ((plus-test (m+ m1 m2)))
     (values #+TO-DO (m* m1 m2)

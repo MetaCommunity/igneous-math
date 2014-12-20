@@ -26,12 +26,12 @@
 			  (+ (measurement-degree measurement)
 			     (factor-exponent cf )))))))
 
-;; (scalar-magnitude (convert-measurement (make-measurement 1 :|ft|) :|m|))
+;; (scalar-magnitude (convert-measurement (make-measurement 1 :|ft_1893|) :|m|))
 ;; => 1200/3937 (m)
-;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m|) :|ft|))
+;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m|) :|ft_1893|))
 ;; => 3937/1200 (ft)
 
-;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m| 3) :|mi|))
+;; (scalar-magnitude (convert-measurement (make-measurement 1 :|m| 3) :|mi_1893|))
 ;; => 3937/6336 (mi)
 
 (defun base-convert-measurement (measurement)
@@ -44,7 +44,7 @@
        (values measurement))
       (t (convert-measurement measurement base-mc)))))
 
-;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|ft|)))
+;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|ft_1893|)))
 ;; => 1200/3937
 
 ;; (scalar-magnitude (base-convert-measurement (make-measurement 1 :|m|)))
