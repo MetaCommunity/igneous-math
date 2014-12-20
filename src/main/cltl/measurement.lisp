@@ -315,6 +315,7 @@ for the measurement"
       (md-c (find-class 'measurement-domain))
       (mc-c (find-class 'measurement-class))
       (m-c (find-class 'measurement))
+      ;; FIXME: Portable source locations - see also, SLIME/SWANK
       #+SBCL (src (sb-c:source-location)))
   (labels ((do-def (domain domain-name class print-name print-label name)
 	     (let* ((d 
@@ -347,6 +348,23 @@ for the measurement"
 		(multiple-value-bind (d c)
 		    (do-def domain domain-name class print-name print-label  name)
 		  (cons d c))))
+            ;; N.B: With regards to normalization of compound unit
+            ;; expressions, the set of measurement units defined with
+            ;; this form may be stored in a seperate, constant
+            ;; (stack allocated) vector of SI base units. The order of
+            ;; storage of measurement units within that vector will be
+            ;; significant, and must correspond with section 2.1.2 of 
+            ;; http://www.bipm.org/en/publications/si-brochure/
+            ;;
+            ;; Considering the possibly appolications of an "SI Units"
+            ;; vector, as such: 
+            ;; * The "SI Units" vector may be applied for a normal
+            ;;   ordering of elements within compound unit expressions
+            ;; * Not only the previous, but the "SI Units" vector may
+            ;;   also be aplied in normalization of _partially
+            ;;   normalized_ compound unit expressions (e.g. `W A^-1`)
+            ;; See also: Documentation, section "Compound unit
+            ;; expressions" 
 	    '((length "length" meter "metre" "m" :|m|)
 	      (mass "mass" kilogram "kilogram" "kg" :|kg|)
 	      (time "time, duration" second "second" "s" :|s|)
@@ -592,32 +610,32 @@ See also:
 
 ;;; %% Angular Measure
 
-(defclass angular-measure (measurement-class)
+(defclass plane-angle (measurement-class)
   ()
   (:metaclass measurement-domain)
   ;; FIXME: #I18N
   (:print-name . "angular measure")
   (:print-label . "angular measure")
-  (:symbol . :angular-measure)
+  (:symbol . :plane-angle)
   (:base-measure . radian))
 
-(register-measurement-domain (find-class 'angular-measure))
+(register-measurement-domain (find-class 'plane-angle))
 
 (defclass radian (measurement)
   ()
-  (:metaclass angular-measure)
+  (:metaclass plane-angle)
   (:print-name . "radian")
   (:print-label . "rad")
   (:symbol . :|rad|))
 
 (register-measurement-class (find-class 'radian))
 
-;; (object-print-name (measurement-domain-base-measure (find-class 'angular-measure)))
+;; (object-print-name (measurement-domain-base-measure (find-class 'plane-angle)))
 ;; => "radian"
 
 (defclass degree (measurement)
   ()
-  (:metaclass angular-measure)
+  (:metaclass plane-angle)
   (:base-factor . #.(/ (rational pi) 180) )
   (:print-name . "degree")
   (:print-label . "deg")
