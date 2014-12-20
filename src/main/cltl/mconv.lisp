@@ -36,7 +36,7 @@
 
 (defun base-convert-measurement (measurement)
   (declare (type measurement measurement)
-	   (vaues measurement))
+	   (values measurement))
   (let ((base-mc (measurement-domain-base-measure 
 		  (measurement-domain measurement))))
     (cond
