@@ -69,6 +69,7 @@ Effective version history:
                       :components
                       ((:file "compound-measure")
                        (:file "dimensionless")
+                       (:file "geom-measure"
                        (:file "derived-length")))
              
              (:file "prefix"
