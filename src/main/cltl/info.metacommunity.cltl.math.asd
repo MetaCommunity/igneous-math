@@ -87,10 +87,12 @@ Effective version history:
                                  "measurement-base"
                                  "domain"))
 
-             (:file "measurement-ov"
-                    ;; FIXME: Depends on math-ov
-                    :depends-on ("measurement-base"
-                                 "mconv"))))
+             ))
+
+   (:file "measure/measurement-ov" 
+          ;; measurements + math
+          :depends-on ("measure"
+                       "math-ov"))
    
    (:file "geometry"
 	  :depends-on ("measure"))
