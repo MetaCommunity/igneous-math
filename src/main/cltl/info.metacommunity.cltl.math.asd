@@ -70,11 +70,6 @@ Effective version history:
                       ((:file "compound-measure")
                        (:file "dimensionless")
                        (:file "derived-length")))
-
-
-             (:file "expr"
-                    :depends-on ("measurement-base"
-                                 ))
              
              (:file "prefix"
                     ;; :subsystem measure

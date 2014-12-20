@@ -559,3 +559,25 @@ See also:
 
 ;; (object-print-label (class-of (make-measurement 1 :|m|)))
 ;; => "m"
+
+
+;; % Measurement Unit Expressions (Linear)
+
+
+(defgeneric unit-expr-unit (expr))
+(defgeneric (setf unit-expr-unit) (new-value expr))
+
+(defgeneric unit-expr-degree (expr))
+(defgeneric (setf unit-expr-degree) (new-value expr))
+
+(defgeneric unit-expr-elements (expr))
+(defgeneric (setf unit-expr-elements) (new-value expr))
+
+(defclass unit-expr ()
+  ())
+
+(defclass linear-unit-expr (unit-expr)
+  ((unit
+    :initarg :unit
+    :accessor unit-expr-unit
+    :type measurement-class)))

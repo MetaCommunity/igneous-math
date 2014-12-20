@@ -12,3 +12,19 @@
                           luminous-intensity))))
 
 
+
+(defclass compound-measurement-class (measurement-class)
+  ((unit-sequence
+    :initarg :unit-sequence
+    :reader measurement-class-unit-sequence)
+   (degree-sequence
+    :initarg :degree-sequence
+    :reader measurement-class-degree-sequence)))
+
+
+(defclass compound-unit-expr (unit-expr)
+  ((elements
+    :initarg :elements
+    :accessor unit-expr-elements
+    :type simple-vector)))
+
