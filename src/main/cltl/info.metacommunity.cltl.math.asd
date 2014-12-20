@@ -64,16 +64,12 @@ Effective version history:
                                  "decimal-scale"
                                  ))
 
-             ;; FIXME: Move next three elements into measure/derived
-             (:file "compound-measure"
-                    :depends-on ("measurement-base"
-                                 ))
-             (:file "dimensionless"
-                    :depends-on ("measurement-base"
-                                 ))
-             (:file "derived-length"
-                    :depends-on ("measurement-base"
-                                 ))
+             (:module "derived"
+                      :depends-on ("measurement-base")
+                      :components
+                      ((:file "compound-measure")
+                       (:file "dimensionless")
+                       (:file "derived-length")))
 
 
              (:file "expr"
