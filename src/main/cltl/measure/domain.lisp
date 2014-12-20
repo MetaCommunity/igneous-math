@@ -32,7 +32,8 @@
 
 (defmethod shared-initialize :around ((instance measurement-domain)
 				      slots &rest initargs
-				      &key base-measure)
+				      &key base-measure 
+                                        &allow-other-keys)
   (let (args-changed-p)
     (when (and base-measure (symbolp base-measure))
       (let ((c (or (find-class base-measure nil) 
@@ -43,7 +44,22 @@
       (args-changed-p
        (apply #'call-next-method instance slots initargs))
       (t (call-next-method)))))
-	
+
+
+(defmethod shared-initialize :after ((instance measurement-domain) slots
+                                     &rest initargs 
+                                     &key &allow-other-keys)
+  (declare (ignore slots initargs))
+  (unless (documentation instance 'type)
+    (handler-case
+        (with-accessors ((print-name object-print-name)) instance
+          (setf (documentation instance 'type)
+                (simplify-string
+                 (format nil "Measurement domain for quantities of ~A" 
+                         print-name))))
+      (unbound-slot (c)
+        (simple-style-warning  "~<Unable to set documentation for ~S~> ~<(~A)~>"
+                               instance c)))))
 
 
 (define-condition measurement-domain-not-found (entity-not-found)
