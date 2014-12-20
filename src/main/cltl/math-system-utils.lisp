@@ -30,8 +30,7 @@
                             (test #'eql tp) 
                             (test-not nil tnp))
   ;; cf. subsetp
-  (with-gensym (%v1 %v2 %n1 %n2 %elt
-                    %test %test-not)
+  (with-gensym (%v1 %v2 %elt %test %test-not)
     `(let ((,%v1 ,v1)
            (,%v2 ,v2)
            ,@(when tp `((,%test ,test)))
