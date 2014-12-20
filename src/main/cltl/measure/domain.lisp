@@ -98,21 +98,23 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 		 :name name)))))
 
 (defun register-measurement-domain (domain)
-  (declare (type measurement-domain domain)
-	   ;; unable to check return type
-	   #+NIL (values measurement-domain))
+  (declare (type class-designator domain)
+           ;; "Type assertion too complex to check" (SBCL)
+           #+NIL (values measurement-domain))
   (with-lock-held (%domains-lock%)
-    (let* ((s (measurement-domain-symbol domain))
+    (let* ((c (compute-class domain))
+           (s (measurement-domain-symbol c))
 	   (n (position s %domains%
 			:test #'eq
 			:key #'measurement-domain-symbol)))
+      (declare (type measurement-domain c))
       (cond
 	(n (warn 'measurement-domain-redefinition
 		 :previous (aref %domains% n)
-		 :new domain)
-	   (setf (aref %domains% n) domain))
-	(t (vector-push-extend domain %domains%)))
-      (values domain))))
+		 :new c)
+	   (setf (aref %domains% n) c))
+	(t (vector-push-extend c %domains%)))
+      (values c))))
 
 (defun enumerate-measurement-domains ()
   (coerce %domains% 'list))
