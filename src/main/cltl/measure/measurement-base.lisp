@@ -2,15 +2,22 @@
 
 (in-package #:math)
 
-;; see also http://www.bipm.org/en/publications/si-brochure/
-;; and http://physics.nist.gov/pubs/sp811/contents.html
+;; see also:
+;; * http://www.bipm.org/en/publications/si-brochure/
+;; * http://physics.nist.gov/pubs/sp811/contents.html
+;; * IUPAC 'Gold Book' http://goldbook.iupac.org/list_math.html
+;;   esp. <http://goldbook.iupac.org/list_goldbook_quantities_defs_A.html>
+;; * <http://physics.nist.gov/cuu/units/>
+;; * <http://physics.nist.gov/pubs/sp811/appenb.html>
+;;    * ^ esp. for formal conversions regarding foot, mile, yard , ...
+
     
 
 (defgeneric measurement-symbol (instance))
 
 
-(defgeneric measurement-base-factor (measurement)) ;; NEW
-(defgeneric measurement-base-factor-exponent (measurement)) ;; NEW
+(defgeneric measurement-base-factor (measurement))
+(defgeneric measurement-base-factor-exponent (measurement))
 
 
 ;;; % Measurement Class
