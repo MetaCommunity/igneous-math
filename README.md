@@ -161,12 +161,11 @@ presentational model for measurements. See also:
 ### Concept: Extensions and Revisions onto Ig<sup>1</sup><sub>m</sub> Measurement Classes
 
 * Class: `MEASUREMENT-CLASS`
-    * Essentially a new definition
     * Protocol class
     * See also: `REGISTER-MEASUREMENT-CLASS`
     * See also: `MEASUREMENT-DOMAIN`
 * Class: `BASE-MEASUREMENT-CLASS`
-    * Analogous to existing `MEASUREMENT-CLASS` for SI base units
+    * `MEASUREMENT-CLASS` for SI base units
     * See also: `LENGTH`; `MASS`; `TIME`; `ELECTRICAL-CURRENT`;
       `TEMPERATURE`; `AMOUNT-SUBSTANCE`; `LUMINOUS-INTENSITY`
 * Class: `DERIVED-MEASUREMENT-CLASS`
