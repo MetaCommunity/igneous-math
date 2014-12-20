@@ -351,35 +351,6 @@ presentational model for measurements. See also:
     * Refer to [SI], [NIST], other resources 
     * e.g. towards units of amps, watts, ohms, newtons, radians, herz...
 
-#### Measurement Systems
-
-* Sidebar; Measurement tools (e.g. oscilloscope; digital multimeter;
-  thermometer; barometer; soil moisture sensor  ...)
-* Sidebar: Experimental data (e.g. spectrographs; astrometry data)
-* A primary concern: "Rigorous metadata recording," i.e insofar as to record the source of a calculation or a measurement, as "measurement metadata," for purpose of reference - cf. [LoC MODS RDF](http://www.loc.gov/standards/mods/modsrdf/), [LoC PREMIS](http://www.loc.gov/standards/premis/)
-    * If a numeric value is a result of a calculation, it should be annotated as a calculation, and annotated for the methodology in which the calculation was derived
-    * If a numeric value is a result of a measurement, it should be annoted with the identity of the device by which the measurement was obtained, as well as the configuration of the measurement system in which the device was applied.
-    * In effect, this requires a development of an object model for measurement devices. See also: [EDIF], [ISO-10303], [STEP]; JEDEC; [About STEP](http://www.ida-step.net/support/resources/about-step), but not as if to neglect the derivation of parts of the STEP standard from EDIF;
-    * For interactive/manual calculations and measurements, an applicaiton may request user input for establishing the respective source of calculation or measurement
-    * For automated calculations or measurements with multiple heterogenous data sources, a data model may be developed such that would effectively "tag" each measured value with the identity of the measurement system from which the value was "read"
-
-##### Measurement Workflows
-
-(TO DO - look for NASA best practice guidelines, regarding? i.e. "Lab work")
-
-
-#### Display Procedures
-
-#### Oscilloscope Data
-
-* Graph
-    * Bezier curves ?
-    * Sample data ?
-
-TO DO: Review TBS-1XXX oscilloscope readout files, e.g. with prototype voltage converter construted in ECT-246 week 1
-
-#### ...
-
 
 ## Reference (Partial)
 
@@ -547,7 +518,7 @@ requires the  definitions of the derived measurement units: newton,
 joule, watt, and volt.
 
 
-[1] http://www.bipm.org/en/publications/si-brochure/
+[1] <http://www.bipm.org/en/publications/si-brochure/>
 
 #### Topic: Measurement Conversion
 
@@ -590,13 +561,13 @@ measurement domains and subdomains.
 
 
 [1] NIST. Guide for the Use of the International System of Units
-     http://physics.nist.gov/cuu/pdf/sp811.pdf
+    <http://physics.nist.gov/cuu/pdf/sp811.pdf>
 
 #### Formal Measurement Definitions in HyTime
 
-referencing http://www.hytime.org/materials/hi2mdhyt.sgm
+Point of reference: <http://www.hytime.org/materials/hi2mdhyt.sgm>
 
-notation names and public identifiers, for 'standard measurement unit'
+Notation names and public identifiers, for 'standard measurement unit'
 (SMU) definitions,from the _HyTime Granule Definition Notation_ module
 of "ISO/IEC 10744:1997", i.e. _Hypermedia/Time-based Structuring
 Language_ (HyTime)
@@ -618,9 +589,10 @@ public idenifier, but may be differentiated by their respective
 notation names. Though practically useful, however those
 measurement units are not standardized onto SI
 
-see also: 
-* http://crism.maden.org/consulting/pub/hytime/meas.html (1992)
-* http://www.is-thought.co.uk/schedule.htm
+see also:
+
+* <http://crism.maden.org/consulting/pub/hytime/meas.html> (1992)
+* <http://www.is-thought.co.uk/schedule.htm>
 * <http://www.hytime.org/materials/hi2mdhyt.sgm>
     * cf. %hygrand
 
@@ -696,7 +668,7 @@ quantity of _force_:
     1 newton = 1 m kg s^-2		[1] p. 118
 
 
-    [1] http://www.bipm.org/en/publications/si-brochure/
+`[1]` <http://www.bipm.org/en/publications/si-brochure/>
 
 
 ### Measurement Unit Conversions within Mathematical Operations
@@ -1059,6 +1031,36 @@ _markdown_ file
 * <http://physics.nist.gov/cuu/units/>
 * <http://physics.nist.gov/pubs/sp811/appenb.html>
     * ^ esp. for conversions regarding foot, mile, yard , ...
+
+#### Appendix. Notes Towards Integration with Measurement Systems
+
+* Sidebar; Measurement tools (e.g. oscilloscope; digital multimeter;
+  thermometer; barometer; soil moisture sensor; solar intensity  ...)
+* Sidebar: Experimental data (e.g. spectrographs; astrometry data)
+* A primary concern: "Rigorous metadata recording," i.e insofar as to record the source of a calculation or a measurement, as "measurement metadata," for purpose of reference - cf. [LoC MODS RDF](http://www.loc.gov/standards/mods/modsrdf/), [LoC PREMIS](http://www.loc.gov/standards/premis/)
+    * If a numeric value is a result of a calculation, it should be annotated as a calculation, and annotated for the methodology in which the calculation was derived
+    * If a numeric value is a result of a measurement, it should be annoted with the identity of the device by which the measurement was obtained, as well as the configuration of the measurement system in which the device was applied.
+    * In effect, this requires a development of an object model for measurement devices. See also: [EDIF], [ISO-10303], [STEP]; JEDEC; [About STEP](http://www.ida-step.net/support/resources/about-step), but not as if to neglect the derivation of parts of the STEP standard from EDIF;
+    * For interactive/manual calculations and measurements, an applicaiton may request user input for establishing the respective source of calculation or measurement
+    * For automated calculations or measurements with multiple heterogenous data sources, a data model may be developed such that would effectively "tag" each measured value with the identity of the measurement system from which the value was "read"
+
+##### Measurement Workflows
+
+(TO DO - look for NASA best practice guidelines, regarding? i.e. "Lab work")
+
+
+#### Display Procedures
+
+#### Oscilloscope Data
+
+* Graph
+    * Bezier curves ?
+    * Sample data ?
+
+
+#### ...
+
+
 
 [igneous-math]: https://github.com/MetaCommunity/igneous-math
 [mci-cltl-utils]: https://github.com/MetaCommunity/mci-cltl-utils
