@@ -310,11 +310,13 @@ for the measurement"
 (defmethod measurement-symbol ((instance measurement))
   (measurement-symbol (class-of instance)))
 
-;;; %% 
+;;; %% Base Measurement and Derived Measurement Classes
 
 (defclass base-measurement-class (measurement-class)
   ())
 
+(defclass derived-measurement-class (measurement-class)
+  ())
 
 ;;; %% Initialize fundamental measurement domains and base unit classes
 
@@ -334,6 +336,9 @@ for the measurement"
 			:print-name domain-name
 			:print-label domain-name
 			:direct-superclasses (list bm-c)
+                        ;; ^ FIXME: This results in all instances of a
+                        ;; measurement domain being of type
+                        ;; BASE-MEASUREMENT-CLASS - incorrectly.
                         :documentation 
                         ;; FIXME: I18N
                         (format nil "Measurement domain for quantities of ~A" 
@@ -412,16 +417,6 @@ Symbolic representation: ~S"
 ;; (find-measurement-class :|k|)
 ;; (find-measurement-class :|mol|)
 ;; (find-measurement-class :|cd|)
-
-
-(defconstant* +si-base-measurements+
-    (make-array 7
-                :initial-contents
-                (mapcar #'find-class
-                        '(length mass time electrical-current
-                          temperature amount-substance
-                          luminous-intensity))))
-                      
 
 
 #+TO-DO?

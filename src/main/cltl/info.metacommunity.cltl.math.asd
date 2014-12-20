@@ -58,33 +58,36 @@ Effective version history:
             :components
             ((:file "domain")
              (:file "decimal-scale")
-             (:file "measurement"
+             (:file "measurement-base"
                     ;; :subsystem measure
                     :depends-on ("domain"
                                  "decimal-scale"
                                  ))
+             (:file "compound-measure"
+                    :depends-on ("measurement-base"
+                                 ))
 
              (:file "dimensionless"
-                    :depends-on ("measurement"
+                    :depends-on ("measurement-base"
                                  ))
 
              (:file "expr"
-                    :depends-on ("measurement"
+                    :depends-on ("measurement-base"
                                  ))
              
              (:file "prefix"
                     ;; :subsystem measure
                     ;; nb. The prefix system is essentially orthogonal to MAKE-MEASUREMENT
-                    :depends-on ("measurement"
+                    :depends-on ("measurement-base"
                                  ))
              (:file "mconv"
                     :depends-on ("prefix"
-                                 "measurement"
+                                 "measurement-base"
                                  "domain"))
 
              (:file "measurement-ov"
                     ;; FIXME: Depends on math-ov
-                    :depends-on ("measurement"
+                    :depends-on ("measurement-base"
                                  "mconv"))))
    
    (:file "geometry"
