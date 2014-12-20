@@ -63,13 +63,18 @@ Effective version history:
                     :depends-on ("domain"
                                  "decimal-scale"
                                  ))
+
+             ;; FIXME: Move next three elements into measure/derived
              (:file "compound-measure"
                     :depends-on ("measurement-base"
                                  ))
-
              (:file "dimensionless"
                     :depends-on ("measurement-base"
                                  ))
+             (:file "derived-length"
+                    :depends-on ("measurement-base"
+                                 ))
+
 
              (:file "expr"
                     :depends-on ("measurement-base"
