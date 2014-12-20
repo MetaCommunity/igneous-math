@@ -51,42 +51,38 @@ Effective version history:
 	  :depends-on ("monotonic-genf"
 		       "math-package"))
 
-   (:file "domain"
-	  ;; :subsystem measure
-	  :depends-on ("math-system-utils"
-		       "defclass-star"))
-   (:file "measurement"
-	  ;; :subsystem measure
-	  :depends-on ("domain"
-		       "decimal-scale"
-		       "math-system-utils"
-		       "defclass-star"))
-   (:file "expr"
-          :depends-on ("measurement"
-                       ))
+   (:module "measure"
+            :depends-on ("math-package"
+                         "defclass-star"
+                         "math-system-utils")
+            :components
+            ((:file "domain")
+             (:file "decimal-scale")
+             (:file "measurement"
+                    ;; :subsystem measure
+                    :depends-on ("domain"
+                                 "decimal-scale"
+                                 ))
+             (:file "expr"
+                    :depends-on ("measurement"
+                                 ))
+             
+             (:file "prefix"
+                    ;; :subsystem measure
+                    ;; nb. The prefix system is essentially orthogonal to MAKE-MEASUREMENT
+                    :depends-on ("measurement"
+                                 ))
+             (:file "mconv"
+                    :depends-on ("prefix"
+                                 "measurement"
+                                 "domain"))
 
-
-   (:file "decimal-scale"
-	  ;; :subsystem measure
-	  :depends-on ("math-package"))
-
-   (:file "prefix"
-	  ;; :subsystem measure
-	  ;; nb. The prefix system is essentially orthogonal to MAKE-MEASUREMENT
-	  :depends-on ("measurement"
-		       "math-system-utils"
-		       "defclass-star"))
-   (:file "mconv"
-	  :depends-on ("prefix"
-		       "measurement"
-		       "domain"))
-
-   (:file "measurement-ov"
-	  :depends-on ("measurement"
-		       "mconv"))
+             (:file "measurement-ov"
+                    :depends-on ("measurement"
+                                 "mconv")))
    
    (:file "geometry"
-	  :depends-on ("measurement"))
+	  :depends-on ("measure"))
 
    (:file "linear"
           :depends-on ("math-package"))
