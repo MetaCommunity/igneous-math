@@ -161,7 +161,7 @@ presentational model for measurements. See also:
 
 ### Concept: Unit Expressions in Ig<sup>2</sup><sub>m</sub>
 
-* Class: `UNIT-EXPRESSION`
+* Class: `UNIT-EXPR`
     * A _unit expresion_ represents an expression of a _measurement
       unit_.
     * Essentially, this concept pertains to presentation of
@@ -174,8 +174,8 @@ presentational model for measurements. See also:
     * In Ig<sup>1</sup><sub>m</sub>, seven primary `MEASUREMENT-CLASS`
       classes are defined, each corresponding to a single
       `MEASUREMENT-DOMAIN`.
-    * The class `UNIT-EXPRESSION` may be implemented towards a
-      `UNIT-EXPRESSION` representing a syntactic expression of a
+    * The class `UNIT-EXPR` may be implemented towards a
+      `UNIT-EXPR` representing a syntactic expression of a
       _measurement class_
     * Three essential types of _unit expression_
         * **Linear unit expression**, e.g. as denoted with `m` or `W`
@@ -261,28 +261,28 @@ presentational model for measurements. See also:
               will be in accord with the sequence of _SI base unit_
               names denoted in section 2.1.2 of [[BIPM][#BIPM]]
               (in English language, p. 116, PDF p. 24)
-* Class: `LINEAR-UNIT-EXPRESSION`
+* Class: `LINEAR-UNIT-EXPR`
     * Concept: A syntactic container for a single measurement unit
       expression, e.g `m`
     * Concern: The definition of this class would serve to ensure that
-      the subclasses specified of `UNIT-EXPRESSION` would   represent
+      the subclasses specified of `UNIT-EXPR` would   represent
       an _exhaustive set_ of types of _unit expression_. However,
       this class -- in its application -- might seem redundant onto 
       `SYMBOL`, insofar as that a _symbol_ may be applied as being
       syntactically representative of a _measurement unit_. Insofar as
       that -- conversely -- a _symbol_ would be interpreted as being
       representative of a _measurement unit_, the classes `SYMBOL` and
-      `LINEAR-UNIT-EXPRESSION` are therefore _functionally
-      orthogonal_. Effectively, a `LINEAR-UNIT-EXPRESSION` would
+      `LINEAR-UNIT-EXPR` are therefore _functionally
+      orthogonal_. Effectively, a `LINEAR-UNIT-EXPR` would
       represent an encapsulation of a `MEASUREMENT-CLASS`, insofar as
       input and presentation of _unit expressions_. Transitively, a
       `MEASUREMENT-CLASS` may be denoted with a _symbol_, as in the
       context of the _measurement classes namespace_
-* Class: `GEOMETRIC-UNIT-EXPRESSION`
+* Class: `GEOMETRIC-UNIT-EXPR`
     * Concept: A syntactic container for both of a single measuremnt
       unit expression and a numeric (fixnum) degree of the measurement
       unit
-* Class: `COMPOUND-UNIT-EXPRESSION`
+* Class: `COMPOUND-UNIT-EXPR`
 * Function: `SIMPLIFY-UNIT`
     * Syntax and arguments: `SIMPLIFY-UNIT EXPR => EXPR`
        * `EXPR`: A _unit expression_
