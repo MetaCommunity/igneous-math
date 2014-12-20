@@ -80,10 +80,10 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 			:test #'eq
 			:key #'measurement-symbol)))
       (cond 
-	((and n (not (eq (aref %measurement-classes% n) %c)))
-	 (simple-style-warning 
-	  "Redfining measurement class for ~S" s)
-	 (setf (aref %measurement-classes% n) %c))
+	(n (unless (eq (aref %measurement-classes% n) %c)
+             (simple-style-warning 
+              "Redfining measurement class for ~S" s)
+             (setf (aref %measurement-classes% n) %c)))
 	(t (vector-push-extend %c %measurement-classes%)))
       (let ((base-f (measurement-base-factor %c))
 	    (base-f-e (measurement-base-factor-exponent %c)))
@@ -334,27 +334,45 @@ for the measurement"
 
 (let ((kwd (find-package '#:keyword))
       (md-c (find-class 'measurement-domain))
+      (mc-c (find-class 'measurement-class))
       (bm-c (find-class 'base-measurement-class))
       (m-c (find-class 'measurement))
       ;; FIXME: Portable source locations - see also, SLIME/SWANK
       #+SBCL (src (sb-c:source-location)))
   (labels ((do-def (domain domain-name class print-name print-label name)
-	     (let* ((d 
+	     (let* ((b-d-name (intern-formatted "BASE-~A"  domain))
+                    (d 
 		     (ensure-class 
 			domain
 			:symbol (intern* domain kwd)
 			:print-name domain-name
 			:print-label domain-name
-			:direct-superclasses (list bm-c)
+			:direct-superclasses (list mc-c)
                         ;; ^ FIXME: This results in all instances of a
                         ;; measurement domain being of type
                         ;; BASE-MEASUREMENT-CLASS - incorrectly.
+                        ;;
+                        ;; Proposal:
+                        ;; For definition of these base measurements,
+                        ;; it may be appropriate to define a class
+                        ;; BASE-{DOMAIN-NAME} such that would be a
+                        ;; subclass of DOMAIN and would have `bm-c` as
+                        ;; one of its direct superclasses. Then,
+                        ;; derived measurement units may still use
+                        ;; {DOMAIN-NAME} as their metaclass, though
+                        ;; not being denoted themselves as being of
+                        ;; type  BASE-MEASUREMENT-CLASS
                         :documentation 
                         ;; FIXME: I18N
                         (format nil "Measurement domain for quantities of ~A" 
                                 domain-name)
 			:metaclass md-c
 			#+SBCL :definition-source #+SBCL src))
+                    (b-d
+                     (ensure-class b-d-name
+                                   :direct-superclasses (list bm-c 
+                                                              domain)
+                                   :metaclass md-c))
 		    (c 
 		     (ensure-class 
 		      class
@@ -371,7 +389,7 @@ Symbolic representation: ~S"
                               print-name
                               print-label
                               name)
-		      :metaclass d
+		      :metaclass b-d
 		      #+SBCL :definition-source #+SBCL src 
 		      )))
 	       (setf (slot-value d 'base-measure) c)
@@ -418,7 +436,7 @@ Symbolic representation: ~S"
 ;; => T
 ;;
 ;; (measurement-domain (make-instance 'meter))
-;; => #<MEASUREMENT-DOMAIN LENGTH>
+;; => #<MEASUREMENT-DOMAIN BASE-LENGTH>
 
 ;; (find-measurement-class :|m|)
 ;; (find-measurement-class :|kg|)
@@ -511,6 +529,8 @@ See also:
 ;; (measurement-magnitude (make-measurement 1 :|m| 5))
 ;; => 1
 
+;; Arbitrary instance tests (FIXME: Formalize these instance tests)
+
 ;; Example: Scaling to significant digits
 ;;
 ;; (measurement-magnitude (make-measurement 103 :|m| 10))
@@ -525,7 +545,7 @@ See also:
 
 ;;- Ratio magnitude (unscaled)
 ;; (make-measurement 1/5 :|m|)
-;; => #<METER 100 km {1003FF93A3}>
+;; => #<METER 1/5 m {1003FF93A3}>
 ;; (measurement-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5
 ;;
@@ -540,6 +560,11 @@ See also:
 ;; (scalar-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5 ;; i.e. 1/5 m
 
+;; (make-measurement 0.2 :|m|)
+;; => #<METER 200 mm {1006CC13C3}>
+
+;; (make-measurement 0.2222 :|m|)
+;; => #<METER 222200 μm {1006E29433}>
 
 ;; (make-measurement 1 :|kg|)
 ;; => #<KILOGRAM 1000 g {10065C1043}>

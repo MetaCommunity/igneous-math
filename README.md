@@ -164,10 +164,13 @@ presentational model for measurements. See also:
     * Protocol class
     * See also: `REGISTER-MEASUREMENT-CLASS`
     * See also: `MEASUREMENT-DOMAIN`
+    * See also: `LENGTH`; `MASS`; `TIME`; `ELECTRICAL-CURRENT`;
+      `TEMPERATURE`; `AMOUNT-SUBSTANCE`; `LUMINOUS-INTENSITY`;
 * Class: `BASE-MEASUREMENT-CLASS`
     * `MEASUREMENT-CLASS` for SI base units
-    * See also: `LENGTH`; `MASS`; `TIME`; `ELECTRICAL-CURRENT`;
-      `TEMPERATURE`; `AMOUNT-SUBSTANCE`; `LUMINOUS-INTENSITY`
+    * See also:  `BASE-LENGTH`; `BASE-MASS`; `BASE-TIME`;
+      `BASE-ELECTRICAL-CURRENT`; `BASE-TEMPERATURE`;
+      `BASE-AMOUNT-SUBSTANCE`; `BASE-LUMINOUS-INTENSITY`; 
 * Class: `DERIVED-MEASUREMENT-CLASS`
     * `BASE-MEASUREMENT-CLASS` and `DERIVED-MEASUREMENT-CLASS` form an
       _exhaustive set_ of types of `MEASUREMENT-CLASS`
@@ -416,10 +419,10 @@ instance of a  _`math:measurement-domain` class_.
 > => #&lt;METER 1 m {10083AF7A3}&gt;
 >
 >  (class-of *m*)
->  => #&lt;LENGTH METER&gt;
+>  => #&lt;BASE-LENGTH METER&gt;
 >
 >  (class-of (class-of *M*))
-> => #&lt;MEASUREMENT-DOMAIN LENGTH&gt;
+> => #&lt;MEASUREMENT-DOMAIN BASE-LENGTH&gt;
 
 
 **Note:** This system develops a concept of a _measurement domain_, in
