@@ -508,6 +508,7 @@ _To do: Still developing the architecture for derived units_
 * Application of measurement unit conversion formulas, within
   mathematical operations onto measurement values
 
+
 #### Topic: Measurement Formulas
 
 The measurement unit, _ohm_, as a standard unit for measurement of
@@ -548,6 +549,80 @@ joule, watt, and volt.
 
 [1] http://www.bipm.org/en/publications/si-brochure/
 
+#### Topic: Measurement Conversion
+
+Issue: Towards a methodology for linear unit conversion
+
+NIST SP 811[1] appendix B defines an effective table of conversion
+factors for standard measurement units recognized by the NIST. The
+table is defined with a format, effectively: (S,D,F,E) for
+
+    S: source measurement unit
+    D: destination measurement unit
+    F: factor for converstion
+    E: decimal exponent for factor of conversion
+
+S and D do not appear uniquely in the table, but the set {S,D) is
+unique within the table.
+
+In transposing that measurement conversions table into this software
+system, a number of matters may be considered, for example:
+
+1. That a floating-point value 3.048 E-03 (imay be represented similarly
+   as 3048 E-6, with the exponent value stored seperate to the integral
+   magnitude -- thus, ensuring that a manner of integral arithmetic
+   may be applied onto the integral magnitude and its integral decimal
+   degree.
+
+2. that for any measurement converstion path A..D in which the
+   following measurement conversion paths are available:
+    * A..B
+    * B..C
+    * C..D
+   ...the converstion from A to D may be accomplished directly by
+   multiplying the factors for the conversions A..B, B..C, and C..D
+   and summing their decimal degrees
+
+   
+
+NIST SP 811[1] clause B.9, furthermore, defines a set of individual
+measurement domains and subdomains.
+
+
+[1] NIST. Guide for the Use of the International System of Units
+     http://physics.nist.gov/cuu/pdf/sp811.pdf
+
+#### Formal Measurement Definitions in HyTime
+
+referencing http://www.hytime.org/materials/hi2mdhyt.sgm
+
+notation names and public identifiers, for 'standard measurement unit'
+(SMU) definitions,from the _HyTime Granule Definition Notation_ module
+of "ISO/IEC 10744:1997", i.e. _Hypermedia/Time-based Structuring
+Language_ (HyTime)
+
+* `gQuantum "ISO/IEC 10744:1997//NOTATION Virtual Measurement Unit//EN"`
+* `SIsecond "ISO/IEC 10744:1997//NOTATION Systeme International second//EN"`
+* `SImeter "ISO/IEC 10744:1997//NOTATION Systeme International meter//EN"`
+* `virTime "ISO/IEC 10744:1997//NOTATION Virtual Measurement Unit//EN"`
+* `virSpace "ISO/IEC 10744:1997//NOTATION Virtual Measurement Unit//EN"`
+* `SIkg "ISO/IEC 10744:1997//NOTATION Systeme International kilogram//EN"`
+* `SIcd ""ISO/IEC 10744:1997//NOTATION Systeme International candela//EN"`
+* `SIampere "ISO/IEC 10744:1997//NOTATION Systeme International ampere//EN"`
+* `SImole "ISO/IEC 10744:1997//NOTATION Systeme International  mole//EN"`
+* `SIradian "ISO/IEC 10744:1997//NOTATION Systeme International radian//EN"`
+* `SIsr "ISO/IEC 10744:1997//NOTATION Systeme International steradian//EN"`
+
+Issue: The _gQuantum_, _virTime_ and _virSpace_ notations share the same
+public idenifier, but may be differentiated by their respective
+notation names. Though practically useful, however those
+measurement units are not standardized onto SI
+
+see also: 
+* http://crism.maden.org/consulting/pub/hytime/meas.html (1992)
+* http://www.is-thought.co.uk/schedule.htm
+* <http://www.hytime.org/materials/hi2mdhyt.sgm>
+    * cf. %hygrand
 
 
 **Previous Documentation (2) :**
@@ -976,19 +1051,14 @@ FIXME: The following documentation items were transposed from
 measurement.lisp and should be edited for presentation in this
 _markdown_ file
 
-### Sidebar: Measurement Definitions in HyTime
+### Additional Resources
 
-* <http://www.is-thought.co.uk/schedule.htm>
-* <http://crism.maden.org/consulting/pub/hytime/meas.html>
-* <http://www.hytime.org/materials/hi2mdhyt.sgm>
-    * ^ cf %hygrand
-
-see also:
-
+* [IUPAC 'Gold Book'](http://goldbook.iupac.org/list_math.html)
+  esp. <http://goldbook.iupac.org/list_goldbook_quantities_defs_A.html>
+* [NASA SWEET Ontologies](http://sweet.jpl.nasa.gov/)
 * <http://physics.nist.gov/cuu/units/>
 * <http://physics.nist.gov/pubs/sp811/appenb.html>
     * ^ esp. for conversions regarding foot, mile, yard , ...
-
 
 [igneous-math]: https://github.com/MetaCommunity/igneous-math
 [mci-cltl-utils]: https://github.com/MetaCommunity/mci-cltl-utils
