@@ -57,7 +57,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 ;;; %%%% Locking (Thread Safety)
 
 (defvar %measurement-classes-lock% (make-lock "%MEASUREMENT-CLASSES%")
-  "Mutex lock for accessing `%DOMAINS%'")
+  "Mutex lock for accessing `%MEASUREMENT-CLASSES%'")
 
 ;;; %%%% Access Functions
 
