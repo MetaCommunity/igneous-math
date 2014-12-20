@@ -79,7 +79,7 @@ Effective version history:
 
              (:file "measurement-ov"
                     :depends-on ("measurement"
-                                 "mconv")))
+                                 "mconv"))))
    
    (:file "geometry"
 	  :depends-on ("measure"))
