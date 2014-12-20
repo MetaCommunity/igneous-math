@@ -244,21 +244,30 @@ Symbolic representation: :N"))
                   (cons (cadr elt)))))
         (declare (type measurement-class c)
                  (type fixnum d))
-        (flet ((add-elt (c d buffer)
-                 ;; FIXME: CONSY buffer implementation
-                 (vector-push-extend (list (measurement-symbol c) d) 
-                                     buffer)))
+        (labels ((find-elt (s buffer)
+                   (do-vector (elt buffer (values nil nil))
+                     (let ((elt-s (aref elt 0)))
+                       (when (eq s elt-s)
+                         (return  (values (aref elt 1) elt))))))
+                 (ensure-elt (c d buffer)
+                   (let ((s (measurement-symbol c)))
+                   (multiple-value-bind (%d elt) 
+                       (find-elt s buffer)
+                     (cond
+                       (%d (setf (aref elt 1) (+ %d d)))
+                       (t  (vector-push-extend (vector s  d)
+                                               buffer)))))))
         (etypecase c
           ((or base-measurement-class 
                linear-measurement-class
                geometric-measurement-class)
-           (add-elt c d buffer))
+           (ensure-elt c d buffer))
           (compound-measurement-class
            (let ((nex (measurement-normalized-expression c)))
              (dotimes (%index (array-dimension nex 0))
                (let ((%c (aref nex %index 0))
                      (%d (* d (aref nex %index 1))))
-                 (add-elt %c %d buffer)))))))))))
+                 (ensure-elt %c %d buffer)))))))))))
 
 ;; NORMALIZE-UNIT / SIMPLIFY-UNIT - Usage cases
 
@@ -269,11 +278,18 @@ Symbolic representation: :N"))
 ;;
 ;; (normalize-unit-expression :|m| :|kg| '(:|s| -2))
 ;; => #2A((:|m| 1) (:|kg| 1) (:|s| -2))
+;;
+;; (normalize-unit-expression '(:|N| 2))
+;; => #2A((:|m| 2) (:|kg| 2) (:|s| -4)) ;; (FIXME: Verify)
+
 
 ;; (simplify-unit-expression :|m| :|kg| '(:|s| -2))
 
 ;; Prototype: Momentum (Units)
 ;;
 ;; (normalize-unit-expression :|N| :|s|)
+;; =initially=> #2A((:|m| 1) (:|kg| 1) (:|s| -2) (:|s| 1))
+;; =revised=> #2A((:|m| 1) (:|kg| 1) (:|s| -1))
+;;
 ;; (simplify-unit :|m| :|kg| (:|s| -2) :|s|)
 ;; (simplify-unit :|kg| :|m| (:|s| -1))
