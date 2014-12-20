@@ -556,44 +556,6 @@ See also:
 
 
 
-#| Topic: Measurement Formulas
-
-The measurement unit, ohm, as a standard unit for measurement of
-electrial resistance, is defined as a derived unit with formulas
-
-  1 ohm = 1 m^2 kg s^-3 A^-2	[1] p. 111	i.e. ((:|m| 2) :|kg| (:|s| -3) (:A -2))
-  1 ohm = 1 V / 1 A		[1] p. 118
-
-Similarly, the measurement unit, volt, as a standard unit for
-measurement of electromotive force or difference in electrical
-potential, is defined with formulas
-
-  1 volt = 1 m^2 kg s^-3 A^-1	[1] p. 118
-  1 volt = 1 W / 1 A		[1] p. 118
-
-and the measurement unit, watt, as a standard unit for measurement of
-power or radiant flux:
-
- 1 watt = 1 m^2 kg s^-3		[1] p. 118
- 1 watt = 1 J / 1 S		[1] p. 118
-
-and the measurement unit, joule, as a standard unit for measurement of
-work, energy, or amount of heat:
-
- 1 joule = 1 m^2 kg s^-2	[1] p. 118
- 1 joule = 1 N * 1 M		[1] p. 118
-
-and the measurement unit, newton, as a standard unit for force:
-
- 1 newton = 1 m kg s^-2		[1] p. 118
-
-Thus, a definition of the derived measurement unit, ohm, effectively
-requires the  definitions of the derived measurement units: newton,
-joule, watt, and volt.
-
-
-  [1] http://www.bipm.org/en/publications/si-brochure/
-|#
 
 #| Topic: Measurement Converstion
 
