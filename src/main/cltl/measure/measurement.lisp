@@ -309,11 +309,19 @@ for the measurement"
 (defmethod measurement-symbol ((instance measurement))
   (measurement-symbol (class-of instance)))
 
-;;; %% Initialize core measurement domains and base unit classes
+;;; %% 
+
+(defclass base-measurement-class (measurement-class)
+  ())
+
+
+;;; %% Initialize fundamental measurement domains and base unit classes
+
+
 
 (let ((kwd (find-package '#:keyword))
       (md-c (find-class 'measurement-domain))
-      (mc-c (find-class 'measurement-class))
+      (bm-c (find-class 'base-measurement-class))
       (m-c (find-class 'measurement))
       ;; FIXME: Portable source locations - see also, SLIME/SWANK
       #+SBCL (src (sb-c:source-location)))
@@ -324,7 +332,7 @@ for the measurement"
 			:symbol (intern* domain kwd)
 			:print-name domain-name
 			:print-label domain-name
-			:direct-superclasses (list mc-c)
+			:direct-superclasses (list bm-c)
                         :documentation 
                         ;; FIXME: I18N
                         (format nil "Measurement domain for quantities of ~A" 
@@ -404,6 +412,15 @@ Symbolic representation: ~S"
 ;; (find-measurement-class :|mol|)
 ;; (find-measurement-class :|cd|)
 
+
+(defconstant* +si-base-measurements+
+    (make-array 7
+                :initial-contents
+                (mapcar #'find-class
+                        '(length mass time electrical-current
+                          temperature amount-substance
+                          luminous-intensity))))
+                      
 
 
 #+TO-DO?

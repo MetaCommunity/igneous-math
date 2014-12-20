@@ -164,11 +164,11 @@ presentational model for measurements. See also:
     * Essentially a new definition
     * Protocol class
     * See also: `REGISTER-MEASUREMENT-CLASS`
-    * See also: `MEASUREMENT-DOMAIN`; `LENGTH`; `MASS`; `TIME`;
-      `ELECTRICAL-CURRENT`; `TEMPERATURE`; `AMOUNT-SUBSTANCE`;
-      `LUMINOUS-INTENSITY`
+    * See also: `MEASUREMENT-DOMAIN`
 * Class: `BASE-MEASUREMENT-CLASS`
     * Analogous to existing `MEASUREMENT-CLASS` for SI base units
+    * See also: `LENGTH`; `MASS`; `TIME`; `ELECTRICAL-CURRENT`;
+      `TEMPERATURE`; `AMOUNT-SUBSTANCE`; `LUMINOUS-INTENSITY`
 * Class: `DERIVED-MEASUREMENT-CLASS`
     * `BASE-MEASUREMENT-CLASS` and `DERIVED-MEASUREMENT-CLASS` form an
       _exhaustive set_ of types of `MEASUREMENT-CLASS`
@@ -291,7 +291,8 @@ presentational model for measurements. See also:
               elements_ of a _normalized compound unit expression_
               will be in accord with the sequence of _SI base unit_
               names denoted in section 2.1.2 of [[BIPM][#BIPM]]
-              (in English language, p. 116, PDF p. 24)
+              (in English language, p. 116, PDF p. 24) See also:
+              `+SI-BASE-MEASUREMENTS+` 
 * Class: `LINEAR-UNIT-EXPR`
     * Concept: A syntactic container for a single measurement unit
       expression, e.g `m`
