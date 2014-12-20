@@ -2,11 +2,23 @@
 
 (in-package #:math)
 
-;;; %% Angular Measure
+;; % Class for Dimensionless Measurement Domains
+
+(defclass dimensionless-measurement-domain (measurement-domain)
+  ;; FIXME: For formulas resulting in dimensionless measurements, it
+  ;; may be possible to define a method to provide 'advice' for the
+  ;; measurement being sought (?)
+  ;;
+  ;; Perhaps it may simply be accepted that the semantics of a
+  ;; dimensionless measurement must be provided in documentation
+  ;; seperate to any programmed expression of the measurement
+  ())
+
+;;; % Angular Measure
 
 (defclass plane-angle (measurement-class)
   ()
-  (:metaclass measurement-domain)
+  (:metaclass dimensionless-measurement-domain)
   ;; FIXME: #I18N
   (:print-name . "angular measure")
   (:print-label . "angular measure")
@@ -16,9 +28,9 @@
 (register-measurement-domain (find-class 'plane-angle))
 
 (defclass radian (measurement)
-  ;; FIXME: Define as COMPOUND-MEASUREMENT-CLASS with units m m^-1
+  ;; FIXME: Define as COMPOUND-MEASUREMENT-CLASS with units m m^-1 (?)
   ;; FIXME: Define corresponding STERADIAN class in measurement domain
-  ;; SOLID-ANGLE, units m^2 m^-2
+  ;; SOLID-ANGLE (units m^2 m^-2 ?)
   ()
   (:metaclass plane-angle)
   (:print-name . "radian")
@@ -43,7 +55,7 @@
 ;; (scalar-magnitude (convert-measurement (make-measurement (rational pi) :|rad|) :|deg|))
 ;; => 180
 
-;;; %% Dimensionless Measure
+;;; % Dimensionless Measure (Generic)
 
 (defclass dimensionless-measure (measurement-class)
   ;; FIXME: Consider undefining this class. It should be possible to
@@ -52,7 +64,7 @@
   ;; it may be derived (e.g m s^-2 m^-1 s^2)
   ()
   (:documentation "Informal domain for dimensionless measures")
-  (:metaclass measurement-domain)
+  (:metaclass dimensionless-measurement-domain)
   ;; FIXME: #I18N
   (:print-name . "dimensionless measure")
   (:print-label . "dimensionless measure")
