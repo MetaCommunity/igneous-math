@@ -405,10 +405,6 @@ for the measurement"
 			g:direct-superclasses (list mc-mc)
 			:metaclass md-mc
 			#+SBCL :definition-source #+SBCL src))
-                    
-                    ;; FIXME: for B-D and D-D, use a class other than a
-                    ;; MEASUREMENT-DOMAIN (?)
-                    
                     (b-d ;; base measurement class for DOMAIN
                      ;; This class serves to allow for a base
                      ;; measurement class to be defined as an instance
@@ -418,7 +414,8 @@ for the measurement"
                                    :domain d
                                    :direct-superclasses 
                                    (list bm-mc lm-mc domain)
-                                   :metaclass md-mc))
+                                   :metaclass md-mc
+                                   #+SBCL :definition-source #+SBCL src))
                     (d-d ;; derived measurement class for DOMAIN (aux)
                      ;;
                      ;; FIXME: There may seem to be a certain
@@ -463,7 +460,8 @@ for the measurement"
                                    :domain d
                                    :direct-superclasses 
                                    (list dm-mc lm-mc domain)
-                                   :metaclass md-mc))
+                                   :metaclass md-mc
+                                   #+SBCL :definition-source #+SBCL src))
 
 		    (c  ;; measurement class denoted by 'class' name
 		     (ensure-class 
