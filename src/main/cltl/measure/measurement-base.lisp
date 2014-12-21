@@ -130,6 +130,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 	   (n (position s %measurement-classes%
 			:test #'eq
 			:key #'measurement-symbol)))
+      (finalize-inheritance %c)
       (cond 
 	(n (unless (eq (aref %measurement-classes% n) %c)
              (simple-style-warning 
@@ -140,8 +141,8 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 	    (base-f-e (measurement-base-factor-exponent %c)))
 	(unless (and (zerop base-f-e)
 		     (eql base-f 1))
-	  (let* ((domain (class-of %c))
-		 (base-m (measurement-domain-base-measure domain))
+	  (let* (#+NIL (domain (class-of %c))
+		 (base-m (measurement-domain-base-measure c))
 		 (cf-to (make-conversion-factor  %c  base-m
 						 base-f base-f-e))
 		 (cf-from (make-conversion-factor base-m %c
@@ -376,8 +377,31 @@ for the measurement"
 (defclass base-measurement-class (measurement-class)
   ())
 
+(defmethod measurement-domain-base-measure ((instance base-measurement-class))
+  (values instance))
+
 (defclass derived-measurement-class (measurement-class)
   ())
+
+(defmethod measurement-domain-base-measure ((instance derived-measurement-class))
+  ;; example: derived-length
+  (labels ((frob ()
+             (dolist (c (class-precedence-list 
+                         (class-of instance))
+                      nil)
+               (let ((bm
+                      (when (typep c 'measurement-domain)
+                        (measurement-domain-base-measure c))))
+                 (when bm (return bm))))))
+    (handler-case 
+        (cond 
+          ((next-method-p) (or (call-next-method) (frob)))
+          (t (frob)))
+      ;; FIXME: KLUDGE! Hairy subtle kludge.
+      ;;
+      ;; THIS METHOD SHOULD NOT HAVE TO WORK AROUND UNBOUND SLOTS (FIXME)
+      (unbound-slot ()
+        (frob)))))
 
 ;;; %% Initialize fundamental measurement domains and base unit classes
 
@@ -402,7 +426,7 @@ for the measurement"
                         :base-measure class
 			:print-name domain-name
 			:print-label domain-name
-			g:direct-superclasses (list mc-mc)
+			:direct-superclasses (list mc-mc)
 			:metaclass md-mc
 			#+SBCL :definition-source #+SBCL src))
                     (b-d ;; base measurement class for DOMAIN
@@ -413,7 +437,7 @@ for the measurement"
                      (ensure-class b-d-name
                                    :domain d
                                    :direct-superclasses 
-                                   (list bm-mc lm-mc domain)
+                                   (list bm-mc domain lm-mc)
                                    :metaclass md-mc
                                    #+SBCL :definition-source #+SBCL src))
                     (d-d ;; derived measurement class for DOMAIN (aux)
@@ -459,7 +483,7 @@ for the measurement"
                      (ensure-class d-d-name
                                    :domain d
                                    :direct-superclasses 
-                                   (list dm-mc lm-mc domain)
+                                   (list dm-mc domain lm-mc)
                                    :metaclass md-mc
                                    #+SBCL :definition-source #+SBCL src))
 
@@ -473,8 +497,13 @@ for the measurement"
 		      :metaclass b-d
 		      #+SBCL :definition-source #+SBCL src 
 		      )))
-               (declare (ignore d-d))
 	       (setf (slot-value d 'base-measure) c)
+
+               (finalize-inheritance d)
+               (finalize-inheritance b-d)
+               (finalize-inheritance d-d)
+               (finalize-inheritance c)
+               
 	       (register-measurement-domain d)
 	       (register-measurement-class c)
 	       (values d c))))
@@ -529,7 +558,7 @@ for the measurement"
 ;; (find-measurement-class :|cd|)
 
 
-#+TO-DO?
+#+TO-DO
 (defclass gram (kilogram)
   ;; Kilogram is the base unit of measurement for mass, under the
   ;; Systeme International.
@@ -552,6 +581,7 @@ for the measurement"
 ;; (make-measurement 1 :|kg|)
 ;; => #<KILOGRAM 1000 g {10082A9083}>
 
+;; (make-measurement 1000 :|g|) ;; FIXME: define :|g|
 
 ;;; % Measurement Initialization
 
