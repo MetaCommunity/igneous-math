@@ -251,7 +251,7 @@ PREFIX-NOT-FOUND is singaled"
 If no prefix is defined with prefix degree D, an error of type
 PREFIX-NOT-FOUND is singaled"
   (declare (type prefix-degree d)
-	   (values prefix))
+	   #+NIL (values prefix))
   (with-lock-held (%prefixes-lock%)
     (or (find d %prefixes%
 	      :test #'(lambda (a b)
@@ -266,7 +266,7 @@ PREFIX-NOT-FOUND is singaled"
 
 (defun register-prefix (p)
   (declare (type prefix p)
-	   (values prefix))
+	   #+NIL (values prefix))
   (with-lock-held (%prefixes-lock%)
     (let* ((len (length (object-print-label p)))
 	   (s (prefix-symbol p))
