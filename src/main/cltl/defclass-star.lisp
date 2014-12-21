@@ -21,6 +21,25 @@
 
 ;; (ensure-forward-referenced-class (gensym))
 
+
+(defun initialize-slot-p (slot slots-spec)
+  ;; utility for SHARED-INITIALIZE
+  (declare (type symbol slot)
+           (type (or boolean cons) slots-spec)
+           (values boolean))
+  (or (eq slots-spec t)
+      (and (consp slots-spec)
+           (when (find slot (the cons slots-spec)
+                       :test #'eq)
+             (values t)))))
+
+;; (initialize-slot-p 'foo t)
+;; => T
+;; (initialize-slot-p 'foo '(foo bar quux))
+;; => T
+;; (initialize-slot-p 'foo '())
+;; => NIL
+
 (defmacro defclass* (name-form (&rest superclasses) 
                              (&rest slot-definitions)
                      &rest initargs)
@@ -147,7 +166,7 @@
                  (list (if read-only-p :reader :accessor)
                        (intern-formatted "~A~A" conc-name slot))))
              (initarg (slot)
-               (list :initarg (intern (symbol-name slot) :keyword)))
+               (list :initarg (intern* slot :keyword)))
 
              (initform (form infp)
                (when infp
@@ -172,3 +191,5 @@
   ((b)
    (c real :read-only t)))
 ))
+
+
