@@ -138,31 +138,26 @@
                      (let ((elt (degree-of expr index)))
                        (declare (type fixnum elt))
                        (setf (aref buffer index) elt))))))
-        (let ((nex (normalize expression)))
+        (let ((nex (normalize expression)))          
           (setq args-changed-p t)
           (setf (getf initargs :normalized-expression) nex
                 (getf initargs :unit-sequence) (map-units nex)
-                (getf initargs :degree-sequence) (map-degrees nex))))
-      (cond 
-        (args-changed-p (apply #'call-next-method instance slots initargs))
-        ;; FIXME: Thie following CALL-NEXT-METHOD form should probably
-        ;; not be denoted as 'unreachable code' by the compiler.
-        ;; In SBCL 1.2.5.76-65a44db, it is denoted as unreachable
-        ;; however. 
-        (t (call-next-method))))))
+                (getf initargs :degree-sequence) (map-degrees nex)))))
+    (cond 
+      (args-changed-p (apply #'call-next-method instance slots initargs))
+      (t (call-next-method)))))
 
 ;; To Do: Develop prototypes for SIMPLIFY-UNIT / NORMALIZE-UNIT
 ;; with 'Newton' and 'N s' (momentum) as examples
 
 
 #+PROTOTYPE
-(defclass force (derived-measurement-class)
+(defclass force (derived-measurement-class
+                 compound-measurement-class)
   ()
   (:print-name . "force")
   (:print-label . "force")
   (:symbol . :force)
-  (:documentation 
-   "Measurement domain for quantities of force")
   (:metaclass measurement-domain)
   (:base-measure . newton))
 
@@ -176,12 +171,10 @@
   (:print-name . "newton")
   (:print-label . "N")
   (:symbol . :|N|)
-  (:metaclass compound-measurement-class)
-  (:expression :|m| :|kg| (:|s| -2))
-  (:documentation "Measurement class for quantities \
-of force in base unit newton (N)
-
-Symbolic representation: :N"))
+  (:metaclass 
+   compound-measurement-class ;; FIXME: is not 'force'
+   )
+  (:expression :|m| :|kg| (:|s| -2)))
 
 #+NIL ;; instance test
 (measurement-domain-base-measure (find-class 'force))
@@ -243,10 +236,20 @@ Symbolic representation: :N"))
                        (t  (vector-push-extend (vector s  d)
                                                buffer)))))))
         (etypecase c
-          ((or base-measurement-class 
-               linear-measurement-class
-               geometric-measurement-class)
+          (base-measurement-class
            (ensure-elt c d buffer))
+          (linear-measurement-class
+           ;; FIXME: To convert to base units from a non-base linear
+           ;; measurement class will require a measurement conversion,
+           ;; such that a measurement value must be available.
+           ;;
+           ;; Note that this would apply to all non-base measurements,
+           ;; though it's rather kludged for now.
+           (warn "Not converting non-base linear measurement ~A" c)
+           (ensure-elt c d buffer))
+          (geometric-measurement-class
+           (let ((%d (measurement-degree c)))
+             (ensure-elt c (* d %d) buffer)))
           (compound-measurement-class
            (let ((nex (measurement-normalized-expression c)))
              (dotimes (%index (array-dimension nex 0))
