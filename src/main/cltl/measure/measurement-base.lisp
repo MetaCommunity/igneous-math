@@ -25,7 +25,8 @@
 (defclass* (measurement-class 
 	    :conc-name #:measurement-)
     (pretty-printable-object standard-class)
-  ((symbol symbol  :read-only t)
+  ((symbol symbol :read-only t)
+   (domain measurement-domain :read-only t)
    (base-factor 
     real 
     :read-only t
@@ -38,6 +39,30 @@
 
 (validate-class measurement-class)
 
+(defmethod shared-initialize :after ((instance measurement-class) slots
+                                     &rest initargs 
+                                     &key &allow-other-keys)
+  (declare (ignore slots initargs))
+  (unless (documentation instance 'type)
+    (handler-case
+        (with-accessors ((domain measurement-domain)
+                         (print-name object-print-name)
+                         (print-label object-print-label)
+                         (s measurement-symbol)) instance
+          (let ((domain-name (object-print-name domain)))
+            (setf (documentation instance 'type)
+                  (simplify-string 
+                   (format nil "Measurement class for quantities of ~A ~
+in base unit ~A (~A)~2%~
+Symbolic representation: ~S"
+                           domain-name
+                           print-name
+                           print-label
+                           s)))))
+      (unbound-slot (c)
+        (simple-style-warning  "~<Unable to set documentation for ~S~> ~<(~A)~>"
+                               instance c)))))
+
 (deftype measurement-class-designator ()
   '(or symbol measurement-class))
 
@@ -48,6 +73,32 @@
      (format s "No measurement class registered for name ~S"
              (entity-condition-name c)))))
 
+
+(defclass linear-measurement-class (measurement-class)
+  ;; This class is defined, here, for purpose of convenience. 
+  ;; See also:  
+  ;; `GEOMETRIC-MEASUREMENT-CLASS'
+  ;; `COMPOUND-MEASUREMENT-CLASS'
+  ;; `LINEAR-DERIVED-MEASUREMENT-CLASS'
+  ;;
+  ;; The concept of whether a measurement class C is a linear,
+  ;; geometric, or compound measurement class, essentially, is
+  ;; orthogonal to whether C is a base measurement class or derived
+  ;; measurement class.
+  ;;
+  ;; In some pragmatic terms: Every BASE-MEASUREMENT-CLASS is also a
+  ;; LINEAR-MEASUREMENT-CLASS, but not every LINEAR-MEASUREMENT-CLASS
+  ;; is a BASE-MEASUREMENT-CLASS.
+  ;;
+  ;; Furthermore, as to whether a linear measurement class defines
+  ;; a unit of measure for length: Though there may seem to be some
+  ;; ambiguity in the terminology of the object model, but the concept
+  ;; of linearity in a measurement class is essentially orthogonal to
+  ;; the concept linearity in measurement units. In the first
+  ;; instance, the concept of a "linear measurement unit"
+  ;; (such as 'm') is contrasted to the concept of a "geometric
+  ;; measurement unit" (such as 'm^2' or 'm^3')
+  ())
 
 
 ;;; %%% Global Measurement Class Storage (Symbol Key)
@@ -333,65 +384,98 @@ for the measurement"
 
 
 (let ((kwd (find-package '#:keyword))
-      (md-c (find-class 'measurement-domain))
-      (mc-c (find-class 'measurement-class))
-      (bm-c (find-class 'base-measurement-class))
+      (md-mc (find-class 'measurement-domain))
+      (mc-mc (find-class 'measurement-class))
+      (bm-mc (find-class 'base-measurement-class))
+      (lm-mc (find-class 'linear-measurement-class))
+      (dm-mc (find-class 'derived-measurement-class))
       (m-c (find-class 'measurement))
       ;; FIXME: Portable source locations - see also, SLIME/SWANK
       #+SBCL (src (sb-c:source-location)))
   (labels ((do-def (domain domain-name class print-name print-label name)
 	     (let* ((b-d-name (intern-formatted "BASE-~A"  domain))
+                    (d-d-name (intern-formatted "DERIVED-~A" domain))
                     (d 
 		     (ensure-class 
 			domain
 			:symbol (intern* domain kwd)
+                        :base-measure class
 			:print-name domain-name
 			:print-label domain-name
-			:direct-superclasses (list mc-c)
-                        ;; ^ FIXME: This results in all instances of a
-                        ;; measurement domain being of type
-                        ;; BASE-MEASUREMENT-CLASS - incorrectly.
-                        ;;
-                        ;; Proposal:
-                        ;; For definition of these base measurements,
-                        ;; it may be appropriate to define a class
-                        ;; BASE-{DOMAIN-NAME} such that would be a
-                        ;; subclass of DOMAIN and would have `bm-c` as
-                        ;; one of its direct superclasses. Then,
-                        ;; derived measurement units may still use
-                        ;; {DOMAIN-NAME} as their metaclass, though
-                        ;; not being denoted themselves as being of
-                        ;; type  BASE-MEASUREMENT-CLASS
-                        :documentation 
-                        ;; FIXME: I18N
-                        (format nil "Measurement domain for quantities of ~A" 
-                                domain-name)
-			:metaclass md-c
+			g:direct-superclasses (list mc-mc)
+			:metaclass md-mc
 			#+SBCL :definition-source #+SBCL src))
-                    (b-d
+                    
+                    ;; FIXME: for B-D and D-D, use a class other than a
+                    ;; MEASUREMENT-DOMAIN (?)
+                    
+                    (b-d ;; base measurement class for DOMAIN
+                     ;; This class serves to allow for a base
+                     ;; measurement class to be defined as an instance
+                     ;; of a class specific to base measurement
+                     ;; units.
                      (ensure-class b-d-name
-                                   :direct-superclasses (list bm-c 
-                                                              domain)
-                                   :metaclass md-c))
-		    (c 
+                                   :domain d
+                                   :direct-superclasses 
+                                   (list bm-mc lm-mc domain)
+                                   :metaclass md-mc))
+                    (d-d ;; derived measurement class for DOMAIN (aux)
+                     ;;
+                     ;; FIXME: There may seem to be a certain
+                     ;; ambiguity with regards to the term "Base
+                     ;; measure," as being developed in this software
+                     ;; system. 
+                     ;;
+                     ;; Classically, a "Base measure" would be one of
+                     ;; the seven SI base measurement units. That
+                     ;; sense of the term, "Base measure" should be
+                     ;; retained within this system, and not shadowed
+                     ;; with any ambiguous applications of the same
+                     ;; term.
+                     ;;
+                     ;; So, this system shall define a concept of
+                     ;; "fundamental measure" as with regards to
+                     ;; measurement domains. A measurement domain's
+                     ;; fundamental measure may be a base unit
+                     ;; (e.g. meter, in domain 'length') or a derived
+                     ;; unit (e.g. joule, in domain 'energy'). 
+                     ;;
+                     ;; For every measurement domain defined within an
+                     ;; "Accepted standard" (e.g. as published of the
+                     ;; BIPM, the NIST, or the IUPAC), there must be
+                     ;; one "fundamental unit" (e.g joule) to which
+                     ;; any additinal derived units
+                     ;; (e.g. horsepower(E)) may be reduced. 
+                     ;;
+                     ;; Whether a fundamental unit B of a measurement
+                     ;; domain A would be defined as a base
+                     ;; measurement unit, or defined as a derived
+                     ;; measurement unit, that would be essentially
+                     ;; orthogonal to the role of B as a fundamental 
+                     ;; measurement unit within domain A.
+                     ;;
+                     ;; Tangentially: The nature of a measurement as
+                     ;; a base measurement unit would have some
+                     ;; meaning as in a contesxt of calculations on
+                     ;; measurement values - see also,
+                     ;; `NORMALIZE-UNIT-EXPRESSION' 
+                     (ensure-class d-d-name
+                                   :domain d
+                                   :direct-superclasses 
+                                   (list dm-mc lm-mc domain)
+                                   :metaclass md-mc))
+
+		    (c  ;; measurement class denoted by 'class' name
 		     (ensure-class 
 		      class
 		      :direct-superclasses (list m-c)
 		      :symbol name
 		      :print-name print-name
 		      :print-label print-label
-                      :documentation
-                      ;; FIXME: I18N
-                      (format nil "Measurement class for quanities ~
-of ~A in base unit ~A (~A)~2%~
-Symbolic representation: ~S"
-                              domain-name
-                              print-name
-                              print-label
-                              name)
 		      :metaclass b-d
 		      #+SBCL :definition-source #+SBCL src 
 		      )))
+               (declare (ignore d-d))
 	       (setf (slot-value d 'base-measure) c)
 	       (register-measurement-domain d)
 	       (register-measurement-class c)
@@ -587,6 +671,8 @@ See also:
 
 ;; (object-print-label (class-of (make-measurement 1 :|m|)))
 ;; => "m"
+
+;; (object-print-name (class-of (make-measurement 1 :|m|)))
 
 
 ;; % Measurement Unit Expressions (Linear)
