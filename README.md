@@ -137,6 +137,84 @@ following concepts:
 The sections of this outline, immediately following, are developed
 for application about the design of the first of those three modules.
 
+## Changes in Ig<sup>2</sup><sub>m</sub> - Relation of Measurement Domain and Measurement Class
+
+In Ig<sup>1</sup><sub>m</sub>, each of the seven fundamental base
+units of the Systeme International was impelemented such as with the
+following example: The class `METER` would have as its metaclass, the
+class `LENGTH`. The class `LENGTH` would itself represent a
+_measurement domain_, while likewise being defined as a _metaclass_.
+
+During the development of classes for _dervied units_ in
+Ig<sup>2</sup><sub>m</sub>, that feature of the design of
+Ig<sup>1</sup><sub>m</sub> has been reconsidered.
+
+In Ig<sup>2</sup><sub>m</sub>, the following additional classes are
+defined, as for differentiation of measurement syntaxes defined to
+specific types of measurement unit:
+
+* `LINEAR-MEASUREMENT-CLASS`
+* `GEOMETRIC-MEASUREMENT-CLASS`
+* `COMPOUND-MEASUREMENT-CLASS`
+
+Furthremore, the following two classes are defined as for
+differentiation between _derived units_ and _base units_
+
+* `DERIVED-MEASUREMENT-CLASS`
+* `BASE-MEASUREMENT-CLASS`
+
+Effectively, every `BASE-MEASUREMENT-CLASS` is likewise a
+`LINEAR-MEASUREMENT-CLASS`, though certainly not every
+`LINEAR-MEASUREMENT-CLASS` is likewise a
+`BASE-MEASUREMENT-CLASS`. Semantically, however, the concepts of
+_Derived units and base units_ is orthogonal to the concept of _linear
+and other types of measurement class_ as developed in
+Ig<sup>2</sup><sub>m</sub>.
+
+
+As a further feature of the design of Ig<sup>1</sup><sub>m</sub>,
+originally: Considering that a _measurement unit_ would have a
+_measurement domain_ as its metaclass, then the _measurement domain_
+of a _measurement unit_ may be calculated by computing the class of
+the _measurement unit_'s representative class. To retain this feature
+onto the design of Ig<sup>2</sup><sub>m</sub>, however, there must be
+a differention made somewhere semantically _between_ a _measurement
+domain_ and a _measurement class_, as to differentiate the
+_measurement class_ for whether it is a _base measurement unit_ or a
+_derived measurement unit_.
+
+During development of Ig<sup>2</sup><sub>m</sub>, a _prototype_ was
+defined wherein a _measurement domain_ would be extended (by way of
+subclass) by two additional _measurement domains_, one solely
+representative of a _base_ or _fundamental_ unit of measure for the
+domain, and the other for representing all types of _derived
+measurement_ deriving from the _base_ or _fundamental measure_ of the
+associated _measurement domain_. Although this seemed to present a
+novel and convenient solution to the concern denoted of the previous
+paragraph, but  it effectively "breaks" the procedures developed in
+Ig<sup>1</sup><sub>m</sub> for indexing of measurement
+domains. Therefore, this prototype must be reconsidered for its
+essential meaning  and relevance, in its own regards and as it may
+serve as a reflection of the design of Ig<sup>1</sup><sub>m</sub>.
+
+Continuing with the previous example:
+
+* Semantically, _Meter_ is a measurement of _Length_
+* Programmatically, in Ig<sup>1</sup><sub>m</sub>, the class `METER`
+  has as its metaclass, the class `LENGTH`. The class `LENGTH` has as
+  its metaclass, the class `MEASUREMENT-DOMAIN`. Therefore, the
+  `METER` class is a `LENGTH` class, and `LENGTH` is a
+  `MEASUREMENT-DOMAIN`. Furthermore, an instance of type `METER` would
+  be an object of type `MEASUREMENT`. 
+* In Ig<sup>2</sup><sub>m</sub>, initially it was considered that the
+  class `METER` must be redefined such that it  would also _be_ bot of
+  a `BASE-MEASUREMENT-CLASS` and a `LINEAR-MEASUREMENT-CLASS`,
+  itself. Both classes being orthogonal to the metaclass of `METER` --  
+  i.e `LENGTH` -- it would pose some difficulty to _apply_ those
+  classes in the exiting Ig<sup>1</sup><sub>m</sub> measurement model,
+  as if to extend onto `LENGTH`
+
+
 ## Measurements Implementation in Ig<sup>1</sup><sub>m</sub>
 
 In a synopsis of the semantics of the design of the 
