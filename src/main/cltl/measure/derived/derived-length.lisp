@@ -17,7 +17,7 @@
   ;;  * International foot [1959] 0.3048 m
   ;;  * International mile  [1959] 5280 US internationa foot
  ()
-  (:metaclass length)
+  (:metaclass derived-length)
   (:print-name . "foot [1893]")
   (:print-label . "ft [1893]")
   (:base-factor . 1200/3937)
@@ -65,7 +65,7 @@
 (defclass us-survey-mile (measurement)
   ()
   ;; FIXME: Denote as US Survey Mile [1893] - See previous
-  (:metaclass length)
+  (:metaclass derived-length)
   (:print-name . "mile [1893]")
   (:print-label . "mi [1893]")
   (:base-factor . #.(* 5280 1200/3937))
