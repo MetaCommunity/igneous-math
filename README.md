@@ -137,7 +137,9 @@ following concepts:
 The sections of this outline, immediately following, are developed
 for application about the design of the first of those three modules.
 
-## Changes in Ig<sup>2</sup><sub>m</sub> - Relation of Measurement Domain and Measurement Class
+## Changes in Ig<sup>2</sup><sub>m</sub>
+
+### Relation of Measurement Domain and Measurement Class
 
 In Ig<sup>1</sup><sub>m</sub>, each of the seven fundamental base
 units of the Systeme International was impelemented such as with the
@@ -213,6 +215,303 @@ Continuing with the previous example:
   i.e `LENGTH` -- it would pose some difficulty to _apply_ those
   classes in the exiting Ig<sup>1</sup><sub>m</sub> measurement model,
   as if to extend onto `LENGTH`
+
+
+### Meaning and Application of "Magnitude" and "Value" in Measurements
+
+During the development of Ig<sup>2</sup><sub>m</sub>, a certain issue
+of _code alignment_ was observed, with regards to the following three
+functions, such that were developed originally in
+Ig<sup>1</sup><sub>m</sub>.
+
+* Function `SCALAR-MAGNITUDE`
+* Function `BASE-MAGNITUDE`
+* Function `MESAUREMENT-MAGNITUDE`
+
+Correspondingly, this represents an issue of an essential concern of
+_conceptual alignment_ as to the naming, meaning, and application of
+each of those respective functions.
+
+#### Computational Magnitude
+
+In a computational sense, the _magnitude_ of a value would be
+calculated seperate to the _exponential degree_ of the value - such
+as, with or without an overlayed _measurement prefix_ model.
+
+As in how these functions have been developed in
+Ig<sup>1</sup><sub>m</sub>: Perhaps the term "magnitde" has ben
+applied too broadly, within Ig<sup>1</sup><sub>m</sub>, as if the term
+was synonymous with "numeric value".
+
+#### Relevance of Concepts "Magnitude" and "Degree", as Developed in Ig<sup>1</sup><sub>m</sub>
+
+_Ed. Note: In an orthogonal sense, there may seem to be a further
+conceputal ambiguity of these concepts as implemented, but in an
+ambiguity towards concepts of 'magnitude' and 'degree' within vector 
+arithmetic. Presently, that ambiguity will not be developed of 
+this documentation._ 
+
+
+Concerning the relevance of concepts _"Magnitude"_ and _"Degree"_, as
+in how those concepts have been developed and applied in the design of
+the measurements model in Ig<sup>1</sup><sub>m</sub> -- as in order to
+endeavor to _disambiguate_ the concepts as _intended_ and the concepts
+as _implemented_ of the design of each of those three functions
+denoted in the previous outline:
+
+The _measurement prefix_ model developed of Ig<sup>1</sup><sub>m</sub>
+represents one of the primary concepts underlying the development of
+Ig<sup>1</sup><sub>m</sub>. Essentially, the _mesaurement prefix_
+model was to the origins of the _measurements_ design in
+Ig<sup>1</sup><sub>m</sub> -- in which, a _measurement_ may be
+evaluated seperately as either _numeric value_ or as a _scalar value_
+of distinct _magnitude_ and _degree_.
+
+Simply, the _numeric value_ of a _measurement_ would be drived from
+its _scalar properties_ of _scalar magnitude_ and _scalar degree_, as
+for example: 
+
+> Magnitude: 5
+> Degree: 2
+> Base: 10
+> => numeric value: 5 * 10^2 = 500
+
+Although in this model, there are essentially three fields required
+for recording each numeric value, and so it may seem to be either
+_redundant_ or _excessively complex_, but there may be some
+computational advantages developed of such an elemental encoding for a
+numeric value. For instance:
+
+* The _base_ value need not be encoded into the numeric value itself,
+  but rather may be derived of a _metaclass_ of the numeric
+  value. Thus, only the _magnitude_ and _degree_ would need to be
+  recorded for each respective numeric value.
+
+* If a prefix measurement system would be applied onto the numeric
+  value, then it would be a relatively straightforard process to
+  compute a nearest _prefix_ for the numeric value, as based on the
+  encoded _degree_ of the numeric value.
+
+* With regards to _rational scaling_ of decimal numeric values, this
+  manner of rational, elemental encoding for numeric values
+  effectively serves to allow for computations to be completed all
+  with _rational intermediary values_, even for _decimal input
+  values_. Thus, this design may  effectively  serve to minimize
+  the numer of instances of possible _feedback errors_ as may occur
+  due to _floating point contagion_ during calculatin of _intermediary
+  values_ within the computational system.
+
+In a sense of the design of Igneous-Math as a mathematical system,
+the concept of a _magnitude_ -- namely, in which a _magnitude_ would
+represent a _scalar property_ of a _numeric value_, as a _magnitude_
+being a _rational value_ that would be _distinct to_ but not altogether
+_seperate from_ an integer _scalar decimal exponent property_ i.e
+_scalar degree property_ for the numeric value -- essentially, that
+was thought to be one of the stronger conceputal _"selling points"_
+for the design of Igneous-Math - although it may be difficult to
+document, in any ways succinctly.
+
+#### Ambiguity of Concepts of "Magnitude", as Developed in Ig<sup>1</sup><sub>m</sub>
+
+Notably, in the design of Ig<sup>1</sup><sub>m</sub>, the concept of 
+_magnitude_ -- as in sense developed of the previous paragraph -- the
+concept, in its applications, had become essentially _confounded_ with
+a broader concept of _numeric value_ -- thus, becoming to something of
+a sense of ambiguity, as in how the concept is applied in the
+_definition_ of each of the functions 
+* `SCALAR-MAGNITUDE`
+* `BASE-MAGNITUDE`
+* `MEASUREMENT-MAGNITUDE`
+...and in the concept is applied in those functions' respective
+_applications_, within Igneous-Math (Ig<sup>1</sup><sub>m</sub>)
+
+The same _conceptual ambiguity_ may become apparent, when the system
+for  _measurement conversion_ -- as develoepd of
+Ig<sup>1</sup><sub>m</sub> -- would be analyzed, as to consider both
+of the following concerns:
+
+1. How the _measurement conversion_ features of Igneous-Math were
+   designed in Ig<sup>1</sup><sub>m</sub>. Notably, this feature has
+   not been well documented of the design of
+   Ig<sup>1</sup><sub>m</sub>, but insofar as the mechanics of this
+   feature are apparent of the source code, then it may be discovered
+   of the design of Ig<sup>1</sup><sub>m</sub> -- albeit, not until
+   after some relatively _time consuming_ analysis.
+   
+2. How the design of Ig<sup>1</sup><sub>m</sub> may be _refactored_,
+   in any regards, as ideally to introduce some more of a
+   computational efficiency in measurement conversions, within the
+   Igneous-Math system -- such as, specifically, towards making a
+   further application of a particular computational _"short cut"_ for
+   conversion of a measurement values onto the _base measure_ of a
+   measurement's _measurement domain_ -- such that the _"short cut"_
+   would need not apply the broader, linear _measuremnt conversion_
+   framework, as also developed in Ig<sup>1</sup><sub>m</sub> _...and 
+   also not presently well documented of this computational system,
+   with the author's sinceremost apology._
+
+Considering those as being two issues of analytical concern, the
+second of those two issues may serve to lend way towards an actual
+refactoring of the design of the same system.
+
+With limited further apology, the author will not endeavor to comment
+at great length, towards any broader view of how the same
+computational system is evolving in its development in
+Ig<sup>2</sup><sub>m</sub>.
+
+## Application of a Concept of Numeric Value, in Ig<sup>1</sup><sub>m</sub>
+
+If the author may denote a second bunch of concerns, succinctly: In
+the development of Ig<sup>2</sup><sub>m</sub>, there have also been
+some concerns observed, as with regards to the system for _measurement 
+conversion_ -- such as developed in Ig<sup>1</sup><sub>m</sub> -- as
+when that system is applied across the disjunction of the definitions
+of the measurement units _kilogram_ and _gram_. This issue has been
+observed within _functional testing_, during the development of
+Ig<sup>2</sup><sub>m</sub>.
+
+Simply, whereas the measurement unit, _kilogram_, is defined as the
+_base unit of measure_ for quantities of _mass_, then the measurement
+unit, _gram_ may be denoted as a _derived unit_. Though it is the unit
+of _zero degree_ within the _base measure_ for _mass_, but it is not
+the standard _base unit of measure_ for quantities of _mass_, such as
+standardized in the _Systeme International_ and such as would be
+applied in any number of formulas entailing of quantities of _mass_,
+as within calculations onto the classical mechanics.
+
+Although there was an implementation of a measurement unit _kilogram_,
+in computational system comprised of Ig<sup>1</sup><sub>m</sub>, but
+the corresponding measurement unit, _gram_, had not been implemented
+in the same system. Certainly, Ig<sup>1</sup><sub>m</sub> did not
+represent a _complete implementation_ of _measurement units_ -- as
+_measurement units_ being of definitions standardized in _Systeme
+International_ and as addressed in other institutional
+publications.
+
+Ig<sup>1</sup><sub>m</sub> was designed, essentially, as an initial
+prototype for a mathematical system. That prototype now 
+being further developed, in Ig<sup>2</sup><sub>m</sub>, the discussion
+will return to continue discussing the issues of the ambiguity of
+_magnitude_ and _numeric value_, in Ig<sup>1</sup><sub>m</sub>.
+
+
+#### Similarity of Concepts onto Implementations of Floating-Point Arithmetic
+
+As regarding how a_numeric value_ may be encoded of seperate
+_magnitude_,  _exponent base_ and _exponent degree_ values, there may
+seem to be some generic similarities towards implementations of
+_floating point_ numeric systems. Excepting that the  _magnitude_ and
+the _degree_ would both be iplemented as _rational values_ -- as
+within Ig<sup>1</sup><sub>m</sub>  -- respectively, those concepts
+are analogous toe the concepts of _mantissa_ and _exponent_, as
+represnted in IEEE standard _floating point_ arithmetic.
+
+Presently, that analogy will not be further developed of this article
+of documentaiton. If it may serve towards a development of a numeric
+system for a microprocessor, but considering the braoder industry
+adoption of IEEE _floating point_ arithmetic, any further thesis as
+such should well be accompanied with a substantial _proof of
+concept_.
+
+In one further divergence from the IEEE standard model for _floating
+point_ arithmetic: Essentially, this system of _numeric values_
+represents not a _floating point_ numeric implementation -- though it
+may naturally apply a _floating point_ numeric implementation, insfoar
+as applications of standard implementations of numeric functions
+developed in CLtL2, typically implemented onto LibC.
+
+Rather, the details of the design of this numeric system may be more
+characteristic of a _decimal, "fixed point"_ numeric implementation,
+but in which each _decimal_ value would be represented with a
+_rational_ encoding -- such that the _rational_ encoding of a decimal
+numeric value may serve to permit for mathematical operations mostly,
+if not entirely on rational numbers -- ideally, as to minimize errors
+that may result of _floating point contagion_ and furthermore, of 
+_feedback_ within computational implementations of numeric systems. 
+
+#### Conclusion - Numeric Value and Rational Magnitude
+
+In the development of Ig<sup>2</sup><sub>m</sub>, a further
+distinction must be developed between concepts of _numeric value_ and
+of _rational magnitude_.  This may entail a substantial revision
+to the design of Ig<sup>1</sup><sub>m</sub>, insofar as towards
+specific functional forms developed originally in
+Ig<sup>1</sup><sub>m</sub>.
+
+Insofar as towards an offhand analysis of possible _side effects_ of
+such revisions: Ig<sup>1</sup><sub>m</sub> was not widely publicized
+for its development. If it may be believed that any additional
+developers may have located the source code of
+Ig<sup>1</sup><sub>m</sub>, in the source repository for
+[igneous-math, at Github][igneous-math] -- such that, hypothetically,
+in a functional manner, would be _possible_ to anyone with Internet
+access, though it may seem likewise an _unlikely possibility_, in any
+offhand estimation -- then perhaps it may also be believed that any 
+developer having located the same source code repository, at Github,
+may be of an understanding that Ig<sup>1</sup><sub>m</sub> was by no
+means anything but a prototype, and should by no means be placed into
+any broad adoption. Likewise, it is a prototype to which
+Ig<sup>2</sup><sub>m</sub> may not demonstrate any absolute _backwards 
+compatibility_.
+
+#### Towards a Reference Implementation for Numeric Calculations in Common Lisp
+
+As the design of Ig<sup>2</sup><sub>m</sub> continues to evolve, this
+article in documentation should be furthermore extended, as to
+illustrate the conceptual frameworks developed in Igneous-math, and to
+describe their intended applications within distinct _usage case_
+scenarios.
+
+Candidly, this system was not designed to be a "Cheat Sheet" for
+the homework assigments at any single academic institution, and
+neither a "Short circuit" for any informal studies of disciplines in 
+mathematics and the sciences of mechanical engineering.
+
+It is hoped that this system may serve to assist in development of a
+single _reference implementation_ for numeric calculations applying
+_scalar values_, in a comprehensive numeric system. Although there may
+not be any single, formal project denoting a development of such a
+_reference implementation_, however -- insofar as with regards to
+numeric systems developed in Common Lisp -- clearly, at least one
+_proof of concept_ may already exist, such that could be considered 
+towards development of a unified mathematical model for numeric
+applications, such as developed in Common Lisp.
+
+Certainly this project, in itself, could only serve towards any such
+_reference implementation_, if only insofar as that this project has
+developed any complete solutions to any issues as may be presented to
+such _reference implementation_. Towards discovery of such issues, and
+towards their further documentation, firstly the developer accepts
+that the development of this system represent a substantial divergence
+from applications of _existing tools_ in numerical computation. As
+Igenous-Math being essentially a software project, this system may not
+diverge from _existing methods_ in development and application of
+mathematical methods in computational systems.
+
+#### Literary "Outro"
+
+Though it might be remarked of as something of a "Horse of a different
+color," in regards to _existing tools_, and though the conceptual
+model presented of this project may not be obviously in alignment with
+any single institutional model -- the developer of this project being,
+moreover, not a student of any single thesis program, academically,
+though the developer is formally a student of a postsecondary academic
+institution, presently -- but insofar as that the development of this
+project may present an opportunity for reevaluation of _existing
+methods_ in mathematical computation, and - in a manner of extension -
+an opportunity for an evaluation of _alternate approaches_ for
+development of computational systems applying of decimal values, but
+the developer accepts likewise that it may not result in any too
+glaringly brilliant thesis topics.
+ 
+If the reader may be hunting for a brilliant thesis topic, presently, 
+the developer would kindly advise that a visit to a history museum may
+afford anyone a great opportunity to take a break from hunting.  If
+the history museum be overcrowded, then, but so much is there to say
+of the natural history of society and the arts, as well as the
+artifacts of a museum's curation.
+
+Thus, a discrete character of logic.
 
 
 ## Measurements Implementation in Ig<sup>1</sup><sub>m</sub>
