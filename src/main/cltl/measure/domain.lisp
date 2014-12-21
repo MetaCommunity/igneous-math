@@ -32,10 +32,10 @@
 
 (defmethod shared-initialize :around ((instance measurement-domain)
 				      slots &rest initargs
-				      &key base-measure 
+				      &key (base-measure nil bmp)
                                         &allow-other-keys)
   (let (args-changed-p)
-    (when (and base-measure (symbolp base-measure))
+    (when bmp
       (let ((c (or (find-class base-measure nil) 
 		   (ensure-forward-referenced-class base-measure))))
 	(setf (getf initargs :base-measure) c)
@@ -46,21 +46,49 @@
       (t (call-next-method)))))
 
 
-(defmethod shared-initialize :after ((instance measurement-domain) slots
-                                     &rest initargs 
-                                     &key &allow-other-keys)
-  (declare (ignore slots initargs))
-  (unless (documentation instance 'type)
+
+(defmethod finalize-inheritance :after ((class measurement-domain))
+  (labels ((find-slot (sl where)
+             (find sl (class-slots where)
+                   :key #'slot-definition-name
+                   :test #'eq))
+           (find-super-value (slot sought-type
+                                   &optional 
+                                   (supers  
+                                    (cdr (class-precedence-list class))))
+             (dolist (c supers (values nil nil))
+               (when (and (typep c sought-type)
+                          (find-slot slot c)
+                          (slot-boundp c slot))
+                 (warn "WOOHOO! Found ~A in ~A for ~A"
+                       slot c class)
+                 (return (values (slot-value c slot)
+                                 t)))))
+           (maybe-inherit-slot (slot sought-type)
+             (when (not (slot-boundp class slot))
+               (multiple-value-bind (super-v foundp) 
+                   (find-super-value slot sought-type)
+                 (when foundp
+                   (setf (slot-value class slot)
+                         super-v))))))
+    (maybe-inherit-slot 'utils::print-label 'pretty-printable-object)
+    (maybe-inherit-slot 'utils::print-name 'pretty-printable-object)
+    ;; FIXME: WHY is BASE-MEASURE still not being inherited?
+    (maybe-inherit-slot 'base-measure 'measurement-domain)
+    #+NO (maybe-inherit-slot 'symbol 'measurement-domain) ;; KLUDGE
+    )
+  (unless (documentation class 'type)
     (handler-case
-        (with-accessors ((print-name object-print-name)) instance
-          (setf (documentation instance 'type)
+        (with-accessors ((print-name object-print-name)) class
+          (setf (documentation class 'type)
                 (simplify-string
+                 ;; FIXME: Note Base / Derived measurement domain here... 
+                 ;; (KLUDGE)
                  (format nil "Measurement domain for quantities of ~A" 
                          print-name))))
       (unbound-slot (c)
         (simple-style-warning  "~<Unable to set documentation for ~S~> ~<(~A)~>"
-                               instance c)))))
-
+                               class c)))))
 
 (define-condition measurement-domain-not-found (entity-not-found)
   ()
