@@ -29,6 +29,9 @@
 
 (validate-class measurement-domain)
 
+(defgeneric domain-of (instance)
+  (:method ((instance measurement-domain))
+    (values instance)))
 
 (defmethod shared-initialize :around ((instance measurement-domain)
 				      slots &rest initargs
@@ -166,5 +169,3 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 ;; (find-measurement-domain :electrical-current)
 
 ;; (mapcar #'measurement-domain-symbol (enumerate-measurement-domains))
-
-
