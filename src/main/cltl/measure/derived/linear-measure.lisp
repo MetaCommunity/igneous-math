@@ -2,10 +2,8 @@
 
 (in-package #:math)
 
-(defclass linear-measurement-class (derived-measurement-class)
-  ((degree
-    :initarg :degree
-    :type fixnum
-    :accessor measurement-degree)))
+(defclass linear-derived-measurement-class (derived-measurement-class
+                                            linear-measurement-class )
+  ())
 
 ;; LINEAR-UNIT-EXPR : defined in measurement-base.lisp

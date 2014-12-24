@@ -42,7 +42,13 @@
 (defmethod shared-initialize :after ((instance measurement-class) slots
                                      &rest initargs 
                                      &key &allow-other-keys)
-  (declare (ignore slots initargs))
+  (declare (ignore initargs))
+
+  (when (initialize-slot-p 'domain slots)
+    (unless (slot-boundp instance 'domain)
+      (setf (slot-value instance 'domain)
+            (class-of instance))))
+
   (unless (documentation instance 'type)
     (handler-case
         (with-accessors ((domain measurement-domain)
@@ -62,6 +68,12 @@ Symbolic representation: ~S"
       (unbound-slot (c)
         (simple-style-warning  "~<Unable to set documentation for ~S~> ~<(~A)~>"
                                instance c)))))
+
+
+(defmethod domain-of ((instance measurement-class))
+  ;; FIXME : Call MEASUREMENT-DOMAIN here?
+  (measurement-domain instance))
+
 
 (deftype measurement-class-designator ()
   '(or symbol measurement-class))
@@ -120,6 +132,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 
 ;;; %%%% Access Functions
 
+
 (defun register-measurement-class (c)
   (declare (type measurement-class-designator c)
            ;; "Type assertion too complex to check" (SBCL)
@@ -137,18 +150,17 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
               "Redfining measurement class for ~S" s)
              (setf (aref %measurement-classes% n) %c)))
 	(t (vector-push-extend %c %measurement-classes%)))
-      (let ((base-f (measurement-base-factor %c))
-	    (base-f-e (measurement-base-factor-exponent %c)))
-	(unless (and (zerop base-f-e)
-		     (eql base-f 1))
-	  (let* (#+NIL (domain (class-of %c))
-		 (base-m (measurement-domain-base-measure c))
-		 (cf-to (make-conversion-factor  %c  base-m
-						 base-f base-f-e))
+      (let ((base-ftor (measurement-base-factor %c))
+	    (base-ftor-exp (measurement-base-factor-exponent %c)))
+	(unless (and (zerop base-ftor-exp)
+		     (eql base-ftor 1))
+	  (let* ((domain (domain-of %c))
+		 (base-m (measurement-domain-base-measure domain))
+		 (cf-to (make-conversion-factor  %c base-m
+						 base-ftor base-ftor-exp))
 		 (cf-from (make-conversion-factor base-m %c
-						  (/ base-f) 
-						  (- base-f-e))))
-            (finalize-inheritance domain)
+						  (/ base-ftor) 
+						  (- base-ftor-exp))))
 	    (register-measurement-conversion-factor cf-to domain)
 	    (register-measurement-conversion-factor cf-from domain))))
       (values %c))))
@@ -186,14 +198,15 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
   (macrolet ((safely (form)
 	       `(ignore-errors ,form)))
     (print-unreadable-object (object stream :type t)
-      (format stream "(1 ~A) => (~A~@D ~A)"
-	      (safely (object-print-label 
-		       (factor-source-unit object)))
-	      (safely (factor-magnitude object))
-	      (or (safely (factor-exponent object))
-		  0)
-	      (safely (object-print-label
-		       (factor-destination-unit object)))))))
+      (let ((exp (or (safely (factor-exponent object))
+                     0)))
+        (format stream "(1 ~A) => (~A~@[ * 10^~D~] ~A)"
+                (safely (object-print-label 
+                         (factor-source-unit object)))
+                (safely (factor-magnitude object))
+                (unless (zerop exp) exp)
+                (safely (object-print-label
+                         (factor-destination-unit object))))))))
 
 (defun make-conversion-factor (source-unit dest-unit
 			       factor-magnitude 
@@ -208,33 +221,31 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 			 :exponent factor-exponent)))
 
 
-(defgeneric find-conversion-factor (source-unit dest-unit domain)
-  (:method ((source-unit symbol) (dest-unit symbol)
-	    (domain measurement-domain))
+(defgeneric find-conversion-factor (source-unit dest-unit)
+  (:method ((source-unit symbol) (dest-unit symbol))
     (find-conversion-factor (find-measurement-class source-unit)
-			    (find-measurement-class dest-unit)
-			    domain))
-  (:method ((source-unit measurement-class) (dest-unit measurement-class)
-	    (domain measurement-domain))
-    (with-lock-held ((measurement-domain-cf-lock domain))
-      (let ((factors (measurement-domain-conversion-factors domain)))
-	;; This does not completely walk the measurement-domains table,
-	;; performing only a cursory, one-off search towards DST.
-	;;
-	;; If each derived unit, within a single measurement domain,
-	;; registers a factor for converting that unit to the domain's
-	;; base measure, and the reciptrocal conversion is also
-	;; registered, then it would be possible to convert  
-	;; between any registered units within a measurement domain,
-	;; using only a table of factors
-	(or (find source-unit factors
-		  :test #'(lambda (u cf)
-			    (declare (ignore u))
-			    (and (eq source-unit (factor-source-unit cf))
-				 (eq dest-unit (factor-destination-unit cf)))))
-	    (simple-program-error
-	     "No conversion factor available for converting ~S to ~S within ~S"
-	     source-unit dest-unit domain))))))
+			    (find-measurement-class dest-unit)))
+  (:method ((source-unit measurement-class) (dest-unit measurement-class))
+    (let ((domain (verify-conversion-domain source-unit dest-unit)))
+      (with-lock-held ((measurement-domain-cf-lock domain))
+        (let ((factors (measurement-domain-conversion-factors domain)))
+          ;; This does not completely walk the measurement-domains table,
+          ;; performing only a cursory, one-off search towards DST.
+          ;;
+          ;; If each derived unit, within a single measurement domain,
+          ;; registers a factor for converting that unit to the domain's
+          ;; base measure, and the reciptrocal conversion is also
+          ;; registered, then it would be possible to convert  
+          ;; between any registered units within a measurement domain,
+          ;; using only a table of factors
+          (or (find source-unit factors
+                    :test #'(lambda (u cf)
+                              (declare (ignore u))
+                              (and (eq source-unit (factor-source-unit cf))
+                                   (eq dest-unit (factor-destination-unit cf)))))
+              (simple-program-error
+               "No conversion factor available for converting ~S to ~S within ~S"
+               source-unit dest-unit domain)))))))
 
 (defgeneric register-measurement-conversion-factor (factor domain)
   (:method ((factor conversion-factor) 
@@ -262,7 +273,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
    "Return the scalar magnitude of the INSTANCE
 
 See also:
-* `scalar-magnitude'
+* `scalar-magnitude' [?]
 * `measurement-degree'
 * `measurement-factor-base'"))
 (defgeneric (setf measurement-magnitude) (new-value instance))
@@ -280,7 +291,7 @@ See also:
 (defclass* measurement ()
   ;; magnitude : a real value that, when multplied by 10^degree,
   ;; then serves as an effective element for calculating the
-  ;; `scalar-magnitude' for the measurement
+  ;; `scalar-magnitude' for the measurement [?]
   ((magnitude real :initform 0)
    ;; degree : an exponent of 10, denoting the degree of the decimal
    ;; prefix factor for the measurement; serves as like a scale
@@ -294,25 +305,23 @@ See also:
    ;; rather than 10
    (degree fixnum :initform 0)))
 
-
-(defgeneric measurement-domain (instance)
-  (:method ((instance measurement))
-    (class-of (class-of instance)))
-  (:method ((instance measurement-class))
-    (class-of instance)))
-
-;; (measurement-domain (make-measurement 1 :|m|))
-;; (measurement-domain (find-class 'meter))
-;; ^ EQ => OK
+(defmethod domain-of ((instance measurement))
+  (domain-of (class-of instance)))
 
 (defgeneric measurement-base-measure (instance)
+  ;; FIXME: FUNCTION NAME AMBIGUITY
+  ;;
+  ;; RENAME TO: MEASUREMENT-BASE-UNIT (?)
   (:method ((instance measurement))
-    (measurement-domain-base-measure
-     (measurement-domain instance))))
+    (measurement-domain-base-measure (domain-of instance))))
 
 
 (defgeneric measurement-factor-base (instance)
-  ;; FIXME: Rename to scalar-factor-base
+  ;; FIXME: FUNCTION NAME AMBIGUITY
+  ;;
+  ;; RENAME TO: MEASUREMENT-BASE-UNIT-FACTOR-BASE (?)
+
+  ;; Old FIXME: Rename to scalar-factor-base (?) 
   (:documentation
    "Return the base of the degree scale factor of the INSTANCE
 
@@ -325,50 +334,6 @@ See also:
     (measurement-factor-base (class-of instance))))
 
 
-(defun base-magnitude (m)  
-  "Calculate the scalar magnitude of the measurement M for the base
-measurement unit of M"
-  ;;
-  ;; NB. This function implements a numeric conversion on
-  ;; a basis of of prefix magnitude. Conversions per ratios of derived
-  ;; units must be implemneted seperately.
-  
-  ;; FIXME: This was designed specifically around base units, and as
-  ;; such, assumes that M is already factored to a base unit
-  (declare (type measurement m)
-           (values real))
-  (let* ((deg (measurement-degree m))
-	 (unit (class-of m))
-	 (expt-base (measurement-factor-base unit))
-	 (base-mag  (measurement-magnitude m)))
-    (cond 
-      ((zerop deg) (values base-mag))
-      (t (values (* base-mag
-                    (expt expt-base deg)))))))
-
-
-;; (base-magnitude (make-measurement 1 :|m| 3))
-;; => 1000
-
-;; (base-magnitude (make-measurement 1 :|m| -3))
-;; => 1/1000
-
-;; (base-magnitude (make-measurement 1/5 :|m|))
-;; => 1/5
-
-;; (base-magnitude (make-measurement 1/5 :|m| -3))
-;; => 1/5000
-
-
-(defgeneric scalar-magnitude (scalar)
-  (:method ((scalar measurement))
-    "Return the magnitude of the SCALAR measurement onto the base unit
-for the measurement"
-    (base-magnitude scalar)))
-
-;; (scalar-magnitude (make-measurement 1 :|m| -3))
-;; => 1/1000
-
 (defmethod measurement-symbol ((instance measurement))
   (measurement-symbol (class-of instance)))
 
@@ -377,11 +342,17 @@ for the measurement"
 (defclass base-measurement-class (measurement-class)
   ())
 
+(defmethod domain-of ((instance base-measurement-class))
+    (class-of (class-of instance)))
+
 (defmethod measurement-domain-base-measure ((instance base-measurement-class))
   (values instance))
 
 (defclass derived-measurement-class (measurement-class)
   ())
+
+(defmethod domain-of ((instance derived-measurement-class))
+    (class-of (class-of instance)))
 
 (defmethod measurement-domain-base-measure ((instance derived-measurement-class))
   ;; example: derived-length
@@ -437,8 +408,8 @@ for the measurement"
                      (ensure-class b-d-name
                                    :domain d
                                    :direct-superclasses 
-                                   (list bm-mc domain lm-mc)
-                                   :metaclass md-mc
+                                   (list bm-mc lm-mc)
+                                   :metaclass domain
                                    #+SBCL :definition-source #+SBCL src))
                     (d-d ;; derived measurement class for DOMAIN (aux)
                      ;;
@@ -483,8 +454,8 @@ for the measurement"
                      (ensure-class d-d-name
                                    :domain d
                                    :direct-superclasses 
-                                   (list dm-mc domain lm-mc)
-                                   :metaclass md-mc
+                                   (list dm-mc  lm-mc)
+                                   :metaclass domain
                                    #+SBCL :definition-source #+SBCL src))
 
 		    (c  ;; measurement class denoted by 'class' name
@@ -558,7 +529,6 @@ for the measurement"
 ;; (find-measurement-class :|cd|)
 
 
-#+TO-DO
 (defclass gram (kilogram)
   ;; Kilogram is the base unit of measurement for mass, under the
   ;; Systeme International.
@@ -573,15 +543,134 @@ for the measurement"
   ;; usage case, the class GRAM will remain directly undefined of this
   ;; system. 
   ()
-  (:metaclass mass)
+  (:metaclass derived-mass)
+  (:base-factor .  1/1000)
   (:print-name . "gram") ;; FIXME: #I18N (EN_UK => gramme)
   (:print-label . "g")
-  (:symbol :|g|))
+  (:symbol . :|g|))
+
+(register-measurement-class 'gram)
+
+;; (measurement-domain-base-measure (domain-of (make-instance 'gram)))
+;; => #<BASE-MASS KILOGRAM>
+
+(defmethod scale-si :around ((measurement gram) &optional ee-p)
+  ;; NB: SCALE-SI GRAM effectively converts the input MEASUREMENT  
+  ;; onto the SI base measure for units of mass, namely KILOGRAM.
+  ;;
+  ;; This behavior may not be reflected for other units of mass.
+  ;;    e.g. (scale-si <<1 cal>>)  => <<1 cal>> NOT <<... joule>>
+  ;;
+  ;; [FIXME: Put this into the documentation]
+  ;;
+  ;; In the implementation specifically of the measurement units
+  ;; KILOGRAM and GRAM, this system endeavors to work around the SI
+  ;; convention of KILOGRAM being the base measure of units of
+  ;; mass. 
+  ;;
+  ;;  Concerning applications of measurements of mass:
+  ;;
+  ;;    Notably, the unit KILOGRAM  is applied in some physical 
+  ;;    formulas, such as with regards to specific heat. 
+  ;;
+  ;;  Concerning applications of the SI prefix system for measurements:
+  ;;
+  ;;    Orthogonally to the convention, 'kilogram as base measure',
+  ;;    GRAM is the measurement unit of mass with prefix 0
+  ;;
+  ;;
+  ;; Specifially with regards to SCALE-SI GRAM: Calling programs
+  ;; should ensure appropriate selection of the measurement unit for
+  ;; the return value
+  ;; 
+  ;; i.e. (measurement-domain-base-measure (domain-of #<GRAM 1 g {10075C92B3}>))
+  ;;      => #<BASE-MASS KILOGRAM>
+  ;;      for MEASUREMENT being of type GRAM
+  ;;
+  (declare (ignore ee-p))
+  (multiple-value-bind (magnitude degree) 
+      (call-next-method)
+    ;; FIXME; DEGREE not always -
+    ;;
+    ;; TO DO: define BASE-CONVERT-MEASUREMENT* => magnitude, degree
+    (let ((deg-base (- degree 3)))
+      (values (shift-magnitude measurement deg-base) 
+              deg-base))))
 
 ;; (make-measurement 1 :|kg|)
-;; => #<KILOGRAM 1000 g {10082A9083}>
+;; =should=> #<KILOGRAM 1 kg {10082A9083}> ;; OK
 
-;; (make-measurement 1000 :|g|) ;; FIXME: define :|g|
+;; (scale-si (make-measurement 1 :|kg|))
+;; => 1, 0 ;; OK - SCALE-SI KILOGRAM
+
+#+NIL
+(let ((m (base-convert-measurement (make-measurement 1 :|kg|))))
+  (values (measurement-magnitude m)
+          (measurement-degree m)))
+;; => 1, 0 ;; OK - BASE-CONEVERT-MEASUREMENT 1 KG
+
+
+;; (make-measurement 1 :|g|)
+;; =should=> #<GRAM 1 g {...}> ;; FAIL - PRINT-LABEL GRAM
+
+;; (scale-si (make-measurement 1 :|g|))
+;; => 1000, -3 ;; OK - SCALE-SI 1 GRAM => 1000 * 10^-3 KG (SCALED)
+
+;; see also: PRINT-LABEL (MEASUREMENT STREAM)
+
+#+NIL
+(let ((m (make-measurement 1 :|g|)))
+  (values (measurement-magnitude m)
+          (measurement-degree m)))
+;; => 1, 0 ;; OK - MAKE-MEASUREMENT, MEASUREMENT INITIALIZATION, MEASUREMENT PROPERTIES
+
+#+NIL
+(let ((m (base-convert-measurement (make-measurement 1 :|g|))))
+  (values (measurement-magnitude m)
+          (measurement-degree m)))
+;; => 1/1000, 0 ;; OK - BASE-CONVERT-MEASUREMENT 1 GRAM = 1/1000 KG (SCALED)
+
+;; (make-measurement 1000 :|g|)
+;; => #<GRAM 1000 g {10075C92B3}> ;; OK
+
+;; (scale-si (make-measurement 1000 :|g|))
+;; => 1000, 0 ;; FAIL - SCALE-SI 1000 GRAM => 1 * 10^0 KG (SCALED)
+;; =SHOULD=> 1, 0
+
+#+NIL
+(let ((m (base-convert-measurement (make-measurement 1000 :|g|))))
+  (values (measurement-magnitude m)
+          (measurement-degree m)))
+;; => 1, 0 ;; OK - BASE-CONVERT-MEASUREMENT 1000 GRAM => 1 KG (SCALED)
+
+
+
+;; (convert-measurement (make-measurement 1 :|kg|)  :|g|)
+;; =should=> #<GRAM 1000 g {...}> ;; FAIL
+
+;; (convert-measurement (make-measurement 1000 :|g|)  :|kg|)
+;; =should=> #<KILOGRAM 1 kg {...}> ;; FAIL - PRINT-LABEL MEASUREMENT STREAM ?
+
+;; (measurement-magnitude (convert-measurement (make-measurement 1 :|kg|)  :|g|))
+;; => 1
+;; (measurement-degree (convert-measurement (make-measurement 1 :|kg|)  :|g|))
+;; => 3 ;; OK
+
+;; (base-convert-measurement (make-measurement 1 :|g|))
+;; =should=> #<KILOGRAM 1 g {...}> ;; OK
+
+;; (measurement-magnitude (base-convert-measurement (make-measurement 1 :|g|)))
+;; => 1/1000 ;; OK 
+
+;; (base-magnitude (make-measurement 1 :|g|))
+;; =should=> 1/1000 ;; OK
+
+
+;; (find-conversion-factor :|g| :|kg|)
+;; => #<CONVERSION-FACTOR (1 g) => (1/1000 kg)> ;; OK
+;; (find-conversion-factor :|kg| :|g|)
+;; => #<CONVERSION-FACTOR (1 kg) => (1000 g)> ;; OK
+
 
 ;;; % Measurement Initialization
 
@@ -601,7 +690,7 @@ Examples:
 
 
 See also: 
-* `scalar-magnitude'
+* `scalar-magnitude' [?]
 * `prefix-of'
 * `rescale', `nrescale'"
   (declare (type real magnitude)
@@ -666,10 +755,10 @@ See also:
 ;; (measurement-magnitude (make-measurement 1/5 :|m| 3))
 ;; => 1/5
 ;;
-;; (scalar-magnitude (make-measurement 1/5 :|m| 3))
+;; (base-magnitude (make-measurement 1/5 :|m| 3))
 ;; => 200 ;; i.e. 200 m
 ;;
-;; (scalar-magnitude (make-measurement 1/5 :|m|))
+;; (base-magnitude (make-measurement 1/5 :|m|))
 ;; => 1/5 ;; i.e. 1/5 m
 
 ;; (make-measurement 0.2 :|m|)

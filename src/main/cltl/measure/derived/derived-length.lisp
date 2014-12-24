@@ -53,8 +53,8 @@
 ;;  ^ 1 foot => "this many" meters (double float precision)
 ;;  ^ approximately 0.30408 as per SP811 (less than single-float precision)
 
-;; (find-conversion-factor :|ft_1893| :|m| (find-class 'length))
-;; (find-conversion-factor :|m| :|ft_1893| (find-class 'length))
+;; (find-conversion-factor :|ft_1893| :|m|)
+;; (find-conversion-factor :|m| :|ft_1893|)
 
 ;; (make-measurement 1 :|ft_1893| 3)
 ;; ^ the illustrious kft

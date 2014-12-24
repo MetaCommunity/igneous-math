@@ -17,10 +17,9 @@ See also: `nrescale'"))
 
 (defgeneric nrescale (scalar prefix )
   (:documentation 
-   "Return the SCALAR object, such that the SCALAR-MAGNITUDE of the
-SCALAR will be equivalent to its orignal value, though PREFIX will be
-used newly as the SCALAR-PREFIX of the SCALAR. Methods specialized on
-this function will alter the SCALAR by side-effect.
+   "Return the SCALAR object, destructively modified such that the
+magnitude and degree of the SCALAR will have been scaled for the new
+PREFIX degree.
 
 The SCALAR-MAGNITUDE of a SCALAR is calcualted as the magnitude of
 SCALAR  multiplied by the effective factor-base of the measurement
@@ -345,25 +344,6 @@ PREFIX-NOT-FOUND is singaled"
   (princ (object-print-label (class-of object))
 	 stream))
 
-(defmethod print-label ((object kilogram) (stream stream))
-  "Print a KILOGRAM measurement in units of grams"
-  (multiple-value-bind (mag boundp)
-      (slot-value* object 'magnitude)
-    (cond 
-      ((and boundp (slot-boundp object 'degree))
-       (multiple-value-bind (adj-mag deg-si)                  
-	   (scale-si object t)
-	 (declare (type real adj-mag) (type fixnum deg-si))
-	 (princ (* adj-mag 1000) stream)
-	 (write-char #\Space stream)
-	 (unless (zerop deg-si)
-	   (let ((prefix (find-prefix= deg-si))) 
-	     (princ (object-print-label prefix) stream)))))
-      (boundp (princ mag stream))
-      (t
-       (princ "{no magnitude} " stream))))  
-  (write-char #\g stream))
-
 (defmethod print-object ((object measurement) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (print-label object stream)))
@@ -387,7 +367,7 @@ inequivalent to the actual magnitude of M.
 
 See also:
 * `measurement-magnitude'
-* `scalar-magnitude'
+* `scalar-magnitude' [?]
 * `rescale', `nrescale'
 * `find-prefix'
 * `find-prefix='"
