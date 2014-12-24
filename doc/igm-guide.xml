@@ -203,7 +203,37 @@
 
       <section>
         <title>The First Sprints: &Ig1m;</title>
-        <remark>...</remark>
+
+        <para>
+          It might be estimated: That there cannot be a work developed 
+          of the sciences, except that it would be a work developed in
+          extension of <emphasis>existing work</emphasis>, insofar as
+          of theories and practices developed in domains of
+          scientific discourse and the practical applications of
+          scientific theory.<remark>
+          <footnote>
+            <para>
+              This comment, itself, perhaps extends of
+              Isaac Newton's original juxtaposition of
+              <glossterm>geometry</glossterm> and
+              <glossterm>mechanics</glossterm> &mdash; broadly,
+              towards a contrast of <emphasis>ideal
+              systems</emphasis> and <emphasis>material
+              systems</emphasis>, in science and engineering.
+            </para>
+          </footnote></remark>. Likewise, the design of &project; was
+          begun after a review of <emphasis>existing work</emphasis>,
+          namely as with regards to repersentations of meaurement
+          values within computational systems. This article will avoid
+          any length dissertation about the development of
+          <productname><acronym>XML</acronym></productname> and its
+          origins in
+          <productname><acronym>SGML</acronym></productname>. With
+          regards to
+          <productname><acronym>SGML</acronym></productname>,
+          specifically, <remark>...</remark>
+        <productname>HyTime</productname></para> 
+        </para>
       </section>
 
       <section>
