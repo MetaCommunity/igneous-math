@@ -18,7 +18,7 @@
 
 (defgeneric measurement-base-factor (measurement))
 (defgeneric measurement-base-factor-exponent (measurement))
-
+;; ^ FIXME: Clarify applications of those generic functions
 
 ;;; % Measurement Class
 
@@ -85,8 +85,20 @@ Symbolic representation: ~S"
      (format s "No measurement class registered for name ~S"
              (entity-condition-name c)))))
 
+(define-condition measurement-class-redefinition (redefinition-condition)
+  ()
+  (:report 
+   (lambda (c s)
+     ;; FIXME: #I18N
+     (let* ((p (redefinition-condition-previous-object c))
+	    (n (redefinition-condition-new-object c))
+	    (sym (measurement-domain-symbol p)))
+       (format s "~<Redefining measurement class ~S~> ~<(previous: ~S)~> ~<(new: ~S)~>"
+               sym n p)))))
 
 (defclass linear-measurement-class (measurement-class)
+  ;; FIXME: Reconsider necessity of this class' definition
+  
   ;; This class is defined, here, for purpose of convenience. 
   ;; See also:  
   ;; `GEOMETRIC-MEASUREMENT-CLASS'
@@ -145,10 +157,12 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 			:key #'measurement-symbol)))
       (finalize-inheritance %c)
       (cond 
-	(n (unless (eq (aref %measurement-classes% n) %c)
-             (simple-style-warning 
-              "Redfining measurement class for ~S" s)
-             (setf (aref %measurement-classes% n) %c)))
+	(n (let ((obj (aref %measurement-classes% n)))
+             (unless (eq obj %c)
+               (warn 'measurement-class-redefinition
+                     :previous-object obj
+                     :new-object c)))
+           (setf (aref %measurement-classes% n) %c))
 	(t (vector-push-extend %c %measurement-classes%)))
       (let ((base-ftor (measurement-base-factor %c))
 	    (base-ftor-exp (measurement-base-factor-exponent %c)))
