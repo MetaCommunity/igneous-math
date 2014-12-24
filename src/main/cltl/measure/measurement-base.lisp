@@ -191,6 +191,11 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 
 ;;; % CONVERSION-FACTOR
 
+(defgeneric conversion-factor-source-unit (instance))
+(defgeneric conversion-factor-magnitude (instance))
+(defgeneric conversion-factor-exponent (instance))
+(defgeneric conversion-factor-destination-unit (instance))
+
 (defclass* (conversion-factor
 	    :conc-name #:factor-)
     ()
