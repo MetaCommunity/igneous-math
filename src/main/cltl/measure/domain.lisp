@@ -5,6 +5,9 @@
 (defgeneric measurement-domain-base-measure (instance))
 (defgeneric measurement-domain-symbol (instance))
 
+(defgeneric measurement-domain-cf-lock (instance))
+(defgeneric measurement-domain-conversion-factors (instance))
+
 
 (defclass measurement-domain (pretty-printable-object
 			      standard-class)
@@ -63,8 +66,6 @@
                (when (and (typep c sought-type)
                           (find-slot slot c)
                           (slot-boundp c slot))
-                 (warn "WOOHOO! Found ~A in ~A for ~A"
-                       slot c class)
                  (return (values (slot-value c slot)
                                  t)))))
            (maybe-inherit-slot (slot sought-type)
@@ -163,8 +164,9 @@ This variable should be accessed with `%DOMAINS-LOCK%' held")
 	(t (vector-push-extend c %domains%)))
       (values c))))
 
-(defun enumerate-measurement-domains ()
-  (coerce %domains% 'list))
+(defun enumerate-measurement-domains (&optional (return-type 'list))
+  (declare (values sequence))
+  (coerce %domains% return-type))
 
 ;; (find-measurement-domain :electrical-current)
 
