@@ -175,8 +175,8 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
 		 (cf-from (make-conversion-factor base-m %c
 						  (/ base-ftor) 
 						  (- base-ftor-exp))))
-	    (register-measurement-conversion-factor cf-to domain)
-	    (register-measurement-conversion-factor cf-from domain))))
+	    (register-conversion-factor cf-to domain)
+	    (register-conversion-factor cf-from domain))))
       (values %c))))
 
 (defun find-measurement-class (s)
@@ -266,7 +266,7 @@ This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
                "No conversion factor available for converting ~S to ~S within ~S"
                source-unit dest-unit domain)))))))
 
-(defgeneric register-measurement-conversion-factor (factor domain)
+(defgeneric register-conversion-factor (factor domain)
   (:method ((factor conversion-factor) 
 	    (domain measurement-domain))
     (with-lock-held ((measurement-domain-cf-lock domain))
