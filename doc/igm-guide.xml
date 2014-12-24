@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book [
+
+<!ENTITY mdash
+	"&#x2014;"
+>
+
+<!-- project metadata -->
+
+<!ENTITY project
+	"<productname>Igneous Math</productname>"
+>
+
+<!ENTITY project.id
+	"igm"
+>
+
+<!-- terms -->
+
+<!ENTITY cltl
+	"<productname><acronym>ANSI</acronym> Common Lisp</productname>"
+>
+
+<!ENTITY asdf
+	"<productname>ASDF</productname>"
+>
+
+<!-- terms -->
+
+<!ENTITY Ig1m
+	"<productname>Ig<subscript>1</subscript><superscript>m</superscript></productname>"
+>
+
+<!ENTITY Ig2m
+	"<productname>Ig<subscript>2</subscript><superscript>m</superscript></productname>"
+>
+
+<!ENTITY clim
+	"<productname><acronym>CLIM</acronym></productname>"
+>
+
+<!ENTITY mcclim
+	"<productname><acronym>McCLIM</acronym></productname>"
+>
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xml:id="&project.id;.guide"
+      version="5.0-extension metacommunity-1.0"
+      >
+  <info>
+    <title>&project; &mdash; Guide</title>
+    <author>
+      <personname>Sean Champ</personname>
+    </author>
+    <pubdate>24 Dec 2014</pubdate>
+
+    <revhistory>
+      <revision>
+        <date>24 Dec 2014</date>
+        <revdescription>
+          <formalpara>
+            <title>Summary</title>
+            <para>
+              <simplelist>
+                <member>Initial revision</member>
+                <member>
+                  Comments (appendix) about design model applied in
+                  &project; &mdash; <glossterm>sprints</glossterm> as
+                  <foreignphrase>viz a viz</foreignphrase>
+                  <glossterm>scrum</glossterm>
+                </member>    
+                <member>
+                  Comments about code alignment in &Ig1m;, &Ig2m;
+                </member>
+                <member>
+                  Comments about distinction of concepts of
+                  <emphasis>measurement numeric value</emphasis> and
+                  <emphasis>measurement magnitude, measurement
+                  degree</emphasis>
+                </member>
+              </simplelist>
+            </para>
+          </formalpara>
+        </revdescription>
+      </revision>
+    </revhistory>
+
+  </info>
+
+  <preface xml:id="&project.id;.guide.ov">
+    <title>Overview</title>
+
+    <remark>TBD - Develop a singular overview about this multi-module
+    system. &project; is not formally a CAS, at &Ig2m;, but provides a
+    small set of elementary <glossterm>modules</glossterm>
+    ... etc.</remark>
+
+  </preface>
+
+
+  <appendix>
+    <title>Software Design Model</title>
+
+    <para>
+      &project; is developed essentially in an
+      <glossterm>agile</glossterm> model.  At &Ig2m;, &project;
+      has not adopted any formal <glossterm>process model</glossterm>
+      for development<remark><
+      <footnote>
+        <para>and well, the &project; project does not have a
+        large development team, at this revision</para>
+      </footnote></remark>. In a broad sense, the development
+      model &mdash; as developed, reflectively, in the development of
+      &project; &mdash; may largely resemble a
+      <productname>Scrum</productname> development model, if any other 
+      generic <productname>agile</productname> model. 
+    </para>
+    <para>
+      Similar to <productname>Scrum</productname>, &project; is
+      developed in each of a momentary <glossterm>sprint</glossterm>. 
+      Unlike <productname>Scrum</productname>, however, the
+      <glossterm>sprint</glossterm> duration is not preceded with any
+      manner of a <emphasis>planning session</emphasis>, and is not
+      followed with any manner of formal
+      <glossterm>review</glossterm>, excepting &mdash; in the latter
+      regards &mdash; a manner of a practical <emphasis>review by
+      application</emphasis><remark>
+      <footnote>
+        <para>
+          i.e. a certain manner of a <foreignphrase>Trial by
+          Fire</foreignphrase> approach to <glossterm>bug
+          hunting</glossterm> and <glossterm>design
+          review</glossterm>, in software development.
+        </para>
+      </footnote>
+      </remark>. Certainly, the <foreignphrase>ad
+      hoc</foreignphrase> <glossterm>agile</glossterm>
+      methodology developed in &project; may not be suitable for
+    <emphasis>large scale</emphasis> projects. However, it appears to
+    be sufficient for a manner of <emphasis>small scale</emphasis>,
+    <glossterm>modular development</glossterm>, even at a
+    <emphasis>scale</emphasis> of a <glossterm>developer
+    team</glossterm> comprised  essentially of an individual
+    <glossterm>developer</glossterm>.
+    </para> 
+
+    <section>
+      <title>"Lessons from Camptown" &mdash; Concerning Alignment 
+      Between Design and Application in a Sprint-Oriented
+      Development Model</title>
+
+      <para>The &project; was begun essentially as a prototype for
+       a system for mathematical computations. As a summary of the
+       first set of goals addressed in the &project; project: The
+       primary goal was to  develop an
+       <glossterm>object system</glossterm> for
+       <glossterm>measurement</glossterm> values, in a model for
+       <glossterm>dispatched</glossterm> application of
+       <glossterm>monadic</glossterm>, <glossterm>diadic</glossterm>,
+       and <glossterm>variadic</glossterm> mathematical
+       <glossterm>operations</glossterm> &mdash; the latter,
+       esentially as to extend of <glossterm>functions</glossterm>
+       implemented for mathematical <glossterm>operations</glossterm>
+       in &cltl;. </para>
+
+       <para>As secondary goals, it was estimated that a
+       graphical <glossterm>presentation</glossterm> model may be
+       developed for such an <glossterm>object system</glossterm> as
+       would be addressed in the previous goals. It was esimated that
+       such a graphical <glossterm>presentation</glossterm> model may be
+       developed specifically onto &clim;. By extension, it was a
+       secondary goal: To develop a graphical model 
+       for <glossterm>phasor</glossterm> analysis and other
+       <glossterm>signal domain</glossterm> analysis, such that could
+       be applied &mdash; specifically &mdash; in an endeavor to
+       clarify some concepts as with regards to qualities of
+       <glossterm>electrodynamically reactive</glossterm> electrical
+       circuit elements and their applications within circuits of
+       <glossterm>alternating current</glossterm>. In this set
+       of those goals, perhaps that much of the design of &project;
+       may be subsequently revised as towards applications of
+       technologies for <glossterm>pulse width modulation</glossterm> 
+       within <glossterm>digital signaling</glossterm> systems.
+       Concerning a question of the essential
+       <glossterm>geometry</glossterm> of
+       <glossterm>electrodynamically reactive</glossterm> circuits 
+       within <glossterm>alternating current</glossterm> systems
+       &mdash; perhaps that may remain to be addressed, as towards an
+       application of this system, extensionally, for
+       <glossterm>modeling</glossterm> of <glossterm>numeric 
+       systems</glossterm> in relation to
+       <glossterm>components</glossterm> of <glossterm>electrical
+       systems</glossterm>, as for purposes of electronic design
+       and electrical system diagnostics.
+      </para>
+
+      <para>
+        That secondary set of goals would prove to  be largely
+        orthogonal to the primary set of goals, as addressed in the
+        development of the &project; <glossterm>codebase</glossterm>.
+      </para>
+
+      <section>
+        <title>The First Sprints: &Ig1m;</title>
+        <remark>...</remark>
+      </section>
+
+      <section>
+        <title>Refactoring in &Ig2m;</title>
+        <remark>...</remark>
+      </section>
+      
+
+    </section>
+  </appendix>
+
+</book>
