@@ -11,7 +11,7 @@
 ;; * <http://physics.nist.gov/pubs/sp811/appenb.html>
 ;;    * ^ esp. for formal conversions regarding foot, mile, yard , ...
 
-    
+
 
 (defgeneric measurement-symbol (instance))
 
@@ -132,7 +132,7 @@ Symbolic representation: ~S"
 (declaim (type (vector measurement-class) %measurement-classes% ))
 
 (defvar %measurement-classes% (make-array 7 :fill-pointer 0 
-			      :element-type 'measurement-class)
+                                          :element-type 'measurement-class)
   "Internal storage for measurement classes.
 
 This variable should be accessed with `%MEASUREMENT-CLASSES-LOCK%' held")
@@ -327,20 +327,19 @@ See also:
 (defmethod domain-of ((instance measurement))
   (domain-of (class-of instance)))
 
+#+NIL ;; unused (FIXME)
 (defgeneric measurement-base-measure (instance)
   ;; FIXME: FUNCTION NAME AMBIGUITY
   ;;
   ;; RENAME TO: MEASUREMENT-BASE-UNIT (?)
+  ;; (or delete)
   (:method ((instance measurement))
     (measurement-domain-base-measure (domain-of instance))))
 
 
 (defgeneric measurement-factor-base (instance)
-  ;; FIXME: FUNCTION NAME AMBIGUITY
-  ;;
-  ;; RENAME TO: MEASUREMENT-BASE-UNIT-FACTOR-BASE (?)
-
-  ;; Old FIXME: Rename to scalar-factor-base (?) 
+  ;; FIXME: Concept, "numeric factor" for measurement values
+  ;; - consider adding to documentation
   (:documentation
    "Return the base of the degree scale factor of the INSTANCE
 
@@ -362,7 +361,7 @@ See also:
   ())
 
 (defmethod domain-of ((instance base-measurement-class))
-    (class-of (class-of instance)))
+  (class-of (class-of instance)))
 
 (defmethod measurement-domain-base-measure ((instance base-measurement-class))
   (values instance))
@@ -371,7 +370,7 @@ See also:
   ())
 
 (defmethod domain-of ((instance derived-measurement-class))
-    (class-of (class-of instance)))
+  (class-of (class-of instance)))
 
 (defmethod measurement-domain-base-measure ((instance derived-measurement-class))
   ;; example: derived-length
@@ -411,14 +410,14 @@ See also:
                     (d-d-name (intern-formatted "DERIVED-~A" domain))
                     (d 
 		     (ensure-class 
-			domain
-			:symbol (intern* domain kwd)
-                        :base-measure class
-			:print-name domain-name
-			:print-label domain-name
-			:direct-superclasses (list mc-mc)
-			:metaclass md-mc
-			#+SBCL :definition-source #+SBCL src))
+                      domain
+                      :symbol (intern* domain kwd)
+                      :base-measure class
+                      :print-name domain-name
+                      :print-label domain-name
+                      :direct-superclasses (list mc-mc)
+                      :metaclass md-mc
+                      #+SBCL :definition-source #+SBCL src))
                     (b-d ;; base measurement class for DOMAIN
                      ;; This class serves to allow for a base
                      ;; measurement class to be defined as an instance
@@ -573,48 +572,8 @@ See also:
 ;; (measurement-domain-base-measure (domain-of (make-instance 'gram)))
 ;; => #<BASE-MASS KILOGRAM>
 
-(defmethod scale-si :around ((measurement gram) &optional ee-p)
-  ;; NB: SCALE-SI GRAM effectively converts the input MEASUREMENT  
-  ;; onto the SI base measure for units of mass, namely KILOGRAM.
-  ;;
-  ;; This behavior may not be reflected for other units of mass.
-  ;;    e.g. (scale-si <<1 cal>>)  => <<1 cal>> NOT <<... joule>>
-  ;;
-  ;; [FIXME: Put this into the documentation]
-  ;;
-  ;; In the implementation specifically of the measurement units
-  ;; KILOGRAM and GRAM, this system endeavors to work around the SI
-  ;; convention of KILOGRAM being the base measure of units of
-  ;; mass. 
-  ;;
-  ;;  Concerning applications of measurements of mass:
-  ;;
-  ;;    Notably, the unit KILOGRAM  is applied in some physical 
-  ;;    formulas, such as with regards to specific heat. 
-  ;;
-  ;;  Concerning applications of the SI prefix system for measurements:
-  ;;
-  ;;    Orthogonally to the convention, 'kilogram as base measure',
-  ;;    GRAM is the measurement unit of mass with prefix 0
-  ;;
-  ;;
-  ;; Specifially with regards to SCALE-SI GRAM: Calling programs
-  ;; should ensure appropriate selection of the measurement unit for
-  ;; the return value
-  ;; 
-  ;; i.e. (measurement-domain-base-measure (domain-of #<GRAM 1 g {10075C92B3}>))
-  ;;      => #<BASE-MASS KILOGRAM>
-  ;;      for MEASUREMENT being of type GRAM
-  ;;
-  (declare (ignore ee-p))
-  (multiple-value-bind (magnitude degree) 
-      (call-next-method)
-    ;; FIXME; DEGREE not always -
-    ;;
-    ;; TO DO: define BASE-CONVERT-MEASUREMENT* => magnitude, degree
-    (let ((deg-base (- degree 3)))
-      (values (shift-magnitude measurement deg-base) 
-              deg-base))))
+;; see also: SCALE-SI methods defined in prefix.lisp
+;;   esp. SCALE-SI (MEASUREMENT &OPTIONAL T)
 
 ;; (make-measurement 1 :|kg|)
 ;; =should=> #<KILOGRAM 1 kg {10082A9083}> ;; OK

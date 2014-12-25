@@ -147,8 +147,6 @@ See also: `rescale'"))
 ;; => 0
 
 
-(defgeneric scale-si (measurement &optional engineering-notation-p))
-
 
 (defclass* prefix (pretty-printable-object)
   ;; NOTE: This class is applied effectively as a DECIMAL-PREFIX 
@@ -574,19 +572,62 @@ See also:
 ;; => #<METER 125 mm {1007B71283}>
 
 
-(defmethod scale-si ((measurement measurement) &optional (ee-p t))
-  (declare (values real prefix-degree))
-  (let ((magnitude (measurement-magnitude measurement))
-        (scale (measurement-degree measurement)))
-    (declare (type real magnitude)
-             (type fixnum scale))
-    (cond
-      ((zerop scale) 
-       (values magnitude scale))
-      (t 
-       (let ((deg (find-nearest-degree scale ee-p)))
-         (values  (shift-magnitude measurement deg)
-                  deg))))))
+(defgeneric scale-si (measurement &optional engineering-notation-p)
+  (:method :around ((measurement gram) &optional ee-p)
+  ;; NB: SCALE-SI GRAM effectively converts the input MEASUREMENT  
+  ;; onto the SI base measure for units of mass, namely KILOGRAM.
+  ;;
+  ;; This behavior may not be reflected for other units of mass.
+  ;;    e.g. (scale-si <<1 cal>>)  => <<1 cal>> NOT <<... joule>>
+  ;;
+  ;; [FIXME: Put this into the documentation]
+  ;;
+  ;; In the implementation specifically of the measurement units
+  ;; KILOGRAM and GRAM, this system endeavors to work around the SI
+  ;; convention of KILOGRAM being the base measure of units of
+  ;; mass. 
+  ;;
+  ;;  Concerning applications of measurements of mass:
+  ;;
+  ;;    Notably, the unit KILOGRAM  is applied in some physical 
+  ;;    formulas, such as with regards to specific heat. 
+  ;;
+  ;;  Concerning applications of the SI prefix system for measurements:
+  ;;
+  ;;    Orthogonally to the convention, 'kilogram as base measure',
+  ;;    GRAM is the measurement unit of mass with prefix 0
+  ;;
+  ;;
+  ;; Specifially with regards to SCALE-SI GRAM: Calling programs
+  ;; should ensure appropriate selection of the measurement unit for
+  ;; the return value
+  ;; 
+  ;; i.e. (measurement-domain-base-measure (domain-of #<GRAM 1 g {10075C92B3}>))
+  ;;      => #<BASE-MASS KILOGRAM>
+  ;;      for MEASUREMENT being of type GRAM
+  ;;
+  (declare (ignore ee-p))
+  (multiple-value-bind (magnitude degree) 
+      (call-next-method)
+    ;; FIXME; DEGREE not always -
+    ;;
+    ;; TO DO: define BASE-CONVERT-MEASUREMENT* => magnitude, degree
+    (let ((deg-base (- degree 3)))
+      (values (shift-magnitude measurement deg-base) 
+              deg-base))))
+  (:method ((measurement measurement) &optional (ee-p t))
+    (declare (values real prefix-degree))
+    (let ((magnitude (measurement-magnitude measurement))
+          (scale (measurement-degree measurement)))
+      (declare (type real magnitude)
+               (type fixnum scale))
+      (cond
+        ((zerop scale) 
+         (values magnitude scale))
+        (t 
+         (let ((deg (find-nearest-degree scale ee-p)))
+           (values  (shift-magnitude measurement deg)
+                    deg)))))))
 
 ;; (scale-si (make-measurement 1 :m 5))
 ;; => 100, 3
