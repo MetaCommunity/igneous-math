@@ -16,5 +16,6 @@
    )
   :components
   ((:file "math-test-package")
-   
+   (:file "measure-test"
+          :depends-on ("math-test-package"))
    ))
