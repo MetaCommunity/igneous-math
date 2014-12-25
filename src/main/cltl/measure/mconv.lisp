@@ -5,15 +5,15 @@
 (define-condition conversion-domains-mismatch (error)
   ((source-domain
     :initarg :source-domain
-    :reader condition-source-domain)
+    :reader conversion-source-domain)
    (dest-domain
     :initarg :destination-domain
-    :reader condition-destination-domain))
+    :reader conversion-destination-domain))
   (:report
    (lambda (c s)
      (format s "Domains Mismatch - Cannot convert measument of domain ~A to domain ~A"
-             (condition-source-domain c)
-             (condition-destination-domain c)))))
+             (conversion-source-domain c)
+             (conversion-destination-domain c)))))
 
 (defun verify-conversion-domain (src-type dst-type)
   (let ((src-domain (domain-of src-type))
@@ -93,13 +93,18 @@ measurement unit of M"
 
 	 (m-m  (measurement-magnitude m))
          (m-d (measurement-degree m)))
+
+    ;; Comment from during Ig1m sprints:
+    ;;
     ;; Note that this effectively ignores the measurement conversion
-    ;; model, and makes no reference to the domain of the MEASUREMENT
+    ;; model, and makes no reference to the domain of the MEASUREMENT (?)
     ;;
     ;; Essentially, this function uses a "Short cut" for conversion to
     ;; base measurement, using the BASE-FACTOR and
-    ;; BASE-FACTOR-EXPONENT of the UNIT for the measurement
+    ;; BASE-FACTOR-EXPONENT of the UNIT for the measurement (?)
     
+    ;; Comment from during Ig2m sprints:
+    ;;
     ;; FIXME - DESIGN AMBIGUITY => MISALIGNMENT
     ;; 
     ;; This function appears to return not the magnitude as in
@@ -107,8 +112,12 @@ measurement unit of M"
     ;; reduced per degrees in measurement conversion (i.e. source
     ;; degree => dest-degree)
     
-    (* m-m (expt expt-base m-d)
-       base-m (expt expt-base base-d))))
+    (let ((new-deg (+ m-d base-d)))
+    (values
+     ;; FIXME - DESIGN/CODE ALIGNMENT
+     ;;  This may be redundant onto other functions defined in this system
+     (* m-m  base-m (expt expt-base new-deg))
+     new-deg))))
 
 ;; BEGIN: Example
 
@@ -134,17 +143,32 @@ measurement unit of M"
 
 
 ;; (base-magnitude (make-measurement 1 :|m| 3))
-;; => 1000
+;; => 1000, 3
 
 ;; (base-magnitude (make-measurement 1 :|m| -3))
-;; => 1/1000
+;; => 1/1000, -3
 
 ;; (base-magnitude (make-measurement 1/5 :|m|))
-;; => 1/5
+;; => 1/5, 0
 
 ;; (base-magnitude (make-measurement 1/5 :|m| -3))
-;; => 1/5000
+;; => 1/5000, -3
 
+
+;; (base-magnitude (make-measurement 1 :|kg|))
+;; => 1, 0
+;;
+;; (base-magnitude (make-measurement 1000 :|kg|))
+;; =SHOULD=> 1000, 0 ;; FAIL (!)
+;; SEE ALSO: 
+;; * MEASUREMENT-BASE-FACTOR <<GRAM>>
+;; * MEASUREMENT-BASE-FACTOR-EXPONENT <<GRAM>>
+
+;; (base-magnitude (make-measurement 1 :|g|))
+;; => 1/1000, 0
+;;
+;; (base-magnitude (make-measurement 1000 :|g|))
+;; => 1, 3
 
 (defgeneric scalar-magnitude (scalar)
   ;; This function had its origins in the definition of the
