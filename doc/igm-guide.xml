@@ -42,6 +42,17 @@
 <!ENTITY mcclim
 	"<productname><acronym>McCLIM</acronym></productname>"
 >
+
+<!ENTITY clos
+	"<productname><acronym>CLOS</acronym></productname>"
+>
+
+<!ENTITY mop
+	"<productname><acronym>MOP</acronym></productname>"
+>
+
+
+]>
 <book xmlns="http://docbook.org/ns/docbook"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -106,7 +117,7 @@
       &project; is developed essentially in an
       <glossterm>agile</glossterm> model.  At &Ig2m;, &project;
       has not adopted any formal <glossterm>process model</glossterm>
-      for development<remark><
+      for development<remark>
       <footnote>
         <para>and well, the &project; project does not have a
         large development team, at this revision</para>
@@ -225,21 +236,241 @@
           begun after a review of <emphasis>existing work</emphasis>,
           namely as with regards to repersentations of meaurement
           values within computational systems. This article will avoid
-          any length dissertation about the development of
+          any lengthy historic dissertation about the development of 
           <productname><acronym>XML</acronym></productname> and its
           origins in
-          <productname><acronym>SGML</acronym></productname>. With
-          regards to
-          <productname><acronym>SGML</acronym></productname>,
-          specifically, <remark>...</remark>
-        <productname>HyTime</productname></para> 
+          <productname><acronym>SGML</acronym></productname>. Specifically
+          as with regards to
+          <productname><acronym>SGML</acronym></productname>, 
+          <remark>...</remark>
+        <productname>HyTime</productname> <remark>Hypermedia -
+        orthogonal to this article, relevant to the McCLIM fork, and
+        not exclusively represented with MathML.</remark> 
+        <remark>(Existing work, in information sciences)</remark>
+        <remark>(See also: SWEET Ontologies)</remark>
         </para>
+
+        <para>
+          <remark>Also a part of the existing work, namely in the
+          domain of the material sciences: The
+          BIPM's documentation about the SI system, itself, and that
+          from the NIST.</remark>
+        </para>
+
+        <para>
+          <remark>Existing work, in Common Lisp: {rmarren}'s
+          <productname>Unit-Formula</productname> and the study
+          referenced from the same &mdash; see also, bibliography &amp;
+          bibliography tools...</remark>
+        </para>
+
+
+        <para>
+          Subsequent to a review of <emphasis>existing
+          work</emphasis> &mdash; insofar as noted, in this article,
+          as with regards to systems of measurements, orthogonal to
+          a system of vector mathematics &mdash; a number of
+          corresponding <glossterm>object models</glossterm> were
+          designed during the changesets now comprising &Ig1m;:
+          <simplelist>
+            <member>Measurement Domain</member>
+            <member>Measurement Class</member>
+            <member>Numeric Prefix Objects for Annotation of
+            Measurement Values</member>
+          </simplelist>
+        </para>
+        
+        <sidebar>
+          <para>
+            Concerning any details of the design of that three-part object
+            model for measurement systems in &project;, and its
+            interfaces for application within extensional systems, the
+            reader would kindly be referred to the source code of
+            &project; &mdash; this <emphasis>guide</emphasis> book,
+            itself, being presently in absence of any specific
+            documentation for application of those object
+            models. Certainly, those are documented thoroughly, in the
+            project's source code. 
+          </para>
+          <remark>
+            This manual should be updated
+            subsequently, to describe those object models as in a
+            manner sufficient for their application. Also, there would
+            be the revisions to be developed in &Ig2m;, as with
+            regards to a <glossterm>reader</glossterm>
+            <glossterm>syntax</glossterm> for input of numeric
+            measurement values, etc.
+          </remark>
+        </sidebar>
+        
+        <para>
+          Parallel to the development of the
+          <glossterm>measurement</glossterm> model, during the
+          development of &Ig1m;, an <glossterm>object
+          model</glossterm> was defined also for
+          definition and application of <glossterm>monadic</glossterm>,
+          <glossterm>diadic</glossterm>, and
+          <glossterm>variadic</glossterm> mathematical 
+          <glossterm>operations</glossterm>. That <glossterm>object
+          model</glossterm> was defined as an extension of the 
+          <productname>Common Lisp Object System</productname> (&clos;)
+          &mdash; insofas as the latter is standardized in &cltl; and
+          may be extended in applciations of &clos; via the
+          <productname>MetaObject Protocol</productname> (&mop;). The
+          components of &Ig1m; as extending of &mop;, likewise
+          extend of the &mop; <glossterm>model</glossterm> for
+          implementation of <glossterm>funcallable</glossterm>
+          <glossterm>standard objects</glossterm>. Essentially, this
+          component of the &project; <glossterm>codebase</glossterm>
+          implements a unique set of <glossterm>classes</glossterm> of
+          &clos; <glossterm>method</glossterm>  and <glossterm>generic
+          function</glossterm> <glossterm>objects</glossterm>, such
+          that the <glossterm>method</glossterm>
+          <glossterm>dispatching</glossterm> within the latter is not
+          a standard <glossterm>method</glossterm>
+          <glossterm>dispatching</glossterm>. <remark>This componenent of
+          &Ig1m; may be subject to some further revision. At the time
+          of the writing of this remark, development of &Ig1m; is
+          focusing primarily about refactoring of the
+          <glossterm>measurement</glossterm> <glossterm>object
+          model</glossterm>.</remark>
+        </para>
+
+        <para>
+          As well as the development of those discrete
+          <glossterm>object models</glossterm>, some simpler prototypes
+          were created within the &project; codebase, during &Ig1m;
+          development. Specifically, there was a
+          prototype created &mdash; albeit, a trivial prototype
+          &mdash; towards a development of a &clim; 
+          <glossterm>presentation model</glossterm> for
+          <glossterm>objects</glossterm> of a 
+          system for <glossterm>linear mathematics</glossterm>,
+          beginning namely at the <glossterm>presentation</glossterm>
+          of a <glossterm>two dimensional</glossterm>
+          <glossterm>matrix</glossterm> <glossterm>object</glossterm>
+          onto a &clim; <glossterm>application
+          pane</glossterm>. 
+        </para>
+        <para>
+          Fourthly, some intial prototypes were
+          created for a definition of a formal <glossterm>object
+          model</glossterm> for <glossterm>scalar</glossterm> and
+          <glossterm>vector</glossterm>
+          <glossterm>objects</glossterm> &mdash; pending revision, in
+          extension of the mathematical
+          <glossterm>operations</glossterm> <glossterm>object
+          model</glossterm> defined originally in &Ig1m;.
+        </para>
+
+        <para>
+          Lasly, &Ig1m; saw the development of a system for
+          <glossterm>rational</glossterm>
+          <glossterm>scaling</glossterm> of
+          <glossterm>decimal</glossterm>
+          <glossterm>numeric</glossterm>
+          <glossterm>values</glossterm>. The implementaiton of this
+          feature might corresponds conveniently with the system for 
+          <glossterm>measurement</glossterm>
+          <glossterm>objects</glossterm>, as also begun in
+          &Ig1m;
+        </para> 
+
+        
       </section>
 
       <section>
         <title>Refactoring in &Ig2m;</title>
-        <remark>...</remark>
+
+        <section>
+          <title>Refactoring of the &Ig1m; Measurement Object
+          Model</title>
+
+          <remark>&Ig1m; - measurement domains; base measurement
+          units; fundamental measurement units; linear measurement
+          units</remark> 
+
+          <remark>&Ig2m; - derived measurement units; measurement
+          units describing geometric qualities; measurement unit
+          conversion</remark>
+
+          <remark>Furthermore, &Ig2m; has seen the emergence of a
+          concern with regards to <emphasis>code alignment</emphasis>
+          and <emphasis>design alignment</emphasis> &mdash; thus, to
+          the primary thesis orignally denoted of this
+          article. Simply, it is the author's observation: That across
+          the many <glossterm>sprints</glossterm> ultimately comprising
+          the set of <glossterm>changesets</glossterm> developed in
+          &Ig1m;, the <emphasis>system as developed</emphasis> became,
+          in some ways, <glossterm>ambiguous</glossterm> within itself
+          &mdash; furthermore, <glossterm>misaligned</glossterm>,
+          within its own codebase. At this time, it appears that the
+          primary concerns of that
+          <glossterm>misalignment</glossterm> may be denoted as  as
+          with regards to: Concepts of function naming, function
+          application, functional behaviors, and intended
+          application. Insofar as the process of the discovery of this
+          concern, it would also serve to denote an orthogonoal
+          concern, as with regards to functional testing.</remark>
+          
+        </section>
+
+
+        <section>
+          <title>Design for Application of the revised &Ig2m;
+          Measurement Object Model, in Extension of the &Ig1m;
+          Object Model for Mathematical Applications</title>
+
+          <remark>This may proceed not until after the program
+          elements denoted in the previous section may be refactored
+          to any condition of complete normalcy.</remark>
+        </section>
+
+
+        <section>
+          <title>Development of the &Ig1m; Prototypes for Scalar and
+          Vector Objects</title>
+
+          <remark>There is some ambiguity with regards to the classes
+          <classname>measurement</classname> and
+          <classname>scalar</classname>, as towards a question of how
+          the class <classname>scalar</classname> would finally be
+          defined. Otherwise, this may be developed  as towards a
+          definition of a system for applications in linear
+          mathematics. Infoar as the
+          <classname>measurement</classname>/<classname>scalar</classname>
+          ambiguity, that could possibly be revised with a definition of 
+          <classname>scalar</classname> as a
+          <glossterm>container</glossterm> for a <glossterm>numeric
+          value</glossterm>, but again there is the question of how
+          the classes of <glossterm>numeric value</glossterm> would be
+          defined or provided with an <glossterm>interface</glossterm>
+          for mathematical procedures. Considering that a &cltl;
+          implementation may provide a number of optimizations for
+          mathematical functions, but that those optimizations would
+          be contingent on whether the <glossterm>compiler</glossterm>
+          would be able to determine an existing numeric type for the
+          parameters to any single, optimized mathematical operation:
+          It would be desirable to ensure that any application of the 
+          <classname>scalar</classname> class would not serve as to
+          <emphasis>loose information</emphasis> with regards to the
+          numeric type of any numeric value contained by a
+          <classname>scalar</classname>
+          <glossterm>object</glossterm>. Not insomuch a mere excerise
+          in tedious application design, such considerations might
+          serve towards an optimization of program systems, whether or
+          not of any program systems that would require that
+          procedures complete within a model of determinisic timing,
+          even insofar as in mathematical operations within the Common
+          Lisp programming environment.
+          </remark> 
+        </section>
+                
       </section>
+
+
+      <!-- <section> -->
+      <!--   <title>Further  -->
       
 
     </section>
