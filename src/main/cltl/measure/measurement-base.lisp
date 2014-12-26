@@ -44,10 +44,9 @@
                                      &key &allow-other-keys)
   (declare (ignore initargs))
 
-  (when (initialize-slot-p 'domain slots)
-    (unless (slot-boundp instance 'domain)
-      (setf (slot-value instance 'domain)
-            (class-of instance))))
+  (when-slot-init (instance domain slots)
+    (setf (slot-value instance 'domain)
+          (class-of instance)))
 
   (unless (documentation instance 'type)
     (handler-case
