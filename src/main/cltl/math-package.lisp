@@ -33,19 +33,7 @@
    )
 
   (:export
-   ;; utils
-   ;;FIXME: Consider moving these into the utils system
-   #:entity-condition
-   #:entity-condition-name
-   #:entity-not-found
-
-   #:redefinition-condition
-   #:redefinition-condition-previous-object
-   #:redefinition-condition-new-object
-
-   #:container-condition
-   #:container-condition-container
-
+   ;;; utils
    ;; #:vsubsetp ;; move this into the utils system
    )
 
