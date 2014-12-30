@@ -2,15 +2,6 @@
 (in-package #:math)
 ;: ^ FIXME: move into #:utils
 
-(defmacro validate-class (class &optional (superclass 'standard-class))
-  #+(or SBCL CMU CCL ALLEGRO)
-  `(progn 
-     (defmethod validate-superclass ((a ,class) (b ,superclass))
-       (values t))
-     (defmethod validate-superclass ((a ,superclass) (b ,class))
-       (values t)))
-  #-(or SBCL CMU CCL ALLEGRO)
-  `(values))
 
 (defun ensure-forward-referenced-class (name)
   (declare (type symbol name))

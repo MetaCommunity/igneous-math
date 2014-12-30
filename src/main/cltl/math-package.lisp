@@ -4,6 +4,11 @@
 
 (defpackage #:info.metacommunity.cltl.math
   (:nicknames #:math)
+  (:use #:info.metacommunity.cltl.utils
+        #:info.metacommunity.cltl.utils.mop
+        #:bordeaux-threads
+        #:c2mop
+        #:cl)
   (:shadowing-import-from 
    ;; prefer the implementation's own forms to those defined in c2mop
    ;; towards debugging, etc.
@@ -26,19 +31,6 @@
    #:SB-PCL
    #:method-combination-type-name
    )
-  #+(or SBCL CMU CCL) ;; FIXME: MOP-PORT
-  (:shadowing-import-from
-   #+SBCL #:SB-MOP
-   #+CMU #:PCL
-   #+CCL #:CCL
-   #+ALLEGRO #:MOP
-   #:validate-superclass
-   )
-
-  (:use #:info.metacommunity.cltl.utils
-        #:bordeaux-threads
-        #:c2mop
-        #:cl)
 
   (:export
    ;; utils

@@ -33,7 +33,9 @@ Effective version history:
   :depends-on 
   (#:info.metacommunity.cltl.utils
    #:closer-mop
-   #:bordeaux-threads)
+   #:bordeaux-threads
+   #:info.metacommunity.cltl.utils.mop
+   )
   ;; :serial t
   :components 
   ((:file "math-package")
