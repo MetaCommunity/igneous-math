@@ -1,6 +1,6 @@
 ;; math-reader.lisp - ...
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 
 (defun read-unit (s)

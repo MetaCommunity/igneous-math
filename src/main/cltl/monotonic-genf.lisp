@@ -1,6 +1,6 @@
 ;; monotonic-genf.lisp - definition of a MONOTONIC-GENERIC-FUNCTION
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 ;; FIXME: Move code to mci-cltl-utils system
 

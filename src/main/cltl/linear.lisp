@@ -1,6 +1,6 @@
 ;; linear.lisp - matrix operations
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 ;;; % Matrix class
 

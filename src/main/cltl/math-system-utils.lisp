@@ -1,6 +1,6 @@
 ;; math-system-utils.lisp - misc. utility forms
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 
 (defmacro vsubsetp (v1 v2 &key (key nil kp)

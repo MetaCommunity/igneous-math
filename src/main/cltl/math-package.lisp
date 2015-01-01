@@ -3,7 +3,7 @@
 (in-package #:cl-user)
 
 (defpackage #:info.metacommunity.cltl.math
-  (:nicknames #:math)
+  (:nicknames #:mcicl.math)
   (:use #:info.metacommunity.cltl.utils
         #:info.metacommunity.cltl.utils.mop
         #:bordeaux-threads
@@ -117,7 +117,7 @@
   )
 
 
-(in-package #:math)
+#+NIL (in-package #:mcicl.math)
 ;; FIXME: "Do this somewhere else"
 #-(or SBCL CMU)
 (declaim (declaration values))

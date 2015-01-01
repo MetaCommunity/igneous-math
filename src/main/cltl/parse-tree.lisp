@@ -71,7 +71,7 @@ objects, within the broader Igneous-math system.
 |#
 
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 ;;; % Condition Classes
 

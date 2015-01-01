@@ -1,6 +1,6 @@
 ;; ov-seq.lisp - overloading for simple mathematical operations onto Lisp sequence objects
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 #+NIL
 (defmethod @= ((a list) (b list))

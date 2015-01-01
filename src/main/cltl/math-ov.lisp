@@ -1,6 +1,6 @@
 ;; math-ov.lisp : definition of 'overloaded' mathematical operations
 
-(in-package #:math)
+(in-package #:mcicl.math)
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

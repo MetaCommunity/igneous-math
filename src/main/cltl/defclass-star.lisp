@@ -1,5 +1,5 @@
 
-(in-package #:math)
+(in-package #:mcicl.math)
 ;: ^ FIXME: move into #:utils
 
 
