@@ -3,7 +3,7 @@
 (in-package #:cl-user)
 
 (defpackage #:info.metacommunity.cltl.math.test
-  (:nicknames #:math.test)
+  (:nicknames #:mcicl.math.test)
   (:use
    #:info.metacommunity.cltl.test
    #:info.metacommunity.cltl.utils
